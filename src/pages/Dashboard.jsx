@@ -7,6 +7,7 @@ import {
 } from 'react-icons/fi';
 import '../assets/css/Dashboard.css';
 import XopsLogo from '../components/XopsLogo';
+import { tokenStore } from '../api/client';
 import { SAMPLE_METRICS_TEXT } from '../data/sampleMetrics';
 import {
   parsePrometheus, buildMetricsModel, fmtBytes, fmtMs, fmtDuration,
@@ -187,6 +188,7 @@ export default function Dashboard() {
   const toggleGroup = (id) => setOpenGroups((s) => ({ ...s, [id]: !s[id] }));
 
   const reset = () => {
+    tokenStore.clear(); // drop the real auth token so the dashboard is locked again
     sessionStorage.removeItem('uidai_loggedIn');
     sessionStorage.removeItem('uidai_user');
     sessionStorage.removeItem('xops_cloud');

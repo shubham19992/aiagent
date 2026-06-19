@@ -10,11 +10,11 @@ import UIDAILogin from "./pages/Uidailogin";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
+import { isAuthenticated } from "./api/auth";
 
-// Only logged-in users reach the dashboard.
+// Only authenticated users (real login token present) reach the dashboard.
 function RequireAuth({ children }) {
-  const loggedIn = sessionStorage.getItem("uidai_loggedIn") === "true";
-  return loggedIn ? children : <Navigate to="/login" replace />;
+  return isAuthenticated() ? children : <Navigate to="/login" replace />;
 }
 
 export default function App() {
