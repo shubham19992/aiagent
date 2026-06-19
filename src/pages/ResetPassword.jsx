@@ -263,7 +263,7 @@ const ResetPassword = () => {
             </form>
 
             <div className="uidai-rp-footer">
-              © 2026 xOps · PMIS Automation Tool · Internal Use Only
+              © 2026 xOps · Automation Tool · Internal Use Only
             </div>
           </div>
         </div>

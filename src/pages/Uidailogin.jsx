@@ -255,7 +255,7 @@ const UIDAILogin = () => {
           <div className="uidai-card-loginfix">
             <div className="uidai-card-head">
               <XopsLogo variant="mark" height={52} style={{ marginBottom: 10 }} />
-              <h1>xOps PMIS Secure Login</h1>
+              <h1>xOps Secure Login</h1>
               <div className="uidai-sub">Authorized access only</div>
             </div>
 
@@ -420,7 +420,7 @@ const UIDAILogin = () => {
             </div>
 
             <div className="uidai-footer">
-              © 2026 xOps · PMIS Automation Tool · Internal Use Only
+              © 2026 xOps · Automation Tool · Internal Use Only
             </div>
           </div>
         </div>
