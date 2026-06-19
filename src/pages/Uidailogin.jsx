@@ -8,7 +8,7 @@ const RESEND_COOLDOWN_SECONDS = 60;
 
 // DEMO: when true, the login button signs in immediately without
 // requiring credentials or OTP. Set to false to restore the real flow.
-const DEMO_BYPASS = true;
+const DEMO_BYPASS = false;
 
 const UIDAILogin = () => {
   const navigate = useNavigate();
