@@ -8,6 +8,13 @@ import "./App.css";
 import UIDAILogin from "./pages/Uidailogin";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
+import Dashboard from "./pages/Dashboard";
+
+// Simple session guard — only logged-in users reach the dashboard.
+function RequireAuth({ children }) {
+  const loggedIn = sessionStorage.getItem("uidai_loggedIn") === "true";
+  return loggedIn ? children : <Navigate to="/login" replace />;
+}
 
 export default function App() {
   return (
@@ -18,7 +25,17 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Everything else lands on the login page for now */}
+        {/* Post-login role-based dashboard */}
+        <Route
+          path="/"
+          element={
+            <RequireAuth>
+              <Dashboard />
+            </RequireAuth>
+          }
+        />
+
+        {/* Unknown routes → login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
