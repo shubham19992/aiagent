@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   FiActivity, FiCheckCircle, FiClock, FiServer, FiCpu, FiHardDrive,
   FiWifi, FiLayers, FiShield, FiZap, FiDatabase, FiLogOut, FiTrendingUp,
+  FiChevronDown, FiGrid, FiList,
 } from 'react-icons/fi';
 import '../assets/css/Dashboard.css';
 import XopsLogo from '../components/XopsLogo';
@@ -13,24 +14,38 @@ import {
 
 const CHART_COLORS = ['#059669', '#0d9488', '#34d399', '#14b8a6', '#5eead4', '#047857'];
 
-/* Which dashboard sections each role is allowed to see. */
+/* Roles control which nav items are visible. */
 const ROLES = {
-  user: {
-    label: 'User',
-    blurb: 'Business view — service health & API activity',
-    sections: ['kpi', 'api', 'tenant'],
-  },
-  devops: {
-    label: 'DevOps Engineer',
-    blurb: 'Operational view — runtime, resources & GC',
-    sections: ['kpi', 'api', 'tenant', 'runtime', 'process', 'gc'],
-  },
-  admin: {
-    label: 'Admin',
-    blurb: 'Full view — everything incl. scrape & governance',
-    sections: ['kpi', 'api', 'tenant', 'runtime', 'process', 'gc', 'scrape', 'governance'],
-  },
+  user: { label: 'User', blurb: 'Business view — service health & API activity' },
+  devops: { label: 'DevOps Engineer', blurb: 'Operational view — runtime, resources & GC' },
+  admin: { label: 'Admin', blurb: 'Full view — everything incl. scrape & governance' },
 };
+
+/* Sidebar navigation. Each item lists the roles allowed to see it. */
+const NAV = [
+  {
+    id: 'observability',
+    label: 'Observability',
+    icon: <FiActivity />,
+    items: [
+      { id: 'overview', label: 'Overview', icon: <FiGrid />, roles: ['user', 'devops', 'admin'] },
+      { id: 'api', label: 'API Requests', icon: <FiTrendingUp />, roles: ['user', 'devops', 'admin'] },
+      { id: 'tenant', label: 'Tenants', icon: <FiShield />, roles: ['user', 'devops', 'admin'] },
+      { id: 'runtime', label: 'Runtime', icon: <FiZap />, roles: ['devops', 'admin'] },
+      { id: 'process', label: 'Resources', icon: <FiHardDrive />, roles: ['devops', 'admin'] },
+      { id: 'gc', label: 'Garbage Collection', icon: <FiClock />, roles: ['devops', 'admin'] },
+      { id: 'scrape', label: 'Scrape Health', icon: <FiActivity />, roles: ['admin'] },
+    ],
+  },
+  {
+    id: 'governance',
+    label: 'Governance',
+    icon: <FiShield />,
+    items: [
+      { id: 'summary', label: 'Summary', icon: <FiList />, roles: ['admin'] },
+    ],
+  },
+];
 
 /* ── small presentational helpers ─────────────────────────── */
 function Kpi({ icon, label, value, sub, tone = 'brand' }) {
@@ -142,38 +157,43 @@ function Section({ title, icon, desc, children }) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const userName = sessionStorage.getItem('uidai_user') || 'User';
+  const cloudName = sessionStorage.getItem('xops_cloud_name') || 'Azure';
   const [role, setRole] = useState(sessionStorage.getItem('xops_role') || 'user');
+  const [active, setActive] = useState('overview');
+  const [openGroups, setOpenGroups] = useState({ observability: true, governance: true });
 
   const model = useMemo(
     () => buildMetricsModel(parsePrometheus(SAMPLE_METRICS_TEXT)),
     [],
   );
 
-  const allowed = ROLES[role].sections;
-  const can = (s) => allowed.includes(s);
+  // Visible nav groups/items for the current role.
+  const visibleNav = NAV
+    .map((g) => ({ ...g, items: g.items.filter((it) => it.roles.includes(role)) }))
+    .filter((g) => g.items.length > 0);
+
+  const allItems = visibleNav.flatMap((g) => g.items);
+  const activeItem = allItems.find((i) => i.id === active) || allItems[0];
+  const activeId = activeItem ? activeItem.id : 'overview';
 
   const chooseRole = (r) => {
     setRole(r);
     sessionStorage.setItem('xops_role', r);
+    // if current view isn't allowed for the new role, fall back to overview
+    const stillVisible = NAV.flatMap((g) => g.items).find((i) => i.id === active && i.roles.includes(r));
+    if (!stillVisible) setActive('overview');
   };
 
-  const cloudName = sessionStorage.getItem('xops_cloud_name') || 'Azure';
+  const toggleGroup = (id) => setOpenGroups((s) => ({ ...s, [id]: !s[id] }));
 
-  const logout = () => {
+  const reset = () => {
     sessionStorage.removeItem('uidai_loggedIn');
     sessionStorage.removeItem('uidai_user');
     sessionStorage.removeItem('xops_cloud');
     sessionStorage.removeItem('xops_cloud_name');
-    navigate('/');
   };
-
-  const switchCloud = () => {
-    sessionStorage.removeItem('uidai_loggedIn');
-    sessionStorage.removeItem('uidai_user');
-    sessionStorage.removeItem('xops_cloud');
-    sessionStorage.removeItem('xops_cloud_name');
-    navigate('/');
-  };
+  const logout = () => { reset(); navigate('/'); };
+  const switchCloud = () => { reset(); navigate('/'); };
 
   const endpointData = Object.entries(model.byEndpoint).map(([label, value]) => ({ label, value }));
   const methodItems = Object.entries(model.byMethod).map(([label, value]) => ({ label, value }));
@@ -181,63 +201,32 @@ export default function Dashboard() {
     ? model.apiRequests.reduce((a, r) => a + r.avgMs * r.count, 0) / model.totalRequests
     : 0;
 
-  return (
-    <div className="xd-page">
-      {/* top bar */}
-      <header className="xd-topbar">
-        <div className="xd-brand">
-          <XopsLogo height={36} />
-          <button className="xd-cloud-chip" onClick={switchCloud} type="button" title="Switch cloud">
-            {cloudName} <span className="xd-cloud-switch">⇄</span>
-          </button>
-        </div>
-        <div className="xd-topbar-right">
-          <div className="xd-role-switch" role="group" aria-label="Switch role">
-            {Object.entries(ROLES).map(([key, r]) => (
-              <button
-                key={key}
-                className={`xd-role-btn ${role === key ? 'active' : ''}`}
-                onClick={() => chooseRole(key)}
-                type="button"
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
-          <div className="xd-user">
-            <span className="xd-avatar">{userName.charAt(0).toUpperCase()}</span>
-            <span className="xd-user-name">{userName}</span>
-          </div>
-          <button className="xd-logout" onClick={logout} type="button" title="Log out">
-            <FiLogOut />
-          </button>
-        </div>
-      </header>
-
-      <main className="xd-main">
-        <div className="xd-pagehead">
-          <div>
-            <h1>{cloudName} Monitoring Dashboard</h1>
-            <p>{ROLES[role].label} · {ROLES[role].blurb}</p>
-          </div>
-          <div className={`xd-status-pill ${model.serviceUp ? 'up' : 'down'}`}>
-            <span className="xd-pulse" />
-            {model.serviceUp ? 'All systems operational' : 'Service down'}
-          </div>
-        </div>
-
-        {/* KPI ROW — everyone */}
-        {can('kpi') && (
-          <div className="xd-kpi-row">
-            <Kpi icon={<FiActivity />} tone="brand" label="Total API Requests" value={model.totalRequests} sub="Azure ARM calls" />
-            <Kpi icon={<FiCheckCircle />} tone="green" label="Success Rate" value={`${model.successRate.toFixed(0)}%`} sub={`${model.okRequests}/${model.totalRequests} returned 2xx`} />
-            <Kpi icon={<FiClock />} tone="teal" label="Avg Response Time" value={fmtMs(avgLatency)} sub="weighted across endpoints" />
-            <Kpi icon={<FiServer />} tone="slate" label="Uptime" value={fmtDuration(model.proc.uptimeSec)} sub="since process start" />
-          </div>
-        )}
-
-        {/* API ACTIVITY — everyone */}
-        {can('api') && (
+  /* ── content per nav item ── */
+  const renderView = () => {
+    switch (activeId) {
+      case 'overview':
+        return (
+          <>
+            <div className="xd-kpi-row">
+              <Kpi icon={<FiActivity />} tone="brand" label="Total API Requests" value={model.totalRequests} sub={`${cloudName} ARM calls`} />
+              <Kpi icon={<FiCheckCircle />} tone="green" label="Success Rate" value={`${model.successRate.toFixed(0)}%`} sub={`${model.okRequests}/${model.totalRequests} returned 2xx`} />
+              <Kpi icon={<FiClock />} tone="teal" label="Avg Response Time" value={fmtMs(avgLatency)} sub="weighted across endpoints" />
+              <Kpi icon={<FiServer />} tone="slate" label="Uptime" value={fmtDuration(model.proc.uptimeSec)} sub="since process start" />
+            </div>
+            <div className="xd-grid-2">
+              <div className="xd-card">
+                <h3>Requests by Endpoint</h3>
+                <Donut data={endpointData} total={model.totalRequests} />
+              </div>
+              <div className="xd-card">
+                <h3>Requests by Method</h3>
+                <BarList items={methodItems} />
+              </div>
+            </div>
+          </>
+        );
+      case 'api':
+        return (
           <Section title="Azure API Activity" icon={<FiTrendingUp />} desc="Requests, status and latency to Azure endpoints">
             <div className="xd-grid-2">
               <div className="xd-card">
@@ -268,10 +257,9 @@ export default function Dashboard() {
               </div>
             </div>
           </Section>
-        )}
-
-        {/* TENANT — everyone */}
-        {can('tenant') && (
+        );
+      case 'tenant':
+        return (
           <Section title="Connected Tenant" icon={<FiShield />} desc="Azure AD tenants seen in API traffic">
             <div className="xd-tenant-row">
               {model.tenants.length === 0 && <div className="xd-muted">No tenant-scoped calls.</div>}
@@ -286,10 +274,9 @@ export default function Dashboard() {
               ))}
             </div>
           </Section>
-        )}
-
-        {/* RUNTIME — devops + admin */}
-        {can('runtime') && (
+        );
+      case 'runtime':
+        return (
           <Section title="Go Runtime" icon={<FiZap />} desc="Internal runtime of the exporter process">
             <div className="xd-kpi-row">
               <Kpi icon={<FiLayers />} tone="teal" label="Goroutines" value={model.go.goroutines} />
@@ -302,10 +289,9 @@ export default function Dashboard() {
                 display={`${fmtBytes(model.go.heapAlloc)} / ${fmtBytes(model.go.nextGc)}`} />
             </div>
           </Section>
-        )}
-
-        {/* PROCESS — devops + admin */}
-        {can('process') && (
+        );
+      case 'process':
+        return (
           <Section title="Process Resources" icon={<FiHardDrive />} desc="CPU, memory, network and file descriptors">
             <div className="xd-kpi-row">
               <Kpi icon={<FiCpu />} tone="brand" label="CPU Time" value={`${model.proc.cpuSeconds}s`} sub="user+system total" />
@@ -318,10 +304,9 @@ export default function Dashboard() {
                 display={`${model.proc.openFds} / ${model.proc.maxFds}`} />
             </div>
           </Section>
-        )}
-
-        {/* GC — devops + admin */}
-        {can('gc') && (
+        );
+      case 'gc':
+        return (
           <Section title="Garbage Collection" icon={<FiClock />} desc="Stop-the-world pause behaviour">
             <div className="xd-kpi-row">
               <Kpi icon={<FiClock />} tone="teal" label="GC Pause (p50)" value={fmtMs(model.go.gcP50 * 1000)} />
@@ -329,10 +314,9 @@ export default function Dashboard() {
               <Kpi icon={<FiActivity />} tone="green" label="GC Cycles" value={model.go.gcCount} sub="since start" />
             </div>
           </Section>
-        )}
-
-        {/* SCRAPE — admin */}
-        {can('scrape') && (
+        );
+      case 'scrape':
+        return (
           <Section title="Scrape Health" icon={<FiActivity />} desc="Prometheus /metrics handler stats">
             <div className="xd-kpi-row">
               <Kpi icon={<FiCheckCircle />} tone="green" label="Successful Scrapes" value={model.scrape.ok} sub="HTTP 200" />
@@ -340,10 +324,9 @@ export default function Dashboard() {
               <Kpi icon={<FiZap />} tone="slate" label="Scrapes In-Flight" value={model.scrape.inFlight} />
             </div>
           </Section>
-        )}
-
-        {/* GOVERNANCE — admin */}
-        {can('governance') && (
+        );
+      case 'summary':
+        return (
           <Section title="Governance Summary" icon={<FiShield />} desc="Admin overview of monitored scope">
             <div className="xd-grid-3">
               <div className="xd-card xd-stat">
@@ -360,10 +343,99 @@ export default function Dashboard() {
               </div>
             </div>
           </Section>
-        )}
+        );
+      default:
+        return null;
+    }
+  };
 
-        <footer className="xd-footer">© 2026 xOps · Automation Tool · Internal Use Only</footer>
-      </main>
+  return (
+    <div className="xd-shell">
+      {/* ── sidebar ── */}
+      <aside className="xd-sidebar">
+        <div className="xd-side-logo">
+          <XopsLogo height={34} />
+        </div>
+        <button className="xd-cloud-chip" onClick={switchCloud} type="button" title="Switch cloud">
+          {cloudName} <span className="xd-cloud-switch">⇄</span>
+        </button>
+
+        <nav className="xd-nav">
+          {visibleNav.map((group) => (
+            <div className="xd-nav-group" key={group.id}>
+              <button
+                className="xd-nav-group-head"
+                onClick={() => toggleGroup(group.id)}
+                type="button"
+                aria-expanded={!!openGroups[group.id]}
+              >
+                <span className="xd-nav-group-icon">{group.icon}</span>
+                <span className="xd-nav-group-label">{group.label}</span>
+                <FiChevronDown className={`xd-nav-caret ${openGroups[group.id] ? 'open' : ''}`} />
+              </button>
+              {openGroups[group.id] && (
+                <ul className="xd-nav-items">
+                  {group.items.map((it) => (
+                    <li key={it.id}>
+                      <button
+                        className={`xd-nav-item ${activeId === it.id ? 'active' : ''}`}
+                        onClick={() => setActive(it.id)}
+                        type="button"
+                      >
+                        <span className="xd-nav-item-icon">{it.icon}</span>
+                        {it.label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </nav>
+
+        <div className="xd-side-foot">
+          <div className="xd-user">
+            <span className="xd-avatar">{userName.charAt(0).toUpperCase()}</span>
+            <span className="xd-user-name">{userName}</span>
+          </div>
+          <button className="xd-logout" onClick={logout} type="button" title="Log out">
+            <FiLogOut />
+          </button>
+        </div>
+      </aside>
+
+      {/* ── content ── */}
+      <div className="xd-content-wrap">
+        <header className="xd-topbar">
+          <div>
+            <h1 className="xd-topbar-title">{activeItem ? activeItem.label : 'Overview'}</h1>
+            <p className="xd-topbar-sub">{cloudName} · {ROLES[role].label}</p>
+          </div>
+          <div className="xd-topbar-right">
+            <div className="xd-role-switch" role="group" aria-label="Switch role">
+              {Object.entries(ROLES).map(([key, r]) => (
+                <button
+                  key={key}
+                  className={`xd-role-btn ${role === key ? 'active' : ''}`}
+                  onClick={() => chooseRole(key)}
+                  type="button"
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+            <div className={`xd-status-pill ${model.serviceUp ? 'up' : 'down'}`}>
+              <span className="xd-pulse" />
+              {model.serviceUp ? 'Operational' : 'Down'}
+            </div>
+          </div>
+        </header>
+
+        <main className="xd-main">
+          {renderView()}
+          <footer className="xd-footer">© 2026 xOps · Automation Tool · Internal Use Only</footer>
+        </main>
+      </div>
     </div>
   );
 }
