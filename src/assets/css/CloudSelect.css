@@ -1,0 +1,121 @@
+/* ============================================================
+   CloudSelect.css — public cloud-picker landing (pre-login).
+   Emerald Mint theme, cs- namespace.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+.cs-page {
+  --cs-emerald: #059669;
+  --cs-teal: #0d9488;
+  --cs-ink: #0f2a28;
+  --cs-soft: #5b7a72;
+  --cs-line: #d9ece4;
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  color: var(--cs-ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(1100px 500px at 15% -10%, #e7f7ef 0%, transparent 60%),
+    radial-gradient(900px 500px at 110% 110%, #e0f5f1 0%, transparent 55%),
+    #f3faf7;
+  -webkit-font-smoothing: antialiased;
+}
+.cs-page *, .cs-page *::before, .cs-page *::after { box-sizing: border-box; }
+
+.cs-header {
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--cs-line);
+  background: rgba(255, 255, 255, .7);
+  backdrop-filter: blur(6px);
+}
+
+.cs-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.cs-intro { text-align: center; margin-bottom: 38px; }
+.cs-intro h1 {
+  font-size: 30px; font-weight: 800; letter-spacing: -.6px; margin: 0;
+}
+.cs-intro p { margin: 10px 0 0; color: var(--cs-soft); font-size: 15px; }
+
+.cs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.cs-card {
+  position: relative;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--cs-line);
+  border-radius: 18px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: transform .18s, box-shadow .18s, border-color .18s;
+  box-shadow: 0 2px 12px rgba(15, 42, 40, .04);
+}
+.cs-card.active:hover {
+  transform: translateY(-4px);
+  border-color: #b9e6cf;
+  box-shadow: 0 16px 36px rgba(5, 150, 105, .14);
+}
+.cs-card.disabled {
+  cursor: not-allowed;
+  opacity: .62;
+  filter: grayscale(.35);
+}
+
+.cs-badge { position: absolute; top: 16px; right: 16px; font-size: 11px; font-weight: 700; }
+.cs-badge-live {
+  color: #0a7a48; background: #e7f7ef; border: 1px solid #b9e6cf;
+  padding: 3px 9px; border-radius: 999px; letter-spacing: .2px;
+}
+.cs-badge-soon {
+  color: #7a8a86; background: #eef1f4; border: 1px solid #dfe5e8;
+  padding: 3px 9px; border-radius: 999px;
+}
+
+.cs-icon {
+  width: 60px; height: 60px; border-radius: 15px;
+  display: grid; place-items: center; font-size: 32px;
+  background: var(--cs-glow, #eef4f1);
+  margin-bottom: 6px;
+}
+
+.cs-name { font-size: 17px; font-weight: 700; }
+.cs-desc { font-size: 13.5px; color: var(--cs-soft); line-height: 1.5; }
+
+.cs-cta {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 10px; font-size: 14px; font-weight: 700;
+  color: var(--cs-emerald);
+}
+.cs-card.active:hover .cs-cta { gap: 10px; }
+
+.cs-footer {
+  text-align: center; color: var(--cs-soft); font-size: 12px;
+  padding: 18px; border-top: 1px solid var(--cs-line);
+}
+
+@media (max-width: 860px) {
+  .cs-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .cs-grid { grid-template-columns: 1fr; }
+  .cs-intro h1 { font-size: 24px; }
+  .cs-main { padding: 32px 18px; }
+}

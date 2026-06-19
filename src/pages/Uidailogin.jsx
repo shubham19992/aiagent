@@ -6,6 +6,10 @@ import * as auth from '../api/auth';
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
+// DEMO: when true, the login button signs in immediately without
+// requiring credentials or OTP. Set to false to restore the real flow.
+const DEMO_BYPASS = true;
+
 const UIDAILogin = () => {
   const navigate = useNavigate();
 
@@ -58,9 +62,18 @@ const UIDAILogin = () => {
   const togglePasswordVisibility = () => setShowPassword((v) => !v);
 
   const handleSendOtp = async () => {
+    setSubmitError('');
+
+    // DEMO: skip validation, API and OTP — log straight in.
+    if (DEMO_BYPASS) {
+      sessionStorage.setItem('uidai_user', username.trim() || 'Guest');
+      sessionStorage.setItem('uidai_loggedIn', 'true');
+      navigate('/dashboard');
+      return;
+    }
+
     setUsernameTouched(true);
     setPasswordTouched(true);
-    setSubmitError('');
 
     const uErr = validateUsername(username);
     const pErr = validatePassword(password);
@@ -87,7 +100,7 @@ const UIDAILogin = () => {
       } else {
         sessionStorage.setItem('uidai_user', username);
         sessionStorage.setItem('uidai_loggedIn', 'true');
-        navigate('/');
+        navigate('/dashboard');
       }
     } catch (err) {
       setSubmitError(err?.message || 'Login failed. Please try again.');
@@ -107,7 +120,7 @@ const UIDAILogin = () => {
       await auth.verifyOtp({ ephemeralToken, code: otp });
       sessionStorage.setItem('uidai_user', username);
       sessionStorage.setItem('uidai_loggedIn', 'true');
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       setOtpError(err?.message || 'Invalid OTP. Please try again.');
     } finally {
@@ -268,7 +281,7 @@ const UIDAILogin = () => {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (isStep1Disabled || submitting) return;
+                  if ((!DEMO_BYPASS && isStep1Disabled) || submitting) return;
                   handleSendOtp();
                 }}
                 noValidate
@@ -341,9 +354,9 @@ const UIDAILogin = () => {
                   type="submit"
                   className="uidai-btn-primary"
                   id="sendOtpBtn"
-                  disabled={isStep1Disabled || submitting}
+                  disabled={(!DEMO_BYPASS && isStep1Disabled) || submitting}
                 >
-                  {submitting ? 'Please wait…' : 'Send OTP'}
+                  {submitting ? 'Please wait…' : DEMO_BYPASS ? 'Login' : 'Send OTP'}
                 </button>
               </form>
             )}

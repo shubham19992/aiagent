@@ -157,10 +157,22 @@ export default function Dashboard() {
     sessionStorage.setItem('xops_role', r);
   };
 
+  const cloudName = sessionStorage.getItem('xops_cloud_name') || 'Azure';
+
   const logout = () => {
     sessionStorage.removeItem('uidai_loggedIn');
     sessionStorage.removeItem('uidai_user');
-    navigate('/login');
+    sessionStorage.removeItem('xops_cloud');
+    sessionStorage.removeItem('xops_cloud_name');
+    navigate('/');
+  };
+
+  const switchCloud = () => {
+    sessionStorage.removeItem('uidai_loggedIn');
+    sessionStorage.removeItem('uidai_user');
+    sessionStorage.removeItem('xops_cloud');
+    sessionStorage.removeItem('xops_cloud_name');
+    navigate('/');
   };
 
   const endpointData = Object.entries(model.byEndpoint).map(([label, value]) => ({ label, value }));
@@ -173,7 +185,12 @@ export default function Dashboard() {
     <div className="xd-page">
       {/* top bar */}
       <header className="xd-topbar">
-        <XopsLogo height={36} />
+        <div className="xd-brand">
+          <XopsLogo height={36} />
+          <button className="xd-cloud-chip" onClick={switchCloud} type="button" title="Switch cloud">
+            {cloudName} <span className="xd-cloud-switch">⇄</span>
+          </button>
+        </div>
         <div className="xd-topbar-right">
           <div className="xd-role-switch" role="group" aria-label="Switch role">
             {Object.entries(ROLES).map(([key, r]) => (
@@ -200,7 +217,7 @@ export default function Dashboard() {
       <main className="xd-main">
         <div className="xd-pagehead">
           <div>
-            <h1>Azure Monitoring Dashboard</h1>
+            <h1>{cloudName} Monitoring Dashboard</h1>
             <p>{ROLES[role].label} · {ROLES[role].blurb}</p>
           </div>
           <div className={`xd-status-pill ${model.serviceUp ? 'up' : 'down'}`}>

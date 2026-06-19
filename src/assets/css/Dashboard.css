@@ -31,6 +31,15 @@
   box-shadow: 0 1px 8px rgba(5, 150, 105, .05);
 }
 .xd-topbar-right { display: flex; align-items: center; gap: 16px; }
+.xd-brand { display: flex; align-items: center; gap: 12px; }
+.xd-cloud-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--xd-line); background: #eef6f2; color: var(--xd-emerald);
+  font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  padding: 5px 12px; border-radius: 999px; transition: all .15s;
+}
+.xd-cloud-chip:hover { background: #e0f2ea; border-color: #b9e6cf; }
+.xd-cloud-switch { font-size: 13px; opacity: .8; }
 
 .xd-role-switch {
   display: inline-flex; background: #eef6f2; border: 1px solid var(--xd-line);
