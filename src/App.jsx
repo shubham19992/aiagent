@@ -21,7 +21,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         {/* Auth flow — login / forgot / reset password */}
-        <Route path="/login" element={<UIDAILogin />} />
+        <Route path="/login" element={<Dashboard />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
