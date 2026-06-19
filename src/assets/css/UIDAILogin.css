@@ -7,10 +7,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --uidai-navy: #0b3c88;
-  --uidai-navy-deep: #062a63;
-  --uidai-cyan: #0aa1c0;
-  --uidai-cyan-light: #3cb8d4;
+  --uidai-navy: #4f46e5;
+  --uidai-navy-deep: #312e81;
+  --uidai-cyan: #7c3aed;
+  --uidai-cyan-light: #a78bfa;
   --uidai-green: #1a8a3d;
   --uidai-green-soft: #e7f7ec;
   --uidai-saffron: #d4440e;

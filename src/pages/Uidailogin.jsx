@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import '../assets/css/UIDAILogin.css';
-import aadhaarLogo from '../assets/Aadhaar.png';
+import XopsLogo from '../components/XopsLogo';
 import * as auth from '../api/auth';
 
 const RESEND_COOLDOWN_SECONDS = 60;
@@ -241,11 +241,7 @@ const UIDAILogin = () => {
         </div>
         <div className="header-main">
           <div className="header-brand">
-            <img src={aadhaarLogo} alt="Aadhaar logo" />
-            <div className="header-brand-text">
-              <span className="header-brand-hi-1" lang="hi">मेरा आधार</span>
-              <span className="header-brand-hi-2" lang="hi">मेरी पहचान</span>
-            </div>
+            <XopsLogo height={44} />
           </div>
           <h1 className="header-title">UIDAI Automation Governance Tool</h1>
           <div className="header-authority">
@@ -258,7 +254,7 @@ const UIDAILogin = () => {
         <div className="uidai-overlay">
           <div className="uidai-card-loginfix">
             <div className="uidai-card-head">
-              <img src={aadhaarLogo} alt="Aadhaar" />
+              <XopsLogo variant="mark" height={52} style={{ marginBottom: 10 }} />
               <h1>UIDAI PMIS Secure Login</h1>
               <div className="uidai-sub">Authorized access only</div>
             </div>

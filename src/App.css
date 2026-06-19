@@ -1,12 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
 
 :root {
-  --navy: #0b3c88;
-  --cyan: #0aa1c0;
-  --light: #f4f7fb;
-  --border: #dbe5f1;
+  /* xOps — DevOps Indigo theme */
+  --navy: #4f46e5;   /* primary (indigo) */
+  --cyan: #7c3aed;   /* accent  (violet) */
+  --light: #f5f3ff;
+  --border: #e0ddf5;
   --red: #d32f2f;
-  --text: #1e2a3a;
+  --text: #1e1b2e;
 }
 
 * {
@@ -123,7 +124,7 @@ body {
   align-items: center;
   gap: 14px;
   padding: 8px 20px;
-  background: linear-gradient(119.54deg, #FFD9B3 0, #E3FEE4 100%);
+  background: linear-gradient(119.54deg, #EEF2FF 0, #F5F3FF 100%);
 }
 
 .header-brand {

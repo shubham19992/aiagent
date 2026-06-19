@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import '../assets/css/ResetPassword.css';
-import aadhaarLogo from '../assets/Aadhaar.png';
+import XopsLogo from '../components/XopsLogo';
 import * as auth from '../api/auth';
 
 const ResetPassword = () => {
@@ -152,11 +152,7 @@ const ResetPassword = () => {
         </div>
         <div className="header-main">
           <div className="header-brand">
-            <img src={aadhaarLogo} alt="Aadhaar logo" />
-            <div className="header-brand-text">
-              <span className="header-brand-hi-1" lang="hi">मेरा आधार</span>
-              <span className="header-brand-hi-2" lang="hi">मेरी पहचान</span>
-            </div>
+            <XopsLogo height={44} />
           </div>
           <h1 className="header-title">UIDAI Automation Governance Tool</h1>
           <div className="header-authority">
@@ -170,7 +166,7 @@ const ResetPassword = () => {
         <div className="uidai-rp-overlay">
           <div className="uidai-rp-card-reset">
             <div className="uidai-rp-card-head">
-              <img src={aadhaarLogo} alt="Aadhaar" />
+              <XopsLogo variant="mark" height={52} style={{ marginBottom: 10 }} />
               <h1>Reset Password</h1>
               <div className="uidai-rp-sub">Create a secure new password</div>
             </div>
