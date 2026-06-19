@@ -99,9 +99,9 @@ const ForgotPassword = () => {
           <div className="header-brand">
             <XopsLogo height={44} />
           </div>
-          <h1 className="header-title">UIDAI Automation Governance Tool</h1>
+          <h1 className="header-title">xOps Automation Governance Tool</h1>
           <div className="header-authority">
-            Unique Identification<br />Authority of India
+            Automation Governance<br />Platform
           </div>
         </div>
       </header>
@@ -111,7 +111,7 @@ const ForgotPassword = () => {
           <div className="uidai-card-loginfix">
             <div className="uidai-card-head">
               <XopsLogo variant="mark" height={52} style={{ marginBottom: 10 }} />
-              <h1>UIDAI PMIS Reset Password Link</h1>
+              <h1>xOps PMIS Reset Password Link</h1>
               <div className="uidai-sub">Authorized access only</div>
             </div>
 
@@ -164,7 +164,7 @@ const ForgotPassword = () => {
             </div>
 
             <div className="uidai-footer">
-              © 2026 UIDAI · PMIS Automation Tool · Internal Use Only
+              © 2026 xOps · PMIS Automation Tool · Internal Use Only
             </div>
           </div>
         </div>

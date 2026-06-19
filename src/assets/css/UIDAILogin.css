@@ -7,10 +7,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --uidai-navy: #4f46e5;
-  --uidai-navy-deep: #312e81;
-  --uidai-cyan: #7c3aed;
-  --uidai-cyan-light: #a78bfa;
+  --uidai-navy: #059669;
+  --uidai-navy-deep: #064e3b;
+  --uidai-cyan: #0d9488;
+  --uidai-cyan-light: #5eead4;
   --uidai-green: #1a8a3d;
   --uidai-green-soft: #e7f7ec;
   --uidai-saffron: #d4440e;
@@ -189,7 +189,7 @@
 .uidai-main {
   flex: 1;
   position: relative;
-  background: url("../background.jpg") no-repeat center center / cover;
+  background: url("../login-bg.svg") no-repeat center center / cover;
   background-color: var(--uidai-navy-deep);
 }
 .uidai-overlay {

@@ -154,9 +154,9 @@ const ResetPassword = () => {
           <div className="header-brand">
             <XopsLogo height={44} />
           </div>
-          <h1 className="header-title">UIDAI Automation Governance Tool</h1>
+          <h1 className="header-title">xOps Automation Governance Tool</h1>
           <div className="header-authority">
-            Unique Identification<br />Authority of India
+            Automation Governance<br />Platform
           </div>
         </div>
       </header>
@@ -263,7 +263,7 @@ const ResetPassword = () => {
             </form>
 
             <div className="uidai-rp-footer">
-              © 2026 UIDAI · PMIS Automation Tool · Internal Use Only
+              © 2026 xOps · PMIS Automation Tool · Internal Use Only
             </div>
           </div>
         </div>
