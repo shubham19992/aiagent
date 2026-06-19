@@ -62,18 +62,22 @@ const UIDAILogin = () => {
   const togglePasswordVisibility = () => setShowPassword((v) => !v);
 
   const handleSendOtp = async () => {
+    setUsernameTouched(true);
+    setPasswordTouched(true);
     setSubmitError('');
 
-    // DEMO: skip validation, API and OTP — log straight in.
+    // DEMO: require username + password, then log in directly (no OTP/API).
     if (DEMO_BYPASS) {
-      sessionStorage.setItem('uidai_user', username.trim() || 'Guest');
+      const uErr = validateUsername(username);
+      const pErr = validatePassword(password);
+      setUsernameError(uErr);
+      setPasswordError(pErr);
+      if (uErr || pErr) return;
+      sessionStorage.setItem('uidai_user', username.trim());
       sessionStorage.setItem('uidai_loggedIn', 'true');
       navigate('/dashboard');
       return;
     }
-
-    setUsernameTouched(true);
-    setPasswordTouched(true);
 
     const uErr = validateUsername(username);
     const pErr = validatePassword(password);
@@ -281,7 +285,7 @@ const UIDAILogin = () => {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if ((!DEMO_BYPASS && isStep1Disabled) || submitting) return;
+                  if (isStep1Disabled || submitting) return;
                   handleSendOtp();
                 }}
                 noValidate
@@ -354,7 +358,7 @@ const UIDAILogin = () => {
                   type="submit"
                   className="uidai-btn-primary"
                   id="sendOtpBtn"
-                  disabled={(!DEMO_BYPASS && isStep1Disabled) || submitting}
+                  disabled={isStep1Disabled || submitting}
                 >
                   {submitting ? 'Please wait…' : DEMO_BYPASS ? 'Login' : 'Send OTP'}
                 </button>
