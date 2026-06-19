@@ -192,8 +192,7 @@ export default function Dashboard() {
     sessionStorage.removeItem('xops_cloud');
     sessionStorage.removeItem('xops_cloud_name');
   };
-  const logout = () => { reset(); navigate('/'); };
-  const switchCloud = () => { reset(); navigate('/'); };
+  const logout = () => { reset(); navigate('/login'); };
 
   const endpointData = Object.entries(model.byEndpoint).map(([label, value]) => ({ label, value }));
   const methodItems = Object.entries(model.byMethod).map(([label, value]) => ({ label, value }));
@@ -356,9 +355,7 @@ export default function Dashboard() {
         <div className="xd-side-logo">
           <XopsLogo height={34} />
         </div>
-        <button className="xd-cloud-chip" onClick={switchCloud} type="button" title="Switch cloud">
-          {cloudName} <span className="xd-cloud-switch">⇄</span>
-        </button>
+        <span className="xd-cloud-chip xd-cloud-static">{cloudName}</span>
 
         <nav className="xd-nav">
           {visibleNav.map((group) => (

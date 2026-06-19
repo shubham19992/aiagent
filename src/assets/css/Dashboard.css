@@ -93,6 +93,8 @@
 }
 .xd-cloud-chip:hover { background: #e0f2ea; border-color: #b9e6cf; }
 .xd-cloud-switch { font-size: 13px; opacity: .8; }
+.xd-cloud-static { cursor: default; }
+.xd-cloud-static:hover { background: #eef6f2; border-color: var(--xd-line); }
 
 .xd-role-switch {
   display: inline-flex; background: #eef6f2; border: 1px solid var(--xd-line);
