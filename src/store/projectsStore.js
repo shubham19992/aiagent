@@ -27,6 +27,10 @@ export function listProjects() {
   return read();
 }
 
+export function getProject(id) {
+  return read().find((p) => p.id === id) || null;
+}
+
 export function addProject({
   name, key, description, priority, status, owner, environments,
   tags, startDate, endDate, observabilities, assignments, createdBy,

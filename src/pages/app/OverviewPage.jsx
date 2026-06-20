@@ -31,7 +31,7 @@ export default function OverviewPage() {
         ) : (
           <div className="xd-proj-grid">
             {mine.map((p) => (
-              <Link to="/dashboard/projects" className="xd-proj-card xd-proj-card-link" key={p.id}>
+              <Link to={`/dashboard/projects/${p.id}`} className="xd-proj-card xd-proj-card-link" key={p.id}>
                 <h3>{p.name}</h3>
                 <div className="xd-proj-meta"><FiCalendar /> {p.startDate || '—'} → {p.endDate || '—'}</div>
                 <div className="xd-proj-label">Observing</div>

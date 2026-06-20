@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiCalendar, FiUsers, FiUser, FiTrash2, FiPlus, FiFolder, FiTag } from 'react-icons/fi';
+import { FiCalendar, FiUsers, FiUser, FiTrash2, FiPlus, FiFolder, FiTag, FiBarChart2 } from 'react-icons/fi';
 import { PageHeader } from './_parts';
 import { listProjects, myProjects, removeProject, projectMembers } from '../../store/projectsStore';
 
@@ -57,7 +57,7 @@ export default function ProjectListPage() {
                 <div className="xd-proj-card" key={p.id}>
                   <div className="xd-proj-card-head">
                     <div>
-                      <h3>{p.name} {p.key && <span className="xd-proj-key">{p.key}</span>}</h3>
+                      <h3><Link to={`/dashboard/projects/${p.id}`} className="xd-proj-title-link">{p.name}</Link> {p.key && <span className="xd-proj-key">{p.key}</span>}</h3>
                       <div className="xd-proj-badges">
                         <span className={`xd-status xd-status-${(p.status || 'Planning').toLowerCase().replace(/\s/g, '')}`}>{p.status || 'Planning'}</span>
                         <span className={`xd-prio xd-prio-${(p.priority || 'Medium').toLowerCase()}`}>{p.priority || 'Medium'}</span>
@@ -100,7 +100,10 @@ export default function ProjectListPage() {
                     <div className="xd-proj-tags"><FiTag />{p.tags.map((t) => <span className="xd-tag-soft" key={t}>{t}</span>)}</div>
                   )}
 
-                  <div className="xd-proj-foot">Created by {p.createdBy}</div>
+                  <div className="xd-proj-foot xd-proj-foot-row">
+                    <span>Created by {p.createdBy}</span>
+                    <Link to={`/dashboard/projects/${p.id}`} className="xd-proj-open"><FiBarChart2 /> Observability</Link>
+                  </div>
                 </div>
               );
             })}

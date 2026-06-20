@@ -16,6 +16,7 @@ import OpPage from "./pages/app/OpPage";
 import EnvPage from "./pages/app/EnvPage";
 import CreateProjectPage from "./pages/app/CreateProjectPage";
 import ProjectListPage from "./pages/app/ProjectListPage";
+import ProjectDashboardPage from "./pages/app/ProjectDashboardPage";
 import { getToken } from "./api/auth";
 
 // A valid login = a real token (the demo placeholder doesn't count).
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="observability/:opCode/:envCode" element={<EnvPage />} />
           <Route path="projects" element={<ProjectListPage />} />
           <Route path="projects/new" element={<CreateProjectPage />} />
+          <Route path="projects/:projectId" element={<ProjectDashboardPage />} />
         </Route>
 
         {/* Unknown routes → login */}
