@@ -2,13 +2,14 @@ import React from 'react';
 import { Link, useNavigate, useOutletContext } from 'react-router-dom';
 import { FiArrowRight, FiCalendar, FiPlus } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
-import { myProjects, projectMembers } from '../../store/projectsStore';
+import { myProjects, projectMembers, seedDemoProjects } from '../../store/projectsStore';
 
 /** Landing page: the user's projects + grid of all observability ops. */
 export default function OverviewPage() {
   const { ops, source, loading } = useOutletContext();
   const navigate = useNavigate();
   const currentUser = sessionStorage.getItem('uidai_user') || 'You';
+  seedDemoProjects(currentUser);
   const mine = myProjects(currentUser);
 
   return (

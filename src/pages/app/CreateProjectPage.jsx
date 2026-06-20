@@ -111,7 +111,6 @@ export default function CreateProjectPage() {
       <main className="xd-main">
         <div className="xd-pagelead">
           <h1>Create Project</h1>
-          <p>Define a project, pick the observabilities to monitor, and assign members to each.</p>
         </div>
 
         {loading ? (

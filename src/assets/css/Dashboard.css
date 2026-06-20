@@ -401,7 +401,7 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 /* fixed-height create-project card: scrollable body + pinned footer */
 .xd-proj-form.xd-card {
   display: flex; flex-direction: column; padding: 0; overflow: hidden;
-  height: calc(100vh - 210px); min-height: 460px;
+  height: calc(100vh - 150px); min-height: 520px;
 }
 .xd-form-body { flex: 1; min-height: 0; overflow-y: auto; padding: 22px; }
 .xd-form-footer {

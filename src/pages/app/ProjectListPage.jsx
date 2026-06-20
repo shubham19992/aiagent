@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiCalendar, FiUsers, FiUser, FiTrash2, FiPlus, FiFolder, FiTag } from 'react-icons/fi';
 import { PageHeader } from './_parts';
-import { listProjects, myProjects, removeProject, projectMembers } from '../../store/projectsStore';
+import { listProjects, myProjects, removeProject, projectMembers, seedDemoProjects } from '../../store/projectsStore';
 
 const fmtDate = (d) => {
   if (!d) return '—';
@@ -12,7 +12,8 @@ const fmtDate = (d) => {
 
 export default function ProjectListPage() {
   const currentUser = sessionStorage.getItem('uidai_user') || 'You';
-  const [scope, setScope] = useState('mine');   // 'mine' | 'all'
+  seedDemoProjects(currentUser);                 // one-time demo data on first run
+  const [scope, setScope] = useState('all');     // 'mine' | 'all'
   const [version, setVersion] = useState(0);     // bump to re-read after delete
 
   const projects = useMemo(
