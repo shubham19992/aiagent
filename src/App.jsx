@@ -14,6 +14,8 @@ import AppLayout from "./pages/app/AppLayout";
 import OverviewPage from "./pages/app/OverviewPage";
 import OpPage from "./pages/app/OpPage";
 import EnvPage from "./pages/app/EnvPage";
+import CreateProjectPage from "./pages/app/CreateProjectPage";
+import ProjectListPage from "./pages/app/ProjectListPage";
 import { isAuthenticated } from "./api/auth";
 
 // Only authenticated users (real or demo token present) reach the app.
@@ -45,6 +47,8 @@ export default function App() {
           <Route index element={<OverviewPage />} />
           <Route path="observability/:opCode" element={<OpPage />} />
           <Route path="observability/:opCode/:envCode" element={<EnvPage />} />
+          <Route path="projects" element={<ProjectListPage />} />
+          <Route path="projects/new" element={<CreateProjectPage />} />
         </Route>
 
         {/* Unknown routes → login */}

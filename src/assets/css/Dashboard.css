@@ -341,8 +341,63 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 .xd-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(5,150,105,.22); }
 .xd-btn:disabled { opacity: .5; cursor: not-allowed; }
 
+/* ── manage project ── */
+.xd-pagelead-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.xd-list-actions { display: flex; align-items: center; gap: 12px; }
+.xd-btn-sm { padding: 8px 14px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+.xd-btn-ghost {
+  background: #fff; color: var(--xd-ink); border: 1px solid var(--xd-line);
+  border-radius: 8px; padding: 11px 20px; font: inherit; font-weight: 700; cursor: pointer;
+}
+.xd-btn-ghost:hover { background: #f1f7f4; }
+.xd-inline-link { color: var(--xd-emerald); font-weight: 700; text-decoration: none; }
+.xd-form-error { color: #d33; font-weight: 600; font-size: 13px; margin-top: 14px; }
+
+/* chip multiselect */
+.xd-chip-select { display: flex; flex-wrap: wrap; gap: 8px; }
+.xd-chip-opt {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--xd-line); background: #fff; color: var(--xd-soft);
+  border-radius: 999px; padding: 7px 14px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all .14s;
+}
+.xd-chip-opt:hover { border-color: #b9e6cf; color: var(--xd-emerald); }
+.xd-chip-opt.on { background: linear-gradient(90deg, var(--xd-emerald), var(--xd-teal)); color: #fff; border-color: transparent; }
+.xd-chip-opt.member { font-size: 12.5px; padding: 6px 12px; }
+
+.xd-assign-list { display: flex; flex-direction: column; gap: 14px; }
+.xd-assign-row { border: 1px solid var(--xd-line); border-radius: 12px; padding: 14px 16px; background: #fafdfb; }
+.xd-assign-op { font-weight: 700; font-size: 14px; margin-bottom: 10px; color: var(--xd-ink); }
+
+.xd-proj-form .xd-subhead { margin-top: 22px; }
+
+/* project cards */
+.xd-proj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.xd-proj-card {
+  background: var(--xd-card); border: 1px solid var(--xd-line); border-radius: 16px; padding: 18px;
+  box-shadow: 0 2px 10px rgba(15, 42, 40, .04); display: flex; flex-direction: column; gap: 8px;
+}
+.xd-proj-card-link { text-decoration: none; color: inherit; transition: transform .16s, box-shadow .16s, border-color .16s; }
+.xd-proj-card-link:hover { transform: translateY(-3px); border-color: #b9e6cf; box-shadow: 0 14px 30px rgba(5,150,105,.12); }
+.xd-proj-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.xd-proj-card h3 { margin: 0; font-size: 16px; font-weight: 800; }
+.xd-proj-del { border: none; background: transparent; color: #c0392b; cursor: pointer; font-size: 16px; padding: 2px; border-radius: 6px; }
+.xd-proj-del:hover { background: #fdecec; }
+.xd-proj-meta { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--xd-soft); }
+.xd-proj-label { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--xd-soft); margin-top: 6px; }
+.xd-proj-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.xd-tag { background: #e7f4ef; color: var(--xd-emerald); border-radius: 6px; padding: 3px 9px; font-size: 12px; font-weight: 700; }
+.xd-proj-members { display: flex; flex-wrap: wrap; gap: 6px; }
+.xd-member-pill { display: inline-flex; align-items: center; gap: 6px; background: #f1f7f4; border: 1px solid var(--xd-line); border-radius: 999px; padding: 3px 10px 3px 3px; font-size: 12px; font-weight: 600; }
+.xd-member-ava { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 800; color: #fff; background: linear-gradient(135deg, var(--xd-emerald), var(--xd-teal)); }
+.xd-proj-foot { font-size: 12px; color: var(--xd-soft); margin-top: 8px; padding-top: 10px; border-top: 1px solid #eef4f1; }
+
+.xd-empty { text-align: center; color: var(--xd-soft); padding: 50px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.xd-empty svg { font-size: 40px; color: #b6ccc3; }
+
 @media (max-width: 900px) {
   .xd-ops-grid, .xd-env-grid, .xd-conn-grid { grid-template-columns: 1fr; }
+  .xd-proj-grid { grid-template-columns: 1fr; }
 }
 
 /* ── responsive ── */
