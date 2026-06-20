@@ -117,10 +117,11 @@ export default function CreateProjectPage() {
         {loading ? (
           <Spinner label="Loading observabilities…" />
         ) : (
-          <form className="xd-proj-form" onSubmit={onSubmit}>
+          <form className="xd-proj-form xd-card" onSubmit={onSubmit}>
+            <div className="xd-form-body">
             <div className="xd-create-cols">
               {/* ── Column 1: project details ── */}
-              <section className="xd-card xd-create-col">
+              <section className="xd-create-col">
                 <h3 className="xd-col-title">Project Details</h3>
 
                 <div className="xd-conn-field">
@@ -207,7 +208,7 @@ export default function CreateProjectPage() {
               </section>
 
               {/* ── Column 2: what to observe ── */}
-              <section className="xd-card xd-create-col">
+              <section className="xd-create-col">
                 <h3 className="xd-col-title">What do you want to observe?<span className="xd-req">*</span></h3>
                 <p className="xd-col-hint">Select the observability domains this project will monitor.</p>
                 <div className="xd-chip-select xd-chip-stack">
@@ -224,7 +225,7 @@ export default function CreateProjectPage() {
               </section>
 
               {/* ── Column 3: assign members ── */}
-              <section className="xd-card xd-create-col">
+              <section className="xd-create-col">
                 <h3 className="xd-col-title">Assign Members</h3>
                 <p className="xd-col-hint">Assign members to each selected observability.</p>
                 {selected.length === 0 ? (
@@ -255,12 +256,14 @@ export default function CreateProjectPage() {
                 )}
               </section>
             </div>
+            </div>
 
-            {error && <div className="xd-form-error">{error}</div>}
-
-            <div className="xd-conn-actions">
-              <button type="button" className="xd-btn-ghost" onClick={() => navigate('/dashboard/projects')}>Cancel</button>
-              <button type="submit" className="xd-btn">Create Project</button>
+            <div className="xd-form-footer">
+              {error && <div className="xd-form-error">{error}</div>}
+              <div className="xd-conn-actions">
+                <button type="button" className="xd-btn-ghost" onClick={() => navigate('/dashboard/projects')}>Cancel</button>
+                <button type="submit" className="xd-btn">Create Project</button>
+              </div>
             </div>
           </form>
         )}
