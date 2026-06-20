@@ -4,14 +4,20 @@
 // No dummy fallback — on failure the UI shows empty/error states.
 // ============================================================
 
+import { tokenStore } from './client';
+
 const RAW = import.meta.env.VITE_OBS_API_BASE_URL || 'http://127.0.0.1:8005';
 export const OBS_BASE = RAW.replace(/\/+$/, '');
 
 const enc = encodeURIComponent;
 
 async function getElements(path) {
+  const token = tokenStore.get();
   const res = await fetch(`${OBS_BASE}${path}`, {
-    headers: { accept: 'application/json' },
+    headers: {
+      accept: 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const json = await res.json();
