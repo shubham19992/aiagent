@@ -1,10 +1,14 @@
 // ============================================================
 // observability.js — client for the /api/v3/observability/* API.
-// Returns { items, source } where source is 'api' | 'error'.
-// No dummy fallback — on failure the UI shows empty/error states.
+// Returns { items, source } where source is 'api' | 'dummy'.
+// On any failure it falls back to bundled dummy data so the UI
+// keeps working when the backend is unreachable.
 // ============================================================
-
 import { tokenStore } from './client';
+import {
+  DUMMY_OPS, dummyEnvs, dummyMeasures, dummyParams,
+} from '../data/observabilityDummy';
+import { DEMO_USERS } from '../data/demoUsers';
 
 // Every API shares one base URL (VITE_API_BASE_URL).
 const RAW = import.meta.env.VITE_API_BASE_URL || 'http://10.1.151.228:8081';
@@ -32,7 +36,7 @@ export async function listOps({ includeInactive = false } = {}) {
     const items = await getElements(`/api/v3/observability/ops?include_inactive=${includeInactive}`);
     return { items, source: 'api' };
   } catch {
-    return { items: [], source: 'error' };
+    return { items: DUMMY_OPS, source: 'dummy' };
   }
 }
 
@@ -41,7 +45,7 @@ export async function listEnvs(opCode, { includeInactive = false } = {}) {
     const items = await getElements(`/api/v3/observability/${enc(opCode)}/envs?include_inactive=${includeInactive}`);
     return { items, source: 'api' };
   } catch {
-    return { items: [], source: 'error' };
+    return { items: dummyEnvs(opCode), source: 'dummy' };
   }
 }
 
@@ -51,7 +55,7 @@ export async function listMeasures(opCode, env, { includeInactive = false } = {}
     const items = await getElements(`/api/v3/observability/${enc(opCode)}/measures?include_inactive=${includeInactive}${q}`);
     return { items, source: 'api' };
   } catch {
-    return { items: [], source: 'error' };
+    return { items: dummyMeasures(opCode), source: 'dummy' };
   }
 }
 
@@ -60,7 +64,7 @@ export async function listUsers() {
     const items = await getElements('/api/v3/users');
     return { items, source: 'api' };
   } catch {
-    return { items: [], source: 'error' };
+    return { items: DEMO_USERS, source: 'dummy' };
   }
 }
 
@@ -69,6 +73,6 @@ export async function listConnectionParams(opCode, env, { includeInactive = fals
     const items = await getElements(`/api/v3/observability/${enc(opCode)}/connection-params?env=${enc(env)}&include_inactive=${includeInactive}`);
     return { items, source: 'api' };
   } catch {
-    return { items: [], source: 'error' };
+    return { items: dummyParams(opCode, env), source: 'dummy' };
   }
 }

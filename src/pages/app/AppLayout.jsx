@@ -58,7 +58,7 @@ export default function AppLayout() {
             >
               <span className="xd-nav-group-icon"><FiActivity /></span>
               <span className="xd-nav-group-label">Observability</span>
-              {source === 'error' && <span className="xd-demo-dot" title="Observability API unreachable" />}
+              {source === 'dummy' && <span className="xd-demo-dot" title="Showing demo data (API offline)" />}
               <FiChevronDown className={`xd-nav-caret ${open.observability ? 'open' : ''}`} />
             </button>
 
