@@ -127,7 +127,7 @@
 .xd-logout:hover { color: #d33; border-color: #f3c9c9; background: #fff6f6; }
 
 /* ── main ── */
-.xd-main { max-width: 1240px; margin: 0 auto; padding: 24px; }
+.xd-main { padding: 24px; }
 
 .xd-pagehead {
   display: flex; align-items: center; justify-content: space-between;
