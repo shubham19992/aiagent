@@ -25,15 +25,17 @@ function write(list) {
   localStorage.setItem(KEY, JSON.stringify(list));
 }
 
-/** True when there are no real projects, so the UI is showing demo data. */
+/** A demo/sample project (not stored, can't be deleted). */
+export const isDemoProject = (p) => String(p?.id || '').startsWith('p_demo_');
+
+/** Whether any demo projects are currently shown (always true for now). */
 export function usingDummyProjects() {
-  return read().length === 0;
+  return DUMMY_PROJECTS.length > 0;
 }
 
-/** Real projects, or the demo set as a fallback when none exist yet. */
+/** Real projects first, then the demo set so the list is never sparse. */
 export function listProjects() {
-  const real = read();
-  return real.length ? real : DUMMY_PROJECTS;
+  return [...read(), ...DUMMY_PROJECTS];
 }
 
 export function getProject(id) {
@@ -84,14 +86,13 @@ export function projectMembers(project) {
 /** Projects relevant to a given logged-in user: created by them OR where
  *  they're assigned to any observability. Used for the "My Projects" view. */
 export function myProjects(username) {
-  const real = read();
-  // Demo mode (no real projects): show the whole demo set so the
-  // overview / "Mine" view isn't empty.
-  if (real.length === 0) return DUMMY_PROJECTS;
   const u = (username || '').trim().toLowerCase();
-  if (!u) return [];
-  return real.filter((p) => {
-    if ((p.createdBy || '').trim().toLowerCase() === u) return true;
-    return projectMembers(p).some((m) => (m || '').trim().toLowerCase() === u);
-  });
+  const mine = u
+    ? read().filter((p) => {
+        if ((p.createdBy || '').trim().toLowerCase() === u) return true;
+        return projectMembers(p).some((m) => (m || '').trim().toLowerCase() === u);
+      })
+    : [];
+  // Always append the demo set so the overview / "Mine" view stays populated.
+  return [...mine, ...DUMMY_PROJECTS];
 }
