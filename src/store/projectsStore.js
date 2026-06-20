@@ -5,6 +5,8 @@
 // which members are assigned per observability.
 // ============================================================
 
+import { DUMMY_PROJECTS } from '../data/projectsDummy';
+
 const KEY = 'xops_projects';
 
 function read() {
@@ -23,12 +25,23 @@ function write(list) {
   localStorage.setItem(KEY, JSON.stringify(list));
 }
 
+/** True when there are no real projects, so the UI is showing demo data. */
+export function usingDummyProjects() {
+  return read().length === 0;
+}
+
+/** Real projects, or the demo set as a fallback when none exist yet. */
 export function listProjects() {
-  return read();
+  const real = read();
+  return real.length ? real : DUMMY_PROJECTS;
 }
 
 export function getProject(id) {
-  return read().find((p) => p.id === id) || null;
+  return (
+    read().find((p) => p.id === id) ||
+    DUMMY_PROJECTS.find((p) => p.id === id) ||
+    null
+  );
 }
 
 export function addProject({
@@ -71,9 +84,13 @@ export function projectMembers(project) {
 /** Projects relevant to a given logged-in user: created by them OR where
  *  they're assigned to any observability. Used for the "My Projects" view. */
 export function myProjects(username) {
+  const real = read();
+  // Demo mode (no real projects): show the whole demo set so the
+  // overview / "Mine" view isn't empty.
+  if (real.length === 0) return DUMMY_PROJECTS;
   const u = (username || '').trim().toLowerCase();
   if (!u) return [];
-  return read().filter((p) => {
+  return real.filter((p) => {
     if ((p.createdBy || '').trim().toLowerCase() === u) return true;
     return projectMembers(p).some((m) => (m || '').trim().toLowerCase() === u);
   });

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiCalendar, FiUsers, FiUser, FiTrash2, FiPlus, FiFolder, FiTag, FiBarChart2 } from 'react-icons/fi';
 import { PageHeader } from './_parts';
-import { listProjects, myProjects, removeProject, projectMembers } from '../../store/projectsStore';
+import { listProjects, myProjects, removeProject, projectMembers, usingDummyProjects } from '../../store/projectsStore';
 
 const fmtDate = (d) => {
   if (!d) return '—';
@@ -19,6 +19,7 @@ export default function ProjectListPage() {
     () => (scope === 'mine' ? myProjects(currentUser) : listProjects()),
     [scope, currentUser, version],
   );
+  const isDummy = useMemo(() => usingDummyProjects(), [version]);
 
   const del = (id) => {
     removeProject(id);
@@ -27,7 +28,7 @@ export default function ProjectListPage() {
 
   return (
     <>
-      <PageHeader crumbs={[{ label: 'Manage Project' }, { label: 'Project List' }]} />
+      <PageHeader crumbs={[{ label: 'Manage Project' }, { label: 'Project List' }]} source={isDummy ? 'dummy' : 'api'} />
       <main className="xd-main">
         <div className="xd-pagelead xd-pagelead-row">
           <div>
@@ -63,7 +64,9 @@ export default function ProjectListPage() {
                         <span className={`xd-prio xd-prio-${(p.priority || 'Medium').toLowerCase()}`}>{p.priority || 'Medium'}</span>
                       </div>
                     </div>
-                    <button className="xd-proj-del" title="Delete project" onClick={() => del(p.id)}><FiTrash2 /></button>
+                    {!isDummy && (
+                      <button className="xd-proj-del" title="Delete project" onClick={() => del(p.id)}><FiTrash2 /></button>
+                    )}
                   </div>
 
                   {p.description && <div className="xd-proj-desc">{p.description}</div>}
