@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { FiActivity, FiChevronDown, FiLogOut, FiLoader, FiFolder, FiPlusCircle, FiList } from 'react-icons/fi';
 import '../../assets/css/Dashboard.css';
 import XopsLogo from '../../components/XopsLogo';
-import { tokenStore } from '../../api/client';
+import * as auth from '../../api/auth';
 import { listOps } from '../../api/observability';
 
 /**
@@ -32,11 +32,14 @@ export default function AppLayout() {
     return () => { alive = false; };
   }, []);
 
-  const logout = () => {
-    tokenStore.clear();
-    sessionStorage.removeItem('uidai_loggedIn');
-    sessionStorage.removeItem('uidai_user');
-    navigate('/login');
+  const logout = async () => {
+    // Call the backend logout API; auth.logout() clears all tokens/session
+    // in its finally block even if the request fails.
+    try {
+      await auth.logout();
+    } finally {
+      navigate('/login');
+    }
   };
 
   return (
