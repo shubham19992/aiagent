@@ -6,7 +6,8 @@
 
 import { tokenStore } from './client';
 
-const RAW = import.meta.env.VITE_OBS_API_BASE_URL || 'http://127.0.0.1:8005';
+// Every API shares one base URL (VITE_API_BASE_URL).
+const RAW = import.meta.env.VITE_API_BASE_URL || 'http://10.1.151.228:8081';
 export const OBS_BASE = RAW.replace(/\/+$/, '');
 
 const enc = encodeURIComponent;
