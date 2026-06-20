@@ -16,11 +16,14 @@ import OpPage from "./pages/app/OpPage";
 import EnvPage from "./pages/app/EnvPage";
 import CreateProjectPage from "./pages/app/CreateProjectPage";
 import ProjectListPage from "./pages/app/ProjectListPage";
-import { isAuthenticated } from "./api/auth";
+import { getToken } from "./api/auth";
 
-// Only authenticated users (real or demo token present) reach the app.
+// Only users with a real login token reach the app. Any leftover demo
+// placeholder token is treated as not-authenticated.
 function RequireAuth({ children }) {
-  return isAuthenticated() ? children : <Navigate to="/login" replace />;
+  const token = getToken();
+  const authed = !!token && token !== "demo-token";
+  return authed ? children : <Navigate to="/login" replace />;
 }
 
 export default function App() {

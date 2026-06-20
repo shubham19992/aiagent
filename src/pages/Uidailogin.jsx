@@ -9,7 +9,7 @@ const RESEND_COOLDOWN_SECONDS = 60;
 // DEMO: when true and the login API is unreachable, sign in anyway with a
 // placeholder token (after the fields are filled). Set to false to require
 // a successful backend login.
-const DEMO_BYPASS = true;
+const DEMO_BYPASS = false;
 
 const UIDAILogin = () => {
   const navigate = useNavigate();
