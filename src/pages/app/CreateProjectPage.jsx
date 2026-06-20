@@ -158,7 +158,6 @@ export default function CreateProjectPage() {
                   {memberOptions.map((m) => <option key={m.id} value={m.name}>{m.name}{m.you ? ' (you)' : ''}</option>)}
                 </select>
               </div>
-              <div className="xd-conn-field" />
 
               <div className="xd-conn-field">
                 <label className="xd-conn-label">Start Date<span className="xd-req">*</span></label>
