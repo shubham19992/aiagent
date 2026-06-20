@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiCalendar, FiUsers, FiTrash2, FiPlus, FiFolder } from 'react-icons/fi';
+import { FiCalendar, FiUsers, FiUser, FiTrash2, FiPlus, FiFolder, FiTag } from 'react-icons/fi';
 import { PageHeader } from './_parts';
 import { listProjects, myProjects, removeProject, projectMembers } from '../../store/projectsStore';
 
@@ -56,10 +56,28 @@ export default function ProjectListPage() {
               return (
                 <div className="xd-proj-card" key={p.id}>
                   <div className="xd-proj-card-head">
-                    <h3>{p.name}</h3>
+                    <div>
+                      <h3>{p.name} {p.key && <span className="xd-proj-key">{p.key}</span>}</h3>
+                      <div className="xd-proj-badges">
+                        <span className={`xd-status xd-status-${(p.status || 'Planning').toLowerCase().replace(/\s/g, '')}`}>{p.status || 'Planning'}</span>
+                        <span className={`xd-prio xd-prio-${(p.priority || 'Medium').toLowerCase()}`}>{p.priority || 'Medium'}</span>
+                      </div>
+                    </div>
                     <button className="xd-proj-del" title="Delete project" onClick={() => del(p.id)}><FiTrash2 /></button>
                   </div>
+
+                  {p.description && <div className="xd-proj-desc">{p.description}</div>}
                   <div className="xd-proj-meta"><FiCalendar /> {fmtDate(p.startDate)} → {fmtDate(p.endDate)}</div>
+                  {p.owner && <div className="xd-proj-meta"><FiUser /> Owner: {p.owner}</div>}
+
+                  {(p.environments?.length > 0) && (
+                    <>
+                      <div className="xd-proj-label">Environments</div>
+                      <div className="xd-proj-chips">
+                        {p.environments.map((e) => <span className="xd-tag xd-tag-env" key={e}>{e.toUpperCase()}</span>)}
+                      </div>
+                    </>
+                  )}
 
                   <div className="xd-proj-label">Observing</div>
                   <div className="xd-proj-chips">
@@ -77,6 +95,10 @@ export default function ProjectListPage() {
                       </span>
                     ))}
                   </div>
+
+                  {(p.tags?.length > 0) && (
+                    <div className="xd-proj-tags"><FiTag />{p.tags.map((t) => <span className="xd-tag-soft" key={t}>{t}</span>)}</div>
+                  )}
 
                   <div className="xd-proj-foot">Created by {p.createdBy}</div>
                 </div>

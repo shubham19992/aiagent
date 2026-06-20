@@ -25,11 +25,21 @@ export function listProjects() {
   return read();
 }
 
-export function addProject({ name, startDate, endDate, observabilities, assignments, createdBy }) {
+export function addProject({
+  name, key, description, priority, status, owner, environments,
+  tags, startDate, endDate, observabilities, assignments, createdBy,
+}) {
   const list = read();
   const project = {
     id: `p_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
     name,
+    key: key || '',
+    description: description || '',
+    priority: priority || 'Medium',
+    status: status || 'Planning',
+    owner: owner || '',
+    environments: environments || [],            // ['aws','azure',...]
+    tags: tags || [],                            // ['migration', ...]
     startDate,
     endDate,
     observabilities: observabilities || [],      // [{ code, name }]
