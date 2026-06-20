@@ -55,7 +55,7 @@ export default function AppLayout() {
             >
               <span className="xd-nav-group-icon"><FiActivity /></span>
               <span className="xd-nav-group-label">Observability</span>
-              {source === 'dummy' && <span className="xd-demo-dot" title="Showing demo data (API offline)" />}
+              {source === 'error' && <span className="xd-demo-dot" title="Observability API unreachable" />}
               <FiChevronDown className={`xd-nav-caret ${open.observability ? 'open' : ''}`} />
             </button>
 
@@ -63,6 +63,9 @@ export default function AppLayout() {
               <ul className="xd-nav-items">
                 {loading && (
                   <li className="xd-nav-loading"><FiLoader className="xd-spin" /> Loading…</li>
+                )}
+                {!loading && ops.length === 0 && (
+                  <li className="xd-nav-loading">No data · API unreachable</li>
                 )}
                 {!loading && ops.map((op) => (
                   <li key={op.code}>

@@ -1,12 +1,8 @@
 // ============================================================
 // observability.js — client for the /api/v3/observability/* API.
-// Every call falls back to bundled dummy data when the backend
-// is unreachable, so the UI keeps working offline. Each function
-// returns { items, source } where source is 'api' | 'dummy'.
+// Returns { items, source } where source is 'api' | 'error'.
+// No dummy fallback — on failure the UI shows empty/error states.
 // ============================================================
-import {
-  DUMMY_OPS, dummyEnvs, dummyMeasures, dummyParams,
-} from '../data/observabilityDummy';
 
 const RAW = import.meta.env.VITE_OBS_API_BASE_URL || 'http://127.0.0.1:8005';
 export const OBS_BASE = RAW.replace(/\/+$/, '');
@@ -29,7 +25,7 @@ export async function listOps({ includeInactive = false } = {}) {
     const items = await getElements(`/api/v3/observability/ops?include_inactive=${includeInactive}`);
     return { items, source: 'api' };
   } catch {
-    return { items: DUMMY_OPS, source: 'dummy' };
+    return { items: [], source: 'error' };
   }
 }
 
@@ -38,7 +34,7 @@ export async function listEnvs(opCode, { includeInactive = false } = {}) {
     const items = await getElements(`/api/v3/observability/${enc(opCode)}/envs?include_inactive=${includeInactive}`);
     return { items, source: 'api' };
   } catch {
-    return { items: dummyEnvs(opCode), source: 'dummy' };
+    return { items: [], source: 'error' };
   }
 }
 
@@ -48,7 +44,16 @@ export async function listMeasures(opCode, env, { includeInactive = false } = {}
     const items = await getElements(`/api/v3/observability/${enc(opCode)}/measures?include_inactive=${includeInactive}${q}`);
     return { items, source: 'api' };
   } catch {
-    return { items: dummyMeasures(opCode), source: 'dummy' };
+    return { items: [], source: 'error' };
+  }
+}
+
+export async function listUsers() {
+  try {
+    const items = await getElements('/api/v3/users');
+    return { items, source: 'api' };
+  } catch {
+    return { items: [], source: 'error' };
   }
 }
 
@@ -57,6 +62,6 @@ export async function listConnectionParams(opCode, env, { includeInactive = fals
     const items = await getElements(`/api/v3/observability/${enc(opCode)}/connection-params?env=${enc(env)}&include_inactive=${includeInactive}`);
     return { items, source: 'api' };
   } catch {
-    return { items: dummyParams(opCode, env), source: 'dummy' };
+    return { items: [], source: 'error' };
   }
 }

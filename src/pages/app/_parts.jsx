@@ -22,9 +22,9 @@ export function PageHeader({ crumbs = [], source }) {
           );
         })}
       </nav>
-      {source === 'dummy' && (
-        <span className="xd-demo-badge" title="Live API unreachable — showing bundled demo data">
-          ● Demo data · API offline
+      {source === 'error' && (
+        <span className="xd-demo-badge" title="Could not reach the observability API">
+          ● API unreachable
         </span>
       )}
     </header>

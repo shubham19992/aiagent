@@ -2,9 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiCheck, FiUser, FiX } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
-import { listOps } from '../../api/observability';
+import { listOps, listUsers } from '../../api/observability';
 import { addProject } from '../../store/projectsStore';
-import { DEMO_USERS } from '../../data/demoUsers';
+
+// Display name from whatever fields the users API returns.
+const userName = (u) =>
+  u.name || u.full_name || u.fullName || u.username || u.email || String(u.id ?? '');
 
 const PRIORITIES = ['Low', 'Medium', 'High', 'Critical'];
 const STATUSES = ['Planning', 'Active', 'On Hold', 'Completed'];
@@ -39,18 +42,25 @@ export default function CreateProjectPage() {
   const [endDate, setEndDate] = useState('');
   const [selected, setSelected] = useState([]);
   const [assignments, setAssignments] = useState({});
+  const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
 
+  // Members = the logged-in user first, then users fetched from the API.
   const memberOptions = useMemo(() => {
     const me = { id: 'me', name: currentUser, role: 'You', you: true };
-    return [me, ...DEMO_USERS];
-  }, [currentUser]);
+    const others = users
+      .map((u, i) => ({ id: u.id ?? `u${i}`, name: userName(u) }))
+      .filter((u) => u.name && u.name !== currentUser);
+    return [me, ...others];
+  }, [currentUser, users]);
 
   useEffect(() => {
     let alive = true;
-    listOps().then(({ items, source: src }) => {
+    Promise.all([listOps(), listUsers()]).then(([opsRes, usersRes]) => {
       if (!alive) return;
-      setOps(items); setSource(src); setLoading(false);
+      setOps(opsRes.items); setSource(opsRes.source);
+      setUsers(usersRes.items);
+      setLoading(false);
     });
     return () => { alive = false; };
   }, []);
