@@ -6,9 +6,10 @@ import * as auth from '../api/auth';
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
-// DEMO: when true, the login button signs in immediately without
-// requiring credentials or OTP. Set to false to restore the real flow.
-const DEMO_BYPASS = false;
+// DEMO: when true and the login API is unreachable, sign in anyway with a
+// placeholder token (after the fields are filled). Set to false to require
+// a successful backend login.
+const DEMO_BYPASS = true;
 
 const UIDAILogin = () => {
   const navigate = useNavigate();
@@ -61,23 +62,19 @@ const UIDAILogin = () => {
 
   const togglePasswordVisibility = () => setShowPassword((v) => !v);
 
+  // DEMO fallback: drop a placeholder token + session so the guarded
+  // dashboard opens even though no real auth happened.
+  const demoLogin = () => {
+    localStorage.setItem('auth_token', 'demo-token');
+    sessionStorage.setItem('uidai_user', username.trim() || 'Guest');
+    sessionStorage.setItem('uidai_loggedIn', 'true');
+    navigate('/dashboard');
+  };
+
   const handleSendOtp = async () => {
     setUsernameTouched(true);
     setPasswordTouched(true);
     setSubmitError('');
-
-    // DEMO: require username + password, then log in directly (no OTP/API).
-    if (DEMO_BYPASS) {
-      const uErr = validateUsername(username);
-      const pErr = validatePassword(password);
-      setUsernameError(uErr);
-      setPasswordError(pErr);
-      if (uErr || pErr) return;
-      sessionStorage.setItem('uidai_user', username.trim());
-      sessionStorage.setItem('uidai_loggedIn', 'true');
-      navigate('/dashboard');
-      return;
-    }
 
     const uErr = validateUsername(username);
     const pErr = validatePassword(password);
@@ -107,6 +104,12 @@ const UIDAILogin = () => {
         navigate('/dashboard');
       }
     } catch (err) {
+      // If the API is unreachable (network error → no HTTP status) and demo
+      // mode is on, bypass login instead of blocking the user.
+      if (DEMO_BYPASS && !err?.status) {
+        demoLogin();
+        return;
+      }
       setSubmitError(err?.message || 'Login failed. Please try again.');
     } finally {
       setSubmitting(false);

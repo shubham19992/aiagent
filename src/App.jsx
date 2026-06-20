@@ -1,6 +1,7 @@
 // ============================================================
 // App.jsx  –  Router + Routes
-// Flow: login (/login) → dashboard (/dashboard)
+// Flow: login (/login) → app shell (/dashboard) with nested
+// observability drill-down routes.
 // ============================================================
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
@@ -9,10 +10,13 @@ import "./App.css";
 import UIDAILogin from "./pages/Uidailogin";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
-import Dashboard from "./pages/Dashboard";
+import AppLayout from "./pages/app/AppLayout";
+import OverviewPage from "./pages/app/OverviewPage";
+import OpPage from "./pages/app/OpPage";
+import EnvPage from "./pages/app/EnvPage";
 import { isAuthenticated } from "./api/auth";
 
-// Only authenticated users (real login token present) reach the dashboard.
+// Only authenticated users (real or demo token present) reach the app.
 function RequireAuth({ children }) {
   return isAuthenticated() ? children : <Navigate to="/login" replace />;
 }
@@ -24,20 +28,24 @@ export default function App() {
         {/* Landing → login directly */}
         <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* Auth flow — login / forgot / reset password */}
+        {/* Auth flow */}
         <Route path="/login" element={<UIDAILogin />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Post-login role-based dashboard */}
+        {/* Post-login app shell + observability drill-down */}
         <Route
           path="/dashboard"
           element={
             <RequireAuth>
-              <Dashboard />
+              <AppLayout />
             </RequireAuth>
           }
-        />
+        >
+          <Route index element={<OverviewPage />} />
+          <Route path="observability/:opCode" element={<OpPage />} />
+          <Route path="observability/:opCode/:envCode" element={<EnvPage />} />
+        </Route>
 
         {/* Unknown routes → login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
