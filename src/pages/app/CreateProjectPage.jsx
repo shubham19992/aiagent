@@ -14,7 +14,6 @@ const ENVIRONMENTS = [
   { code: 'gcp', name: 'GCP' },
 ];
 
-// Derive a short key like "Cloud Migration FY26" → "CMF".
 const deriveKey = (name) =>
   name.trim().split(/\s+/).map((w) => w[0]).join('').toUpperCase().slice(0, 6);
 
@@ -56,7 +55,6 @@ export default function CreateProjectPage() {
     return () => { alive = false; };
   }, []);
 
-  // Auto-fill key from name until the user edits it manually.
   useEffect(() => {
     if (!keyTouched) setKey(deriveKey(name));
   }, [name, keyTouched]);
@@ -119,126 +117,144 @@ export default function CreateProjectPage() {
         {loading ? (
           <Spinner label="Loading observabilities…" />
         ) : (
-          <form className="xd-card xd-proj-form" onSubmit={onSubmit}>
-            <div className="xd-conn-grid">
-              <div className="xd-conn-field">
-                <label className="xd-conn-label">Project Name<span className="xd-req">*</span></label>
-                <input className="xd-conn-input" value={name} placeholder="e.g. Cloud Migration FY26"
-                  onChange={(e) => { setName(e.target.value); setError(''); }} />
-              </div>
-              <div className="xd-conn-field">
-                <label className="xd-conn-label">Project Key</label>
-                <input className="xd-conn-input" value={key} placeholder="e.g. CMF"
-                  onChange={(e) => { setKey(e.target.value.toUpperCase()); setKeyTouched(true); }} />
-              </div>
+          <form className="xd-proj-form" onSubmit={onSubmit}>
+            <div className="xd-create-cols">
+              {/* ── Column 1: project details ── */}
+              <section className="xd-card xd-create-col">
+                <h3 className="xd-col-title">Project Details</h3>
 
-              <div className="xd-conn-field xd-col-span-2">
-                <label className="xd-conn-label">Description</label>
-                <textarea className="xd-conn-input xd-textarea" rows={3} value={description}
-                  placeholder="What is this project about?"
-                  onChange={(e) => setDescription(e.target.value)} />
-              </div>
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Project Name<span className="xd-req">*</span></label>
+                  <input className="xd-conn-input" value={name} placeholder="e.g. Cloud Migration FY26"
+                    onChange={(e) => { setName(e.target.value); setError(''); }} />
+                </div>
 
-              <div className="xd-conn-field">
-                <label className="xd-conn-label">Priority</label>
-                <select className="xd-conn-input" value={priority} onChange={(e) => setPriority(e.target.value)}>
-                  {PRIORITIES.map((p) => <option key={p}>{p}</option>)}
-                </select>
-              </div>
-              <div className="xd-conn-field">
-                <label className="xd-conn-label">Status</label>
-                <select className="xd-conn-input" value={status} onChange={(e) => setStatus(e.target.value)}>
-                  {STATUSES.map((s) => <option key={s}>{s}</option>)}
-                </select>
-              </div>
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Project Key</label>
+                  <input className="xd-conn-input" value={key} placeholder="e.g. CMF"
+                    onChange={(e) => { setKey(e.target.value.toUpperCase()); setKeyTouched(true); }} />
+                </div>
 
-              <div className="xd-conn-field">
-                <label className="xd-conn-label">Project Owner</label>
-                <select className="xd-conn-input" value={owner} onChange={(e) => setOwner(e.target.value)}>
-                  {memberOptions.map((m) => <option key={m.id} value={m.name}>{m.name}{m.you ? ' (you)' : ''}</option>)}
-                </select>
-              </div>
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Description</label>
+                  <textarea className="xd-conn-input xd-textarea" rows={3} value={description}
+                    placeholder="What is this project about?"
+                    onChange={(e) => setDescription(e.target.value)} />
+                </div>
 
-              <div className="xd-conn-field">
-                <label className="xd-conn-label">Start Date<span className="xd-req">*</span></label>
-                <input className="xd-conn-input" type="date" value={startDate}
-                  onChange={(e) => { setStartDate(e.target.value); setError(''); }} />
-              </div>
-              <div className="xd-conn-field">
-                <label className="xd-conn-label">End Date<span className="xd-req">*</span></label>
-                <input className="xd-conn-input" type="date" value={endDate}
-                  onChange={(e) => { setEndDate(e.target.value); setError(''); }} />
-              </div>
-            </div>
+                <div className="xd-field-row2">
+                  <div className="xd-conn-field">
+                    <label className="xd-conn-label">Priority</label>
+                    <select className="xd-conn-input" value={priority} onChange={(e) => setPriority(e.target.value)}>
+                      {PRIORITIES.map((p) => <option key={p}>{p}</option>)}
+                    </select>
+                  </div>
+                  <div className="xd-conn-field">
+                    <label className="xd-conn-label">Status</label>
+                    <select className="xd-conn-input" value={status} onChange={(e) => setStatus(e.target.value)}>
+                      {STATUSES.map((s) => <option key={s}>{s}</option>)}
+                    </select>
+                  </div>
+                </div>
 
-            {/* Target environments */}
-            <h3 className="xd-subhead">Target Environments</h3>
-            <div className="xd-chip-select">
-              {ENVIRONMENTS.map((env) => {
-                const on = environments.includes(env.code);
-                return (
-                  <button key={env.code} type="button" className={`xd-chip-opt ${on ? 'on' : ''}`}
-                    onClick={() => toggleEnv(env.code)}>
-                    {on && <FiCheck />} {env.name}
-                  </button>
-                );
-              })}
-            </div>
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Project Owner</label>
+                  <select className="xd-conn-input" value={owner} onChange={(e) => setOwner(e.target.value)}>
+                    {memberOptions.map((m) => <option key={m.id} value={m.name}>{m.name}{m.you ? ' (you)' : ''}</option>)}
+                  </select>
+                </div>
 
-            {/* Tags */}
-            <h3 className="xd-subhead">Tags</h3>
-            <div className="xd-tag-input-wrap">
-              {tags.map((t) => (
-                <span className="xd-tag xd-tag-removable" key={t}>
-                  {t}<button type="button" onClick={() => setTags((x) => x.filter((y) => y !== t))}><FiX /></button>
-                </span>
-              ))}
-              <input className="xd-tag-input" value={tagInput} placeholder="Add tag + Enter"
-                onChange={(e) => setTagInput(e.target.value)} onKeyDown={onTagKey} onBlur={addTag} />
-            </div>
+                <div className="xd-field-row2">
+                  <div className="xd-conn-field">
+                    <label className="xd-conn-label">Start Date<span className="xd-req">*</span></label>
+                    <input className="xd-conn-input" type="date" value={startDate}
+                      onChange={(e) => { setStartDate(e.target.value); setError(''); }} />
+                  </div>
+                  <div className="xd-conn-field">
+                    <label className="xd-conn-label">End Date<span className="xd-req">*</span></label>
+                    <input className="xd-conn-input" type="date" value={endDate}
+                      onChange={(e) => { setEndDate(e.target.value); setError(''); }} />
+                  </div>
+                </div>
 
-            {/* Observability multiselect */}
-            <h3 className="xd-subhead">What do you want to observe?</h3>
-            <div className="xd-chip-select">
-              {ops.map((op) => {
-                const on = selected.includes(op.code);
-                return (
-                  <button key={op.code} type="button" className={`xd-chip-opt ${on ? 'on' : ''}`}
-                    onClick={() => toggleOp(op.code)}>
-                    {on && <FiCheck />} {op.name}
-                  </button>
-                );
-              })}
-            </div>
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Target Environments</label>
+                  <div className="xd-chip-select">
+                    {ENVIRONMENTS.map((env) => {
+                      const on = environments.includes(env.code);
+                      return (
+                        <button key={env.code} type="button" className={`xd-chip-opt ${on ? 'on' : ''}`}
+                          onClick={() => toggleEnv(env.code)}>
+                          {on && <FiCheck />} {env.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-            {/* Per-observability member assignment */}
-            {selected.length > 0 && (
-              <>
-                <h3 className="xd-subhead">Assign members per observability</h3>
-                <div className="xd-assign-list">
-                  {selected.map((code) => {
-                    const op = ops.find((o) => o.code === code);
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Tags</label>
+                  <div className="xd-tag-input-wrap">
+                    {tags.map((t) => (
+                      <span className="xd-tag xd-tag-removable" key={t}>
+                        {t}<button type="button" onClick={() => setTags((x) => x.filter((y) => y !== t))}><FiX /></button>
+                      </span>
+                    ))}
+                    <input className="xd-tag-input" value={tagInput} placeholder="Add tag + Enter"
+                      onChange={(e) => setTagInput(e.target.value)} onKeyDown={onTagKey} onBlur={addTag} />
+                  </div>
+                </div>
+              </section>
+
+              {/* ── Column 2: what to observe ── */}
+              <section className="xd-card xd-create-col">
+                <h3 className="xd-col-title">What do you want to observe?<span className="xd-req">*</span></h3>
+                <p className="xd-col-hint">Select the observability domains this project will monitor.</p>
+                <div className="xd-chip-select xd-chip-stack">
+                  {ops.map((op) => {
+                    const on = selected.includes(op.code);
                     return (
-                      <div className="xd-assign-row" key={code}>
-                        <div className="xd-assign-op">{op?.name || code}</div>
-                        <div className="xd-chip-select">
-                          {memberOptions.map((m) => {
-                            const on = (assignments[code] || []).includes(m.name);
-                            return (
-                              <button key={m.id} type="button"
-                                className={`xd-chip-opt member ${on ? 'on' : ''}`}
-                                onClick={() => toggleMember(code, m.name)}>
-                                <FiUser /> {m.name}{m.you ? ' (you)' : ''}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
+                      <button key={op.code} type="button" className={`xd-chip-opt ${on ? 'on' : ''}`}
+                        onClick={() => toggleOp(op.code)}>
+                        {on && <FiCheck />} {op.name}
+                      </button>
                     );
                   })}
                 </div>
-              </>
-            )}
+              </section>
+
+              {/* ── Column 3: assign members ── */}
+              <section className="xd-card xd-create-col">
+                <h3 className="xd-col-title">Assign Members</h3>
+                <p className="xd-col-hint">Assign members to each selected observability.</p>
+                {selected.length === 0 ? (
+                  <div className="xd-assign-empty">Select an observability first to assign members.</div>
+                ) : (
+                  <div className="xd-assign-list">
+                    {selected.map((code) => {
+                      const op = ops.find((o) => o.code === code);
+                      return (
+                        <div className="xd-assign-row" key={code}>
+                          <div className="xd-assign-op">{op?.name || code}</div>
+                          <div className="xd-chip-select">
+                            {memberOptions.map((m) => {
+                              const on = (assignments[code] || []).includes(m.name);
+                              return (
+                                <button key={m.id} type="button"
+                                  className={`xd-chip-opt member ${on ? 'on' : ''}`}
+                                  onClick={() => toggleMember(code, m.name)}>
+                                  <FiUser /> {m.name}{m.you ? ' (you)' : ''}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            </div>
 
             {error && <div className="xd-form-error">{error}</div>}
 
