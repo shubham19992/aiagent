@@ -149,34 +149,34 @@ const enc = encodeURIComponent;
 
 export const ENDPOINTS = {
   auth: {
-    login: '/users/api/v3/users/login',
-    logout: '/users/api/v3/users/logout',
-    me: '/users/api/v3/users/me',
-    introspect: '/users/api/v3/users/introspect',
-    refresh: '/users/api/v3/users/refresh',
-    sendOtp: '/users/api/v3/users/login/send-otp',
-    verifyOtp: '/users/api/v3/users/login/verify-otp',
-    forgotPassword: '/users/api/v3/users/forgot-password',
-    resetPassword: '/users/api/v3/users/reset-password',
+    login: '/api/v3/users/login',
+    logout: '/api/v3/users/logout',
+    me: '/api/v3/users/me',
+    introspect: '/api/v3/users/introspect',
+    refresh: '/api/v3/users/refresh',
+    sendOtp: '/api/v3/users/login/send-otp',
+    verifyOtp: '/api/v3/users/login/verify-otp',
+    forgotPassword: '/api/v3/users/forgot-password',
+    resetPassword: '/api/v3/users/reset-password',
   },
 
   users: {
-    list: '/users/api/v3/users',
-    get: (id) => `/users/api/v3/users/${enc(id)}`,
-    create: '/users/api/v3/users/create',
-    update: (id) => `/users/api/v3/users/${enc(id)}`,
-    updatePassword: (id) => `/users/api/v3/users/${enc(id)}/password`,
-    remove: (id) => `/users/api/v3/users/${enc(id)}`,
+    list: '/api/v3/users',
+    get: (id) => `/api/v3/users/${enc(id)}`,
+    create: '/api/v3/users/create',
+    update: (id) => `/api/v3/users/${enc(id)}`,
+    updatePassword: (id) => `/api/v3/users/${enc(id)}/password`,
+    remove: (id) => `/api/v3/users/${enc(id)}`,
     associated: '/projects/api/v3/associated-users',
     /* Authz assignable-users — the candidates that CAN be assigned a given
        role on a project. Backs the Manage Team Organization User dropdowns
        (role = project_admin | project_member). */
     authzAssignableUsers: (projectId, role) =>
-      `/users/api/v3/authz/projects/${enc(projectId)}/assignable-users/${enc(role)}`,
+      `/api/v3/authz/projects/${enc(projectId)}/assignable-users/${enc(role)}`,
     /* Users that can be assigned to a task / subtask, scoped to a vendor.
        Backs the "Assigned To" dropdown in the task / subtask modals. */
     vendorAssignableUsers: (vendorId) =>
-      `/users/api/v3/vendors/${enc(vendorId)}/assignable-users`,
+      `/api/v3/vendors/${enc(vendorId)}/assignable-users`,
   },
 
   vendors: {
@@ -220,7 +220,7 @@ export const ENDPOINTS = {
     /* Role catalog used by the Add User form's Role dropdown. Backend
        moved this off the /master tree onto /users — keep this path in
        sync with what the curl in PR review uses. */
-    list: '/users/api/v3/roles',
+    list: '/api/v3/roles',
   },
 
   projects: {

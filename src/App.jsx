@@ -18,25 +18,33 @@ import CreateProjectPage from "./pages/app/CreateProjectPage";
 import ProjectListPage from "./pages/app/ProjectListPage";
 import { getToken } from "./api/auth";
 
-// Only users with a real login token reach the app. Any leftover demo
-// placeholder token is treated as not-authenticated.
-function RequireAuth({ children }) {
+// A valid login = a real token (the demo placeholder doesn't count).
+function isAuthed() {
   const token = getToken();
-  const authed = !!token && token !== "demo-token";
-  return authed ? children : <Navigate to="/login" replace />;
+  return !!token && token !== "demo-token";
+}
+
+// Gate every app route: no token → bounce to /login.
+function RequireAuth({ children }) {
+  return isAuthed() ? children : <Navigate to="/login" replace />;
+}
+
+// Keep authenticated users out of the login page.
+function GuestOnly({ children }) {
+  return isAuthed() ? <Navigate to="/dashboard" replace /> : children;
 }
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Landing → login directly */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        {/* Landing → dashboard if logged in, else login */}
+        <Route path="/" element={<Navigate to={isAuthed() ? "/dashboard" : "/login"} replace />} />
 
-        {/* Auth flow */}
-        <Route path="/login" element={<UIDAILogin />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+        {/* Auth flow — only reachable when NOT logged in */}
+        <Route path="/login" element={<GuestOnly><UIDAILogin /></GuestOnly>} />
+        <Route path="/forgot-password" element={<GuestOnly><ForgotPassword /></GuestOnly>} />
+        <Route path="/reset-password" element={<GuestOnly><ResetPassword /></GuestOnly>} />
 
         {/* Post-login app shell + observability drill-down */}
         <Route
