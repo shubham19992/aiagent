@@ -99,8 +99,6 @@ export default function AssignMembersPage() {
   const roleCount = (code, role) =>
     (assignments[code] || []).filter((m) => roleOf(m) === role).length;
 
-  const setMemberRole = (m, role) => setRoles((r) => ({ ...r, [m]: role }));
-
   // Unique members assigned across every observability, for the roles panel.
   const assignedMembers = useMemo(() => {
     const all = Object.values(assignments).flat();
@@ -227,24 +225,6 @@ export default function AssignMembersPage() {
               {/* ── Right: selected / assigned ── */}
               <div className="xd-am-panel">
                 <div className="xd-am-head"><FiUsers /><h3>Assigned members</h3></div>
-
-                {assignedMembers.length > 0 && (
-                  <div className="xd-am-roles">
-                    <div className="xd-am-roles-head"><FiShield /> Project roles</div>
-                    {assignedMembers.map((m) => (
-                      <div className="xd-am-rolerow" key={m}>
-                        <span className="xd-am-ava">{m.charAt(0).toUpperCase()}</span>
-                        <span className="xd-am-rolename">{m}</span>
-                        <select className="xd-am-roleselect" value={roles[m] || 'member'}
-                          onChange={(e) => setMemberRole(m, e.target.value)}>
-                          {ROLE_OPTIONS.map((r) => (
-                            <option key={r.value} value={r.value}>{r.label}</option>
-                          ))}
-                        </select>
-                      </div>
-                    ))}
-                  </div>
-                )}
 
                 <div className="xd-am-summary">
                   {obs.map((o) => {
