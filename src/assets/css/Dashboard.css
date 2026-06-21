@@ -862,8 +862,8 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 .xd-conn-back { margin-right: auto; display: inline-flex; align-items: center; gap: 6px; }
 
 /* ── selected observability cards (create-project, 3rd column) ── */
-/* widen the selected column so 3 compact cards fit per row */
-.xd-create-cols-sel { grid-template-columns: 1fr 0.85fr 1.55fr; }
+/* wider details column; selected column still fits 3 compact cards */
+.xd-create-cols-sel { grid-template-columns: 1.35fr 0.8fr 1.5fr; }
 
 /* cards: 3 per row inside the column */
 .xd-sel-grid {

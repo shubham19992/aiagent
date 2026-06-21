@@ -1,11 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiCheck, FiX, FiActivity, FiImage } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
-import { listOps } from '../../api/observability';
+import { listOps, listUsers } from '../../api/observability';
 import { addProject } from '../../store/projectsStore';
 
 const STATUSES = ['Planning', 'Active', 'On Hold', 'Completed'];
+
+// Display name from whatever fields the users API returns.
+const userName = (u) =>
+  u.name || u.full_name || u.fullName || u.username || u.email || String(u.id ?? '');
 
 // Short two-letter badge from an op name (AIOps -> "AI").
 const opBadge = (name) => name.replace(/Ops$/i, '').slice(0, 2).toUpperCase();
@@ -15,8 +19,18 @@ export default function CreateProjectPage() {
   const currentUser = sessionStorage.getItem('uidai_user') || 'You';
 
   const [ops, setOps] = useState([]);
+  const [users, setUsers] = useState([]);
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
+
+  // Owner options = the logged-in user first, then users from the API.
+  const ownerOptions = useMemo(() => {
+    const me = { id: 'me', name: currentUser, you: true };
+    const others = users
+      .map((u, i) => ({ id: u.id ?? `u${i}`, name: userName(u) }))
+      .filter((u) => u.name && u.name !== currentUser);
+    return [me, ...others];
+  }, [currentUser, users]);
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -43,9 +57,10 @@ export default function CreateProjectPage() {
 
   useEffect(() => {
     let alive = true;
-    listOps().then((opsRes) => {
+    Promise.all([listOps(), listUsers()]).then(([opsRes, usersRes]) => {
       if (!alive) return;
       setOps(opsRes.items); setSource(opsRes.source);
+      setUsers(usersRes.items);
       setLoading(false);
     });
     return () => { alive = false; };
@@ -129,17 +144,21 @@ export default function CreateProjectPage() {
                     onChange={(e) => setDescription(e.target.value)} />
                 </div>
 
-                <div className="xd-conn-field">
-                  <label className="xd-conn-label">Status</label>
-                  <select className="xd-conn-input" value={status} onChange={(e) => setStatus(e.target.value)}>
-                    {STATUSES.map((s) => <option key={s}>{s}</option>)}
-                  </select>
-                </div>
-
-                <div className="xd-conn-field">
-                  <label className="xd-conn-label">Project Owner</label>
-                  <input className="xd-conn-input" value={owner}
-                    onChange={(e) => setOwner(e.target.value)} />
+                <div className="xd-field-row2">
+                  <div className="xd-conn-field">
+                    <label className="xd-conn-label">Status</label>
+                    <select className="xd-conn-input" value={status} onChange={(e) => setStatus(e.target.value)}>
+                      {STATUSES.map((s) => <option key={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div className="xd-conn-field">
+                    <label className="xd-conn-label">Project Owner</label>
+                    <select className="xd-conn-input" value={owner} onChange={(e) => setOwner(e.target.value)}>
+                      {ownerOptions.map((m) => (
+                        <option key={m.id} value={m.name}>{m.name}{m.you ? ' (you)' : ''}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div className="xd-field-row2">
