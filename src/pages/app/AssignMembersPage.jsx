@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiUser, FiCheckCircle } from 'react-icons/fi';
+import { FiCheck, FiCheckCircle, FiUsers, FiLayers, FiUserCheck } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listUsers } from '../../api/observability';
 import { getProject, updateProject } from '../../store/projectsStore';
@@ -8,6 +8,9 @@ import { getProject, updateProject } from '../../store/projectsStore';
 // Display name from whatever fields the users API returns.
 const userName = (u) =>
   u.name || u.full_name || u.fullName || u.username || u.email || String(u.id ?? '');
+
+// Short two-letter badge from an op name (AIOps -> "AI").
+const opBadge = (name) => name.replace(/Ops$/i, '').slice(0, 2).toUpperCase();
 
 /**
  * Second step of project creation: assign members to each observability the
@@ -71,6 +74,8 @@ export default function AssignMembersPage() {
   }
 
   const obs = project.observabilities || [];
+  const totalAssigned = new Set(Object.values(assignments).flat()).size;
+  const coveredOps = obs.filter((o) => (assignments[o.code] || []).length > 0).length;
 
   return (
     <>
@@ -88,39 +93,86 @@ export default function AssignMembersPage() {
           <p>Assign team members to each observability in <strong>{project.name}</strong>.</p>
         </div>
 
+        {/* summary strip */}
+        <div className="xd-assign-summary">
+          <div className="xd-assign-stat">
+            <span className="xd-assign-stat-icon"><FiLayers /></span>
+            <div>
+              <div className="xd-assign-stat-num">{obs.length}</div>
+              <div className="xd-assign-stat-cap">Observabilities</div>
+            </div>
+          </div>
+          <div className="xd-assign-stat">
+            <span className="xd-assign-stat-icon"><FiUserCheck /></span>
+            <div>
+              <div className="xd-assign-stat-num">{coveredOps}/{obs.length}</div>
+              <div className="xd-assign-stat-cap">Covered</div>
+            </div>
+          </div>
+          <div className="xd-assign-stat">
+            <span className="xd-assign-stat-icon"><FiUsers /></span>
+            <div>
+              <div className="xd-assign-stat-num">{totalAssigned}</div>
+              <div className="xd-assign-stat-cap">Members</div>
+            </div>
+          </div>
+        </div>
+
         {loading ? (
           <Spinner label="Loading members…" />
         ) : (
-          <div className="xd-card">
-            <div className="xd-assign-list">
-              {obs.map((o) => (
-                <div className="xd-assign-row" key={o.code}>
-                  <div className="xd-assign-op">{o.name}</div>
-                  <div className="xd-chip-select">
-                    {memberOptions.map((m) => {
-                      const on = (assignments[o.code] || []).includes(m.name);
-                      return (
-                        <button key={m.id} type="button"
-                          className={`xd-chip-opt member ${on ? 'on' : ''}`}
-                          onClick={() => toggleMember(o.code, m.name)}>
-                          <FiUser /> {m.name}{m.you ? ' (you)' : ''}
-                        </button>
-                      );
-                    })}
+          <>
+            <div className="xd-assign-grid">
+              {obs.map((o) => {
+                const picked = assignments[o.code] || [];
+                return (
+                  <div className={`xd-assign-card ${picked.length ? 'covered' : ''}`} key={o.code}>
+                    <div className="xd-assign-card-head">
+                      <span className="xd-sel-badge">{opBadge(o.name)}</span>
+                      <div className="xd-assign-card-meta">
+                        <div className="xd-assign-card-name">{o.name}</div>
+                        <div className="xd-assign-card-count">
+                          {picked.length ? `${picked.length} member${picked.length > 1 ? 's' : ''} assigned` : 'No members yet'}
+                        </div>
+                      </div>
+                      {picked.length > 0 && <FiCheckCircle className="xd-assign-card-tick" />}
+                    </div>
+
+                    <div className="xd-assign-members">
+                      {memberOptions.map((m) => {
+                        const on = picked.includes(m.name);
+                        return (
+                          <button key={m.id} type="button"
+                            className={`xd-assign-member ${on ? 'on' : ''}`}
+                            onClick={() => toggleMember(o.code, m.name)}>
+                            <span className="xd-assign-ava">{m.name.charAt(0).toUpperCase()}</span>
+                            <span className="xd-assign-member-name">{m.name}{m.you ? ' (you)' : ''}</span>
+                            {on && <FiCheck className="xd-assign-member-check" />}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
-            <div className="xd-conn-actions">
-              <button type="button" className="xd-btn-ghost" onClick={() => navigate('/dashboard/projects')}>
-                Skip for now
-              </button>
-              <button type="button" className="xd-btn" onClick={save}>
-                <FiCheckCircle /> Save Assignments
-              </button>
+            <div className="xd-assign-bar">
+              <span className="xd-assign-bar-hint">
+                {coveredOps === obs.length
+                  ? 'All observabilities have members assigned.'
+                  : `${obs.length - coveredOps} observability(ies) still need members.`}
+              </span>
+              <div className="xd-assign-bar-actions">
+                <button type="button" className="xd-btn-ghost" onClick={() => navigate('/dashboard/projects')}>
+                  Skip for now
+                </button>
+                <button type="button" className="xd-btn" onClick={save}>
+                  <FiCheckCircle /> Save Assignments
+                </button>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </main>
     </>
