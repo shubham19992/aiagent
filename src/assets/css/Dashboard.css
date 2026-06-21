@@ -541,14 +541,14 @@ select.xd-conn-input { appearance: none; background-image: url("data:image/svg+x
 .xd-logout,
 .xd-btn-ghost,
 .xd-conn-input,
-.xd-tag-input-wrap { background: var(--xd-card); }
+.xd-tag-input-wrap { background-color: var(--xd-card); }
 .xd-topbar { background: var(--xd-topbar-bg); }
 .xd-form-footer { background: var(--xd-card); }
 .xd-assign-row,
 .xd-assign-empty { background: var(--xd-raised); border-color: var(--xd-line); }
 .xd-conn-input,
 .xd-tag-input,
-select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
+select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink); }
 .xd-conn-input::placeholder, .xd-tag-input::placeholder { color: #6b6e76; }
 
 /* panels: subtle border, tighter radius, no light shadow */
