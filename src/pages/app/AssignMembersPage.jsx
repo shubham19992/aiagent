@@ -36,21 +36,21 @@ export default function AssignMembersPage() {
   const [assignments, setAssignments] = useState(project?.assignments || {});
   const [roles, setRoles] = useState(project?.roles || {});
   const [activeOp, setActiveOp] = useState(project?.observabilities?.[0]?.code || '');
-  const [memberOpen, setMemberOpen] = useState(false);
+  const [openRole, setOpenRole] = useState(null); // null | 'member' | 'admin'
   const msRef = useRef(null);
 
-  // Close the member dropdown on outside click / Escape.
+  // Close the open role dropdown on outside click / Escape.
   useEffect(() => {
-    if (!memberOpen) return undefined;
-    const onDown = (e) => { if (msRef.current && !msRef.current.contains(e.target)) setMemberOpen(false); };
-    const onKey = (e) => { if (e.key === 'Escape') setMemberOpen(false); };
+    if (!openRole) return undefined;
+    const onDown = (e) => { if (msRef.current && !msRef.current.contains(e.target)) setOpenRole(null); };
+    const onKey = (e) => { if (e.key === 'Escape') setOpenRole(null); };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('keydown', onKey);
     };
-  }, [memberOpen]);
+  }, [openRole]);
 
   useEffect(() => {
     let alive = true;
@@ -72,13 +72,32 @@ export default function AssignMembersPage() {
     return [me, ...others];
   }, [currentUser, users]);
 
-  const toggleMember = (code, m) => setAssignments((a) => {
-    const cur = a[code] || [];
-    const next = cur.includes(m) ? cur.filter((x) => x !== m) : [...cur, m];
-    // Give a newly added member a default project role.
-    if (!cur.includes(m)) setRoles((r) => (r[m] ? r : { ...r, [m]: 'member' }));
-    return { ...a, [code]: next };
-  });
+  const roleOf = (m) => roles[m] || 'member';
+  const isOn = (code, m) => (assignments[code] || []).includes(m);
+
+  // Remove a member from an observability entirely.
+  const removeMember = (code, m) => setAssignments((a) => ({
+    ...a, [code]: (a[code] || []).filter((x) => x !== m),
+  }));
+
+  // Toggle a member under a specific role for the given observability.
+  // Picking a member already on that role removes them; picking a member
+  // who is on the other role just switches their role.
+  const pickRole = (code, m, role) => {
+    if (isOn(code, m) && roleOf(m) === role) {
+      removeMember(code, m);
+      return;
+    }
+    setAssignments((a) => {
+      const cur = a[code] || [];
+      return { ...a, [code]: cur.includes(m) ? cur : [...cur, m] };
+    });
+    setRoles((r) => ({ ...r, [m]: role }));
+  };
+
+  // Count of members assigned to an op under a given role.
+  const roleCount = (code, role) =>
+    (assignments[code] || []).filter((m) => roleOf(m) === role).length;
 
   const setMemberRole = (m, role) => setRoles((r) => ({ ...r, [m]: role }));
 
@@ -127,7 +146,7 @@ export default function AssignMembersPage() {
       <main className="xd-main xd-am-main">
         <div className="xd-pagelead">
           <h1>Assign Members</h1>
-          <p>Pick an observability and select members on the left — assignments appear on the right.</p>
+          <p>Pick an observability, then choose members under Project Member or Project Admin — assignments appear on the right.</p>
         </div>
 
         {loading ? (
@@ -158,33 +177,50 @@ export default function AssignMembersPage() {
                 <label className="xd-conn-label">
                   Members for {obs.find((o) => o.code === activeOp)?.name || '—'}
                 </label>
-                <div className="xd-ms" ref={msRef}>
-                  <button type="button" className="xd-ms-btn"
-                    onClick={() => setMemberOpen((v) => !v)}
-                    aria-haspopup="listbox" aria-expanded={memberOpen}>
-                    <span className="xd-ms-btn-label">
-                      {(assignments[activeOp] || []).length
-                        ? `${(assignments[activeOp] || []).length} member(s) selected`
-                        : 'Select members…'}
-                    </span>
-                    <FiChevronDown className={`xd-ms-caret ${memberOpen ? 'open' : ''}`} />
-                  </button>
-                  {memberOpen && (
-                    <div className="xd-ms-menu" role="listbox" aria-multiselectable="true">
-                      {memberOptions.map((m) => {
-                        const on = (assignments[activeOp] || []).includes(m.name);
-                        return (
-                          <label key={m.id} className={`xd-ms-opt ${on ? 'on' : ''}`} role="option" aria-selected={on}>
-                            <input type="checkbox" checked={on}
-                              onChange={() => toggleMember(activeOp, m.name)} />
-                            <span className="xd-am-ava">{m.name.charAt(0).toUpperCase()}</span>
-                            <span className="xd-ms-opt-name">{m.name}{m.you ? ' (you)' : ''}</span>
-                            {on && <FiCheck className="xd-ms-opt-check" />}
-                          </label>
-                        );
-                      })}
-                    </div>
-                  )}
+                <div className="xd-am-rolecols" ref={msRef}>
+                  {ROLE_OPTIONS.map((role) => {
+                    const open = openRole === role.value;
+                    const count = roleCount(activeOp, role.value);
+                    return (
+                      <div className="xd-am-rolecol" key={role.value}>
+                        <div className="xd-am-rolecol-head">
+                          <FiShield /> {role.label}
+                          {count > 0 && <span className="xd-am-op-count">{count}</span>}
+                        </div>
+                        <div className="xd-ms">
+                          <button type="button" className="xd-ms-btn"
+                            onClick={() => setOpenRole(open ? null : role.value)}
+                            aria-haspopup="listbox" aria-expanded={open}>
+                            <span className="xd-ms-btn-label">
+                              {count ? `${count} selected` : 'Select members…'}
+                            </span>
+                            <FiChevronDown className={`xd-ms-caret ${open ? 'open' : ''}`} />
+                          </button>
+                          {open && (
+                            <div className="xd-ms-menu" role="listbox" aria-multiselectable="true">
+                              {memberOptions.map((m) => {
+                                const on = isOn(activeOp, m.name) && roleOf(m.name) === role.value;
+                                const otherRole = isOn(activeOp, m.name) && roleOf(m.name) !== role.value;
+                                return (
+                                  <label key={m.id} className={`xd-ms-opt ${on ? 'on' : ''}`}
+                                    role="option" aria-selected={on}>
+                                    <input type="checkbox" checked={on}
+                                      onChange={() => pickRole(activeOp, m.name, role.value)} />
+                                    <span className="xd-am-ava">{m.name.charAt(0).toUpperCase()}</span>
+                                    <span className="xd-ms-opt-name">
+                                      {m.name}{m.you ? ' (you)' : ''}
+                                      {otherRole && <span className="xd-am-othertag">already {roleOf(m.name)}</span>}
+                                    </span>
+                                    {on && <FiCheck className="xd-ms-opt-check" />}
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -230,7 +266,7 @@ export default function AssignMembersPage() {
                                   {roles[m] === 'admin' ? 'Admin' : 'Member'}
                                 </span>
                                 <button type="button" className="xd-am-remove" title="Remove"
-                                  onClick={() => toggleMember(o.code, m)}><FiX /></button>
+                                  onClick={() => removeMember(o.code, m)}><FiX /></button>
                               </span>
                             ))}
                           </div>
