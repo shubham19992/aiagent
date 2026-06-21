@@ -25,6 +25,9 @@
   background: var(--xd-bg);
   min-height: 100vh;
   display: flex;
+  /* render native controls (date picker icon, spinners) for a dark UI so
+     the calendar icon stays visible on dark inputs */
+  color-scheme: dark;
   -webkit-font-smoothing: antialiased;
 }
 .xd-shell *, .xd-shell *::before, .xd-shell *::after { box-sizing: border-box; }
@@ -675,6 +678,7 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 
 /* Light — clean daylight theme */
 .xd-shell[data-theme="light"] {
+  color-scheme: light;
   --xd-emerald: #2563eb; --xd-teal: #0ea5e9; --xd-mint: #2563eb;
   --xd-ink: #1e293b; --xd-soft: #64748b; --xd-line: #e2e8f0;
   --xd-bg: #f1f5f9; --xd-card: #ffffff; --xd-card-2: #f8fafc;
