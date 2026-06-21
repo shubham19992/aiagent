@@ -111,9 +111,10 @@ export default function AssignMembersPage() {
           <Spinner label="Loading members…" />
         ) : (
           <>
+            <div className="xd-card xd-am-card">
             <div className="xd-am-2col">
               {/* ── Left: select members (form) ── */}
-              <div className="xd-card xd-am-panel">
+              <div className="xd-am-panel">
                 <div className="xd-am-head"><FiUserPlus /><h3>Select members</h3></div>
 
                 <label className="xd-conn-label">Observability</label>
@@ -165,7 +166,7 @@ export default function AssignMembersPage() {
               </div>
 
               {/* ── Right: selected / assigned ── */}
-              <div className="xd-card xd-am-panel">
+              <div className="xd-am-panel">
                 <div className="xd-am-head"><FiUsers /><h3>Assigned members</h3></div>
                 <div className="xd-am-summary">
                   {obs.map((o) => {
@@ -194,6 +195,7 @@ export default function AssignMembersPage() {
                   })}
                 </div>
               </div>
+            </div>
             </div>
 
             <div className="xd-assign-bar">
