@@ -15,8 +15,8 @@
   --xl-card: #15181c;        /* card surface */
   --xl-raised: #1d2127;      /* inputs */
   --xl-border: #2a2f36;
-  --xl-text: #e6e7ea;
-  --xl-text-soft: #9499a2;
+  --xl-text: #d6d9e0;
+  --xl-text-soft: #969ba6;
   --xl-text-mute: #6b7280;
   --xl-red: #f2495c;
   --xl-green: #73bf69;
@@ -91,7 +91,7 @@
 .xlogin-hero-title {
   font-size: 40px; font-weight: 800; line-height: 1.12;
   letter-spacing: -1px; margin: 0 0 16px;
-  color: #fff;
+  color: #eceef3;
 }
 .xlogin-hero-sub {
   font-size: 15.5px; line-height: 1.6;
@@ -145,7 +145,7 @@
 .xlogin-card-head { margin-bottom: 26px; }
 .xlogin-card-head h2 {
   font-size: 26px; font-weight: 800; letter-spacing: -.6px;
-  margin: 0 0 7px; color: #fff;
+  margin: 0 0 7px; color: #eceef3;
 }
 .xlogin-card-head p {
   font-size: 14.5px; color: var(--xl-text-soft); margin: 0; line-height: 1.5;

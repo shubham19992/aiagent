@@ -6,15 +6,15 @@
 
 .xd-shell {
   /* Grafana-style dark theme */
-  --xd-emerald: #3d71d9;   /* primary accent (buttons, links, active) */
-  --xd-teal: #2b5cc4;      /* gradient end */
-  --xd-mint: #6e9fff;
-  --xd-ink: #d8d9da;       /* primary text */
-  --xd-soft: #8e9097;      /* secondary text */
-  --xd-line: #2c3235;      /* borders */
-  --xd-bg: #0b0c0e;        /* app background */
-  --xd-card: #181b1f;      /* panel background */
-  --xd-card-2: #22262b;    /* raised / input background */
+  --xd-emerald: #4d80e6;   /* primary accent (buttons, links, active) */
+  --xd-teal: #3a66c9;      /* gradient end */
+  --xd-mint: #8fb4ff;
+  --xd-ink: #c4c8d0;       /* primary text — soft off-white, easy on eyes */
+  --xd-soft: #9398a3;      /* secondary text */
+  --xd-line: #2a2f36;      /* borders */
+  --xd-bg: #0e1014;        /* app background — lifted off pure black */
+  --xd-card: #181b20;      /* panel background */
+  --xd-card-2: #22262d;    /* raised / input background */
   --xd-accent-rgb: 61, 113, 217;      /* accent as r,g,b for translucent chips */
   --xd-input-bg: #0b0c0e;             /* form inputs */
   --xd-raised: #15181c;               /* assign rows / raised wells */
@@ -628,63 +628,18 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 .xd-shell ::-webkit-scrollbar-track { background: transparent; }
 
 /* ============================================================
-   THEMES — each block overrides the palette variables on the
-   shell. Switched at runtime via [data-theme] (see lib/theme.js).
-   The default (no attribute) is the Grafana Dark palette above.
+   THEMES — only two: Dark (default, above) and Light. Switched at
+   runtime via [data-theme] (see lib/theme.js). Text colors are tuned
+   for comfortable, low-glare reading in both.
    ============================================================ */
 
-/* Emerald Mint — the original xOps green */
-.xd-shell[data-theme="emerald"] {
-  --xd-emerald: #10b981; --xd-teal: #0d9488; --xd-mint: #5eead4;
-  --xd-ink: #d8e3df; --xd-soft: #7e928c; --xd-line: #1f3a33;
-  --xd-bg: #07120f; --xd-card: #0e1f1a; --xd-card-2: #173029;
-  --xd-accent-rgb: 16, 185, 129; --xd-input-bg: #07120f; --xd-raised: #0e1f1a;
-  --xd-topbar-bg: rgba(10, 28, 24, .82);
-}
-
-/* Midnight — indigo / violet dark */
-.xd-shell[data-theme="midnight"] {
-  --xd-emerald: #7c6cff; --xd-teal: #5b4bd6; --xd-mint: #a99bff;
-  --xd-ink: #e4e3f0; --xd-soft: #9b98b5; --xd-line: #2a2742;
-  --xd-bg: #0f0e1a; --xd-card: #1a1830; --xd-card-2: #252247;
-  --xd-accent-rgb: 124, 108, 255; --xd-input-bg: #0f0e1a; --xd-raised: #1f1d38;
-  --xd-topbar-bg: rgba(20, 18, 40, .82);
-}
-
-/* Nord — arctic blue-grey */
-.xd-shell[data-theme="nord"] {
-  --xd-emerald: #88c0d0; --xd-teal: #5e81ac; --xd-mint: #8fbcbb;
-  --xd-ink: #eceff4; --xd-soft: #a3adc0; --xd-line: #3b4252;
-  --xd-bg: #2e3440; --xd-card: #3b4252; --xd-card-2: #434c5e;
-  --xd-accent-rgb: 136, 192, 208; --xd-input-bg: #2e3440; --xd-raised: #3b4252;
-  --xd-topbar-bg: rgba(46, 52, 64, .85);
-}
-
-/* Dracula — dark with violet/pink accents */
-.xd-shell[data-theme="dracula"] {
-  --xd-emerald: #bd93f9; --xd-teal: #ff79c6; --xd-mint: #8be9fd;
-  --xd-ink: #f8f8f2; --xd-soft: #9aa0b5; --xd-line: #44475a;
-  --xd-bg: #282a36; --xd-card: #343746; --xd-card-2: #44475a;
-  --xd-accent-rgb: 189, 147, 249; --xd-input-bg: #21222c; --xd-raised: #343746;
-  --xd-topbar-bg: rgba(40, 42, 54, .85);
-}
-
-/* Solarized — dark teal base */
-.xd-shell[data-theme="solarized"] {
-  --xd-emerald: #268bd2; --xd-teal: #2aa198; --xd-mint: #6ec6e6;
-  --xd-ink: #e9e2cc; --xd-soft: #93a1a1; --xd-line: #0a4b54;
-  --xd-bg: #002b36; --xd-card: #073642; --xd-card-2: #0a4b54;
-  --xd-accent-rgb: 38, 139, 210; --xd-input-bg: #002b36; --xd-raised: #073642;
-  --xd-topbar-bg: rgba(0, 43, 54, .85);
-}
-
-/* Light — clean daylight theme */
+/* Light — clean daylight theme; ink is a soft slate, not pure black */
 .xd-shell[data-theme="light"] {
   color-scheme: light;
-  --xd-emerald: #2563eb; --xd-teal: #0ea5e9; --xd-mint: #2563eb;
-  --xd-ink: #1e293b; --xd-soft: #64748b; --xd-line: #e2e8f0;
-  --xd-bg: #f1f5f9; --xd-card: #ffffff; --xd-card-2: #f8fafc;
-  --xd-accent-rgb: 37, 99, 235; --xd-input-bg: #ffffff; --xd-raised: #f8fafc;
+  --xd-emerald: #2563eb; --xd-teal: #1d4ed8; --xd-mint: #2563eb;
+  --xd-ink: #33415a; --xd-soft: #64748b; --xd-line: #e2e8f0;
+  --xd-bg: #f3f5f9; --xd-card: #ffffff; --xd-card-2: #f6f8fb;
+  --xd-accent-rgb: 37, 99, 235; --xd-input-bg: #ffffff; --xd-raised: #f6f8fb;
   --xd-topbar-bg: rgba(255, 255, 255, .85);
 }
 

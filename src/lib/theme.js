@@ -11,13 +11,8 @@
 import { useEffect, useState } from 'react';
 
 export const THEMES = [
-  { id: 'grafana-dark', name: 'Grafana Dark', swatch: '#3d71d9', bg: '#0b0c0e' },
-  { id: 'emerald',      name: 'Emerald Mint', swatch: '#10b981', bg: '#07120f' },
-  { id: 'midnight',     name: 'Midnight',     swatch: '#7c6cff', bg: '#0f0e1a' },
-  { id: 'nord',         name: 'Nord',         swatch: '#88c0d0', bg: '#2e3440' },
-  { id: 'dracula',      name: 'Dracula',      swatch: '#bd93f9', bg: '#282a36' },
-  { id: 'solarized',    name: 'Solarized',    swatch: '#268bd2', bg: '#002b36' },
-  { id: 'light',        name: 'Light',        swatch: '#2563eb', bg: '#f1f5f9' },
+  { id: 'grafana-dark', name: 'Dark',  swatch: '#3d71d9', bg: '#0e1014' },
+  { id: 'light',        name: 'Light', swatch: '#2563eb', bg: '#f1f5f9' },
 ];
 
 const KEY = 'xops_theme';
