@@ -87,11 +87,6 @@ export function PageHeader({ crumbs = [], source }) {
         })}
       </nav>
       <div className="xd-topbar-right">
-        {source === 'dummy' && (
-          <span className="xd-demo-badge" title="Live API unreachable — showing demo data">
-            ● Demo data · API offline
-          </span>
-        )}
         <ThemePicker />
       </div>
     </header>
