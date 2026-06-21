@@ -108,9 +108,10 @@
   width: 42px; height: 42px; flex: 0 0 auto;
   display: grid; place-items: center; font-size: 19px;
   border-radius: 11px; color: #fff;
-  background: linear-gradient(135deg, var(--xl-accent), #fba919);
+  background: linear-gradient(135deg, var(--xl-accent), #ef7716);
   box-shadow: 0 6px 18px rgba(245, 112, 28, .35);
 }
+.xlogin-feat-icon svg { stroke-width: 2.4; }
 .xlogin-feature div { display: flex; flex-direction: column; gap: 2px; }
 .xlogin-feature strong { font-size: 15px; font-weight: 700; color: #f3f4f6; }
 .xlogin-feature span { font-size: 13.5px; color: var(--xl-text-soft); }
