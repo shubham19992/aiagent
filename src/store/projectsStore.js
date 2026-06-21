@@ -22,7 +22,15 @@ function read() {
 }
 
 function write(list) {
-  localStorage.setItem(KEY, JSON.stringify(list));
+  try {
+    localStorage.setItem(KEY, JSON.stringify(list));
+  } catch {
+    // Most likely the storage quota was exceeded (e.g. a large project
+    // image). Retry once without images so the project still persists.
+    try {
+      localStorage.setItem(KEY, JSON.stringify(list.map((p) => ({ ...p, image: '' }))));
+    } catch { /* give up silently */ }
+  }
 }
 
 /** A demo/sample project (not stored, can't be deleted). */
@@ -48,7 +56,7 @@ export function getProject(id) {
 
 export function addProject({
   name, key, description, priority, status, owner, environments,
-  tags, startDate, endDate, observabilities, assignments, createdBy,
+  tags, image, startDate, endDate, observabilities, assignments, createdBy,
 }) {
   const list = read();
   const project = {
@@ -61,6 +69,7 @@ export function addProject({
     owner: owner || '',
     environments: environments || [],            // ['aws','azure',...]
     tags: tags || [],                            // ['migration', ...]
+    image: image || '',                          // data URL or ''
     startDate,
     endDate,
     observabilities: observabilities || [],      // [{ code, name }]

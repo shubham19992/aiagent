@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiCheck, FiX, FiActivity } from 'react-icons/fi';
+import { FiCheck, FiX, FiActivity, FiImage } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listOps } from '../../api/observability';
 import { addProject } from '../../store/projectsStore';
@@ -22,10 +22,24 @@ export default function CreateProjectPage() {
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('Planning');
   const [owner, setOwner] = useState(currentUser);
+  const [image, setImage] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selected, setSelected] = useState([]);
   const [error, setError] = useState('');
+
+  const onPickImage = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';                       // allow re-picking the same file
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setError('Image is too large (max 2 MB).');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => { setImage(String(reader.result)); setError(''); };
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     let alive = true;
@@ -58,7 +72,7 @@ export default function CreateProjectPage() {
     // Create the project with no members yet, then go assign them.
     const project = addProject({
       name: name.trim(), description: description.trim(),
-      status, owner,
+      status, owner, image,
       startDate, endDate, observabilities: chosenOps, assignments: {}, createdBy: currentUser,
     });
     navigate(`/dashboard/projects/${project.id}/assign`);
@@ -89,6 +103,23 @@ export default function CreateProjectPage() {
                   <label className="xd-conn-label">Project Name<span className="xd-req">*</span></label>
                   <input className="xd-conn-input" value={name} placeholder="e.g. Cloud Migration FY26"
                     onChange={(e) => { setName(e.target.value); setError(''); }} />
+                </div>
+
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Project Image</label>
+                  {image ? (
+                    <div className="xd-img-preview" style={{ backgroundImage: `url(${image})` }}>
+                      <button type="button" className="xd-img-remove" title="Remove image"
+                        onClick={() => setImage('')}><FiX /></button>
+                    </div>
+                  ) : (
+                    <label className="xd-img-drop">
+                      <FiImage />
+                      <span>Click to upload a cover image</span>
+                      <small>PNG/JPG · up to 2 MB</small>
+                      <input type="file" accept="image/*" hidden onChange={onPickImage} />
+                    </label>
+                  )}
                 </div>
 
                 <div className="xd-conn-field">

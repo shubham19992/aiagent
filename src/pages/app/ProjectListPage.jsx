@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiCalendar, FiUsers, FiUser, FiTrash2, FiPlus, FiFolder, FiTag, FiBarChart2 } from 'react-icons/fi';
+import { FiCalendar, FiTrash2, FiPlus, FiFolder, FiBarChart2 } from 'react-icons/fi';
 import { PageHeader } from './_parts';
 import { listProjects, myProjects, removeProject, projectMembers, isDemoProject } from '../../store/projectsStore';
 
@@ -8,6 +8,13 @@ const fmtDate = (d) => {
   if (!d) return '—';
   try { return new Date(d).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }); }
   catch { return d; }
+};
+
+// Deterministic cover gradient from the project name (used when no image).
+const coverGradient = (seed = '') => {
+  let h = 0;
+  for (const c of seed) h = (h * 31 + c.charCodeAt(0)) % 360;
+  return `linear-gradient(135deg, hsl(${h} 52% 42%), hsl(${(h + 38) % 360} 54% 28%))`;
 };
 
 export default function ProjectListPage() {
@@ -54,59 +61,50 @@ export default function ProjectListPage() {
           <div className="xd-proj-grid">
             {projects.map((p) => {
               const members = projectMembers(p);
+              const obs = p.observabilities || [];
               return (
-                <div className="xd-proj-card" key={p.id}>
-                  <div className="xd-proj-card-head">
-                    <div>
-                      <h3><Link to={`/dashboard/projects/${p.id}`} className="xd-proj-title-link">{p.name}</Link> {p.key && <span className="xd-proj-key">{p.key}</span>}</h3>
-                      <div className="xd-proj-badges">
-                        <span className={`xd-status xd-status-${(p.status || 'Planning').toLowerCase().replace(/\s/g, '')}`}>{p.status || 'Planning'}</span>
-                        <span className={`xd-prio xd-prio-${(p.priority || 'Medium').toLowerCase()}`}>{p.priority || 'Medium'}</span>
-                        {isDemoProject(p) && <span className="xd-prio xd-prio-low">Demo</span>}
+                <div className="xd-pcard" key={p.id}>
+                  {/* cover: uploaded image or a generated gradient with the initial */}
+                  <Link to={`/dashboard/projects/${p.id}`} className="xd-pcard-cover"
+                    style={p.image
+                      ? { backgroundImage: `url(${p.image})` }
+                      : { background: coverGradient(p.name) }}>
+                    {!p.image && <span className="xd-pcard-mark">{p.name.charAt(0).toUpperCase()}</span>}
+                    <span className={`xd-status xd-status-${(p.status || 'Planning').toLowerCase().replace(/\s/g, '')} xd-pcard-status`}>
+                      {p.status || 'Planning'}
+                    </span>
+                    {isDemoProject(p) && <span className="xd-pcard-demo">Demo</span>}
+                  </Link>
+
+                  <div className="xd-pcard-body">
+                    <h3 className="xd-pcard-title">
+                      <Link to={`/dashboard/projects/${p.id}`} className="xd-proj-title-link">{p.name}</Link>
+                    </h3>
+
+                    <div className="xd-pcard-meta"><FiCalendar /> {fmtDate(p.startDate)} → {fmtDate(p.endDate)}</div>
+
+                    {obs.length > 0 && (
+                      <div className="xd-pcard-chips">
+                        {obs.slice(0, 3).map((o) => <span className="xd-tag" key={o.code}>{o.name}</span>)}
+                        {obs.length > 3 && <span className="xd-tag xd-tag-more">+{obs.length - 3}</span>}
+                      </div>
+                    )}
+
+                    <div className="xd-pcard-foot">
+                      <div className="xd-pcard-avatars">
+                        {members.length === 0 && <span className="xd-muted">No members</span>}
+                        {members.slice(0, 4).map((m) => (
+                          <span className="xd-pcard-ava" key={m} title={m}>{m.charAt(0).toUpperCase()}</span>
+                        ))}
+                        {members.length > 4 && <span className="xd-pcard-ava more">+{members.length - 4}</span>}
+                      </div>
+                      <div className="xd-pcard-actions">
+                        <Link to={`/dashboard/projects/${p.id}`} className="xd-proj-open"><FiBarChart2 /> Open</Link>
+                        {!isDemoProject(p) && (
+                          <button className="xd-proj-del" title="Delete project" onClick={() => del(p.id)}><FiTrash2 /></button>
+                        )}
                       </div>
                     </div>
-                    {!isDemoProject(p) && (
-                      <button className="xd-proj-del" title="Delete project" onClick={() => del(p.id)}><FiTrash2 /></button>
-                    )}
-                  </div>
-
-                  {p.description && <div className="xd-proj-desc">{p.description}</div>}
-                  <div className="xd-proj-meta"><FiCalendar /> {fmtDate(p.startDate)} → {fmtDate(p.endDate)}</div>
-                  {p.owner && <div className="xd-proj-meta"><FiUser /> Owner: {p.owner}</div>}
-
-                  {(p.environments?.length > 0) && (
-                    <>
-                      <div className="xd-proj-label">Environments</div>
-                      <div className="xd-proj-chips">
-                        {p.environments.map((e) => <span className="xd-tag xd-tag-env" key={e}>{e.toUpperCase()}</span>)}
-                      </div>
-                    </>
-                  )}
-
-                  <div className="xd-proj-label">Observing</div>
-                  <div className="xd-proj-chips">
-                    {p.observabilities.map((o) => (
-                      <span className="xd-tag" key={o.code}>{o.name}</span>
-                    ))}
-                  </div>
-
-                  <div className="xd-proj-label"><FiUsers /> Members ({members.length})</div>
-                  <div className="xd-proj-members">
-                    {members.length === 0 && <span className="xd-muted">None assigned</span>}
-                    {members.map((m) => (
-                      <span className="xd-member-pill" key={m}>
-                        <span className="xd-member-ava">{m.charAt(0).toUpperCase()}</span>{m}
-                      </span>
-                    ))}
-                  </div>
-
-                  {(p.tags?.length > 0) && (
-                    <div className="xd-proj-tags"><FiTag />{p.tags.map((t) => <span className="xd-tag-soft" key={t}>{t}</span>)}</div>
-                  )}
-
-                  <div className="xd-proj-foot xd-proj-foot-row">
-                    <span>Created by {p.createdBy}</span>
-                    <Link to={`/dashboard/projects/${p.id}`} className="xd-proj-open"><FiBarChart2 /> Observability</Link>
                   </div>
                 </div>
               );

@@ -917,6 +917,82 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 .xd-assign-bar-hint { font-size: 13px; color: var(--xd-soft); }
 .xd-assign-bar-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
 
+/* ── project image upload (create project) ── */
+.xd-img-drop {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; text-align: center; cursor: pointer;
+  height: 120px; border: 1.5px dashed var(--xd-line); border-radius: 10px;
+  background: var(--xd-input-bg); color: var(--xd-soft);
+  transition: border-color .15s, color .15s, background .15s;
+}
+.xd-img-drop:hover { border-color: var(--xd-emerald); color: var(--xd-ink); }
+.xd-img-drop svg { font-size: 24px; color: var(--xd-emerald); }
+.xd-img-drop span { font-size: 13px; font-weight: 600; }
+.xd-img-drop small { font-size: 11px; color: var(--xd-soft); }
+.xd-img-preview {
+  position: relative; height: 120px; border-radius: 10px;
+  border: 1px solid var(--xd-line); background-size: cover; background-position: center;
+}
+.xd-img-remove {
+  position: absolute; top: 8px; right: 8px;
+  width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center;
+  border: none; cursor: pointer; font-size: 15px; color: #fff;
+  background: rgba(0, 0, 0, .55); transition: background .14s;
+}
+.xd-img-remove:hover { background: rgba(242, 73, 92, .9); }
+
+/* ── project cards (project list) ── */
+.xd-pcard {
+  background: var(--xd-card); border: 1px solid var(--xd-line);
+  border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;
+  transition: transform .16s, box-shadow .16s, border-color .16s;
+}
+.xd-pcard:hover {
+  transform: translateY(-3px); border-color: var(--xd-emerald);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, .4);
+}
+.xd-pcard-cover {
+  position: relative; display: block; height: 124px;
+  background-size: cover; background-position: center; text-decoration: none;
+}
+.xd-pcard-cover::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, .45));
+}
+.xd-pcard-mark {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: 44px; font-weight: 800; color: rgba(255, 255, 255, .9);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, .35);
+}
+.xd-pcard-status {
+  position: absolute; top: 10px; left: 10px; z-index: 1;
+  backdrop-filter: blur(3px);
+}
+.xd-pcard-demo {
+  position: absolute; top: 10px; right: 10px; z-index: 1;
+  font-size: 11px; font-weight: 700; color: #fff;
+  background: rgba(0, 0, 0, .5); border-radius: 999px; padding: 3px 10px;
+}
+.xd-pcard-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+.xd-pcard-title { margin: 0; font-size: 16px; font-weight: 800; }
+.xd-pcard-meta { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--xd-soft); }
+.xd-pcard-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.xd-tag-more { background: var(--xd-card-2); color: var(--xd-soft); }
+.xd-pcard-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-top: 2px; padding-top: 12px; border-top: 1px solid var(--xd-line);
+}
+.xd-pcard-avatars { display: flex; align-items: center; }
+.xd-pcard-ava {
+  width: 27px; height: 27px; border-radius: 50%; margin-left: -7px;
+  display: grid; place-items: center; font-size: 11px; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg, var(--xd-emerald), var(--xd-teal));
+  border: 2px solid var(--xd-card);
+}
+.xd-pcard-ava:first-child { margin-left: 0; }
+.xd-pcard-ava.more { background: var(--xd-card-2); color: var(--xd-soft); }
+.xd-pcard-actions { display: flex; align-items: center; gap: 8px; }
+
 /* keep 3-up until the layout collapses to one column */
 @media (max-width: 1100px) {
   .xd-create-cols-sel { grid-template-columns: 1fr; }
