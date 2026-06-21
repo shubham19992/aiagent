@@ -47,7 +47,10 @@ export default function AppLayout() {
   return (
     <div className="xd-shell" data-theme={theme}>
       <aside className="xd-sidebar">
-        <div className="xd-side-logo"><XopsLogo height={34} /></div>
+        <div className="xd-side-logo">
+          <XopsLogo height={32} />
+          <span className="xd-side-tag">Automation Governance</span>
+        </div>
 
         <nav className="xd-nav">
           {/* Observability — ops loaded from the API */}
@@ -122,7 +125,10 @@ export default function AppLayout() {
         <div className="xd-side-foot">
           <div className="xd-user">
             <span className="xd-avatar">{userName.charAt(0).toUpperCase()}</span>
-            <span className="xd-user-name">{userName}</span>
+            <span className="xd-user-meta">
+              <span className="xd-user-name">{userName}</span>
+              <span className="xd-user-role">Online</span>
+            </span>
           </div>
           <button className="xd-logout" onClick={logout} type="button" title="Log out">
             <FiLogOut />

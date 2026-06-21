@@ -720,3 +720,82 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 }
 .xd-theme-opt-name { flex: 1; }
 .xd-theme-opt-check { font-size: 15px; color: var(--xd-emerald); }
+
+/* ============================================================
+   SIDEBAR POLISH — richer surface, nicer nav + footer user chip.
+   Appended last so it wins over earlier rules. Fully theme-aware
+   (uses the palette variables, so it adapts to every theme).
+   ============================================================ */
+.xd-sidebar {
+  background: linear-gradient(180deg, var(--xd-card) 0%, var(--xd-bg) 100%);
+  border-right: 1px solid var(--xd-line);
+}
+
+/* brand block with a divider + tagline */
+.xd-side-logo {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--xd-line);
+  margin-bottom: 8px;
+}
+.xd-side-tag {
+  display: block; margin-top: 8px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--xd-soft);
+}
+
+/* group headers: quieter label + accent tile icon */
+.xd-nav-group { margin-bottom: 6px; }
+.xd-nav-group-head {
+  font-size: 11px; letter-spacing: .7px; color: var(--xd-soft);
+  padding: 9px 10px; border-radius: 10px;
+}
+.xd-nav-group-icon {
+  width: 26px; height: 26px; flex: 0 0 auto; border-radius: 8px;
+  display: inline-grid; place-items: center; font-size: 14px;
+  background: rgba(var(--xd-accent-rgb), .14); color: var(--xd-emerald);
+}
+
+/* items: pill hover with a slight slide + bold gradient active state */
+.xd-nav-item {
+  border-radius: 10px; padding: 9px 12px;
+  border-left: 2px solid transparent;
+  transition: background .15s, color .15s, transform .12s, box-shadow .15s;
+}
+.xd-nav-item:hover { transform: translateX(2px); }
+.xd-nav-item.active {
+  background: linear-gradient(90deg, rgba(var(--xd-accent-rgb), .22), rgba(var(--xd-accent-rgb), .05));
+  color: var(--xd-emerald); font-weight: 700;
+  border-left-color: var(--xd-emerald);
+  box-shadow: inset 0 0 0 1px rgba(var(--xd-accent-rgb), .12);
+}
+.xd-nav-item.active .xd-nav-item-icon { color: var(--xd-emerald); }
+
+/* op badges: rounded + gradient when the item is active */
+.xd-op-badge { border-radius: 8px; font-weight: 800; }
+.xd-nav-item.active .xd-op-badge {
+  background: linear-gradient(135deg, var(--xd-emerald), var(--xd-teal));
+  color: #fff;
+}
+
+/* footer becomes a floating user chip */
+.xd-side-foot {
+  margin: 6px 12px 12px; padding: 11px 12px; gap: 10px;
+  background: var(--xd-card-2); border: 1px solid var(--xd-line);
+  border-radius: 12px;
+}
+.xd-user { gap: 11px; min-width: 0; }
+.xd-avatar {
+  position: relative; width: 38px; height: 38px; flex: 0 0 auto;
+  box-shadow: 0 0 0 2px rgba(var(--xd-accent-rgb), .25);
+}
+.xd-avatar::after {
+  content: ''; position: absolute; right: -1px; bottom: -1px;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: #73bf69; border: 2px solid var(--xd-card-2);
+}
+.xd-user-meta { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.xd-user-name {
+  font-weight: 700; font-size: 13.5px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.xd-user-role { font-size: 11px; font-weight: 600; color: #73bf69; }
