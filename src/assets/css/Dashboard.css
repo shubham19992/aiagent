@@ -839,38 +839,49 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 /* ── create-project: two columns (details | what to observe) ── */
 .xd-create-cols-2 { grid-template-columns: 1fr 1.1fr; }
 
-/* observe options as selectable cards, 2 per row */
+/* observe options as selectable cards (project-card style), 2 per row */
 .xd-obs-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 4px;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 4px;
 }
 .xd-obs-card {
-  position: relative; display: flex; flex-direction: column; gap: 8px;
+  position: relative; display: flex; flex-direction: column;
   width: 100%; text-align: left; cursor: pointer; font: inherit;
-  background: var(--xd-card-2); border: 1px solid var(--xd-line);
-  border-radius: 12px; padding: 12px 12px 13px; color: var(--xd-ink);
-  transition: border-color .14s, background .14s, box-shadow .14s;
+  background: var(--xd-card); border: 1px solid var(--xd-line);
+  border-radius: 14px; overflow: hidden; color: var(--xd-ink);
+  transition: transform .16s, border-color .16s, box-shadow .16s;
 }
-.xd-obs-card:hover { border-color: var(--xd-emerald); }
+.xd-obs-card:hover {
+  transform: translateY(-2px); border-color: var(--xd-emerald);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .35);
+}
 .xd-obs-card.on {
   border-color: var(--xd-emerald);
-  background: rgba(var(--xd-accent-rgb), .10);
-  box-shadow: inset 0 0 0 1px rgba(var(--xd-accent-rgb), .35);
+  box-shadow: inset 0 0 0 1px var(--xd-emerald);
 }
-.xd-obs-badge {
-  width: 36px; height: 36px; flex: 0 0 auto; border-radius: 9px;
-  display: grid; place-items: center; font-size: 13px; font-weight: 800;
-  text-transform: uppercase; color: #fff;
-  background: linear-gradient(135deg, var(--xd-emerald), var(--xd-teal));
+/* gradient cover with the op initials */
+.xd-obs-cover {
+  position: relative; display: block; height: 72px;
 }
-.xd-obs-body { display: flex; flex-direction: column; min-width: 0; }
-.xd-obs-name { font-size: 13.5px; font-weight: 700; line-height: 1.2; }
-.xd-obs-desc {
-  font-size: 12px; color: var(--xd-soft); margin-top: 4px; line-height: 1.45;
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+.xd-obs-cover::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, .4));
+}
+.xd-obs-mark {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: 24px; font-weight: 800; color: rgba(255, 255, 255, .92);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, .35);
 }
 .xd-obs-check {
-  position: absolute; top: 10px; right: 10px;
-  color: var(--xd-emerald); font-size: 16px;
+  position: absolute; top: 8px; right: 8px; z-index: 1;
+  width: 24px; height: 24px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 14px; color: #fff;
+  background: var(--xd-emerald); box-shadow: 0 2px 6px rgba(0, 0, 0, .3);
+}
+.xd-obs-body { display: flex; flex-direction: column; padding: 11px 13px 13px; min-width: 0; }
+.xd-obs-name { font-size: 14px; font-weight: 800; line-height: 1.2; }
+.xd-obs-desc {
+  font-size: 12px; color: var(--xd-soft); margin-top: 5px; line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
 }
 @media (max-width: 560px) { .xd-obs-grid { grid-template-columns: 1fr; } }
 

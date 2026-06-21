@@ -10,6 +10,13 @@ const STATUSES = ['Planning', 'Active', 'On Hold', 'Completed'];
 // Short two-letter badge from an op name (AIOps -> "AI").
 const opBadge = (name) => name.replace(/Ops$/i, '').slice(0, 2).toUpperCase();
 
+// Deterministic cover gradient from a name (same look as the project cards).
+const coverGradient = (seed = '') => {
+  let h = 0;
+  for (const c of seed) h = (h * 31 + c.charCodeAt(0)) % 360;
+  return `linear-gradient(135deg, hsl(${h} 52% 42%), hsl(${(h + 38) % 360} 54% 28%))`;
+};
+
 // Display name from whatever fields the users API returns.
 const userName = (u) =>
   u.name || u.full_name || u.fullName || u.username || u.email || String(u.id ?? '');
@@ -186,12 +193,14 @@ export default function CreateProjectPage() {
                       <button key={op.code} type="button"
                         className={`xd-obs-card ${on ? 'on' : ''}`}
                         onClick={() => toggleOp(op.code)}>
-                        <span className="xd-obs-badge">{opBadge(op.name)}</span>
+                        <span className="xd-obs-cover" style={{ background: coverGradient(op.name) }}>
+                          <span className="xd-obs-mark">{opBadge(op.name)}</span>
+                          {on && <span className="xd-obs-check"><FiCheck /></span>}
+                        </span>
                         <span className="xd-obs-body">
                           <span className="xd-obs-name">{op.name}</span>
                           <span className="xd-obs-desc">{op.description}</span>
                         </span>
-                        {on && <FiCheck className="xd-obs-check" />}
                       </button>
                     );
                   })}
