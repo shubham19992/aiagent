@@ -837,15 +837,17 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 .xd-conn-back { margin-right: auto; display: inline-flex; align-items: center; gap: 6px; }
 
 /* ── create-project: two columns (details | what to observe) ── */
-.xd-create-cols-2 { grid-template-columns: 1.15fr 1fr; }
+.xd-create-cols-2 { grid-template-columns: 1fr 1.1fr; }
 
-/* observe options as selectable cards (image + name + description) */
-.xd-obs-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+/* observe options as selectable cards, 2 per row */
+.xd-obs-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 4px;
+}
 .xd-obs-card {
-  position: relative; display: flex; align-items: flex-start; gap: 12px;
+  position: relative; display: flex; flex-direction: column; gap: 8px;
   width: 100%; text-align: left; cursor: pointer; font: inherit;
   background: var(--xd-card-2); border: 1px solid var(--xd-line);
-  border-radius: 12px; padding: 12px 38px 12px 12px; color: var(--xd-ink);
+  border-radius: 12px; padding: 12px 12px 13px; color: var(--xd-ink);
   transition: border-color .14s, background .14s, box-shadow .14s;
 }
 .xd-obs-card:hover { border-color: var(--xd-emerald); }
@@ -855,18 +857,22 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
   box-shadow: inset 0 0 0 1px rgba(var(--xd-accent-rgb), .35);
 }
 .xd-obs-badge {
-  width: 40px; height: 40px; flex: 0 0 auto; border-radius: 10px;
-  display: grid; place-items: center; font-size: 14px; font-weight: 800;
+  width: 36px; height: 36px; flex: 0 0 auto; border-radius: 9px;
+  display: grid; place-items: center; font-size: 13px; font-weight: 800;
   text-transform: uppercase; color: #fff;
   background: linear-gradient(135deg, var(--xd-emerald), var(--xd-teal));
 }
 .xd-obs-body { display: flex; flex-direction: column; min-width: 0; }
-.xd-obs-name { font-size: 14px; font-weight: 700; line-height: 1.2; }
-.xd-obs-desc { font-size: 12.5px; color: var(--xd-soft); margin-top: 3px; line-height: 1.45; }
-.xd-obs-check {
-  position: absolute; top: 12px; right: 12px;
-  color: var(--xd-emerald); font-size: 17px;
+.xd-obs-name { font-size: 13.5px; font-weight: 700; line-height: 1.2; }
+.xd-obs-desc {
+  font-size: 12px; color: var(--xd-soft); margin-top: 4px; line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
 }
+.xd-obs-check {
+  position: absolute; top: 10px; right: 10px;
+  color: var(--xd-emerald); font-size: 16px;
+}
+@media (max-width: 560px) { .xd-obs-grid { grid-template-columns: 1fr; } }
 
 /* ── assign members page ── */
 .xd-assign-summary { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 22px; }
