@@ -7,20 +7,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --uidai-navy: #059669;
-  --uidai-navy-deep: #064e3b;
-  --uidai-cyan: #0d9488;
-  --uidai-cyan-light: #5eead4;
-  --uidai-green: #1a8a3d;
-  --uidai-green-soft: #e7f7ec;
-  --uidai-saffron: #d4440e;
-  --uidai-light: #f4f7fb;
-  --uidai-border: #dbe5f1;
-  --uidai-border-soft: #e9eef6;
-  --uidai-red: #d32f2f;
-  --uidai-text: #1e2a3a;
-  --uidai-text-soft: #5a6680;
-  --uidai-stripe: linear-gradient(90deg, var(--uidai-navy) 0%, var(--uidai-cyan) 100%);
+  /* Grafana-style dark theme */
+  --uidai-navy: #3d71d9;
+  --uidai-navy-deep: #0b0c0e;
+  --uidai-cyan: #5794f2;
+  --uidai-cyan-light: #6e9fff;
+  --uidai-green: #73bf69;
+  --uidai-green-soft: rgba(115, 191, 105, .16);
+  --uidai-saffron: #ff9830;
+  --uidai-light: #181b1f;     /* card / panel */
+  --uidai-raised: #22262b;    /* inputs / chips */
+  --uidai-border: #2c3235;
+  --uidai-border-soft: #2c3235;
+  --uidai-red: #f2495c;
+  --uidai-text: #d8d9da;
+  --uidai-text-soft: #8e9097;
+  --uidai-stripe: linear-gradient(90deg, #3d71d9 0%, #2b5cc4 100%);
 }
 
 /* Scope reset to login surface only */
@@ -207,7 +209,7 @@
 .uidai-card {
   width: 100%;
   max-width: 460px;
-  background: #fff;
+  background: var(--uidai-light);
   border-radius: 12px;
   border: 1px solid var(--uidai-border-soft);
   padding: 36px 36px 30px;
@@ -229,7 +231,7 @@
 .uidai-card-loginfix {
   width: 100%;
   max-width: 440px;
-  background: #fff;
+  background: var(--uidai-light);
   border-radius: 14px;
   border: 1px solid var(--uidai-border-soft);
   padding: 28px 34px 24px;
@@ -285,19 +287,19 @@
   border-radius: 6px;
   font: inherit;
   font-size: 14.5px;
-  background: #fff;
+  background: #0b0c0e;
   color: var(--uidai-text);
   transition: border-color .15s, box-shadow .15s;
 }
 .uidai-input:focus {
   outline: none;
   border-color: var(--uidai-cyan);
-  box-shadow: 0 0 0 3px rgba(10, 161, 192, .12);
+  box-shadow: 0 0 0 3px rgba(61, 113, 217, .25);
 }
-.uidai-input::placeholder { color: #9aa6b8; }
+.uidai-input::placeholder { color: #6b6e76; }
 .uidai-input-error {
   border-color: var(--uidai-red);
-  background: #fff7f7;
+  background: rgba(242, 73, 92, .08);
 }
 .uidai-input-error:focus {
   border-color: var(--uidai-red);
@@ -330,7 +332,7 @@
   line-height: 0;
 }
 .uidai-eye-btn svg { display: block; }
-.uidai-eye-btn:hover { color: var(--uidai-navy); background: #f1f5f9; }
+.uidai-eye-btn:hover { color: var(--uidai-cyan); background: rgba(204, 204, 220, .08); }
 .uidai-eye-btn:focus-visible {
   outline: 2px solid var(--uidai-cyan);
   outline-offset: 2px;
@@ -395,19 +397,19 @@
 
 /* ─── OTP step ─── */
 .uidai-otp-sent-box {
-  background: #eaf6ee;
-  border: 1px solid #b7dec3;
+  background: rgba(115, 191, 105, .1);
+  border: 1px solid rgba(115, 191, 105, .35);
   border-radius: 6px;
   padding: 12px 14px;
   font-size: 13.5px;
-  color: #1f5132;
+  color: #a9d6a1;
   line-height: 1.55;
   margin-bottom: 16px;
 }
 .uidai-otp-sent-box strong {
   display: block;
   margin-bottom: 4px;
-  color: #14532d;
+  color: #73bf69;
   font-weight: 700;
 }
 .uidai-otp-sent-box span {
@@ -495,3 +497,55 @@
   .uidai-card { padding: 26px 22px 20px; }
   .uidai-card-head h1 { font-size: 20px; }
 }
+
+/* ============================================================
+   GRAFANA DARK THEME — login. Scoped to .uidai-login-page so the
+   header (styled by global App.css) goes dark without affecting
+   other pages that reuse those class names.
+   ============================================================ */
+.uidai-login-page { background: var(--uidai-navy-deep); }
+
+/* header bar (App.css classes, scoped here) */
+.uidai-login-page .site-header {
+  background: var(--uidai-light);
+  border-bottom-color: var(--uidai-border);
+}
+.uidai-login-page .header-accessibility-strip {
+  background: #15181c;
+  border-bottom-color: var(--uidai-border);
+  color: var(--uidai-text);
+}
+.uidai-login-page .a11y-label { color: var(--uidai-text-soft); }
+.uidai-login-page .font-resizer {
+  background: var(--uidai-raised);
+  border-color: var(--uidai-border);
+}
+.uidai-login-page .font-resizer button { color: var(--uidai-cyan); }
+.uidai-login-page .font-resizer button:hover { background: rgba(204, 204, 220, .08); }
+.uidai-login-page .font-resizer button[aria-pressed="true"] { background: var(--uidai-navy); color: #fff; }
+.uidai-login-page .header-main {
+  background: linear-gradient(90deg, #14171b 0%, #181b1f 50%, #14171b 100%);
+}
+.uidai-login-page .header-title {
+  background: var(--uidai-stripe);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.uidai-login-page .header-authority { color: var(--uidai-text); }
+
+/* main background + dark overlay so the card pops */
+.uidai-login-page .uidai-main { background-color: var(--uidai-navy-deep); }
+.uidai-login-page .uidai-overlay {
+  background: radial-gradient(1200px 600px at 70% 30%, rgba(61, 113, 217, .12), transparent 60%),
+              linear-gradient(135deg, rgba(11, 12, 14, .82) 0%, rgba(11, 12, 14, .92) 100%);
+}
+
+/* card shadow a touch stronger on dark */
+.uidai-login-page .uidai-card,
+.uidai-login-page .uidai-card-loginfix {
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .6);
+}
+
+/* scrollbars */
+.uidai-login-page ::-webkit-scrollbar { width: 10px; height: 10px; }
+.uidai-login-page ::-webkit-scrollbar-thumb { background: #2c3235; border-radius: 6px; }
+.uidai-login-page ::-webkit-scrollbar-track { background: transparent; }
