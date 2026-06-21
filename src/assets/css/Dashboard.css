@@ -15,6 +15,10 @@
   --xd-bg: #0b0c0e;        /* app background */
   --xd-card: #181b1f;      /* panel background */
   --xd-card-2: #22262b;    /* raised / input background */
+  --xd-accent-rgb: 61, 113, 217;      /* accent as r,g,b for translucent chips */
+  --xd-input-bg: #0b0c0e;             /* form inputs */
+  --xd-raised: #15181c;               /* assign rows / raised wells */
+  --xd-topbar-bg: rgba(17, 18, 23, .82);
   --xd-sidebar-w: 256px;
   font-family: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
   color: var(--xd-ink);
@@ -533,13 +537,13 @@ select.xd-conn-input { appearance: none; background-image: url("data:image/svg+x
 .xd-btn-ghost,
 .xd-conn-input,
 .xd-tag-input-wrap { background: var(--xd-card); }
-.xd-topbar { background: rgba(17, 18, 23, .82); }
+.xd-topbar { background: var(--xd-topbar-bg); }
 .xd-form-footer { background: var(--xd-card); }
 .xd-assign-row,
-.xd-assign-empty { background: #15181c; border-color: var(--xd-line); }
+.xd-assign-empty { background: var(--xd-raised); border-color: var(--xd-line); }
 .xd-conn-input,
 .xd-tag-input,
-select.xd-conn-input { background: #0b0c0e; color: var(--xd-ink); }
+select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 .xd-conn-input::placeholder, .xd-tag-input::placeholder { color: #6b6e76; }
 
 /* panels: subtle border, tighter radius, no light shadow */
@@ -563,15 +567,15 @@ select.xd-conn-input { background: #0b0c0e; color: var(--xd-ink); }
   box-shadow: 0 6px 20px rgba(0, 0, 0, .4);
 }
 .xd-nav-item.active {
-  background: rgba(61, 113, 217, .15);
+  background: rgba(var(--xd-accent-rgb), .15);
   border-left-color: var(--xd-emerald);
 }
 
 /* chips / pills / soft backgrounds → translucent on dark */
 .xd-tag, .xd-op-badge, .xd-measure-icon, .xd-proj-key, .xd-proj-open {
-  background: rgba(61, 113, 217, .16); color: var(--xd-mint);
+  background: rgba(var(--xd-accent-rgb), .16); color: var(--xd-mint);
 }
-.xd-proj-open:hover { background: rgba(61, 113, 217, .28); }
+.xd-proj-open:hover { background: rgba(var(--xd-accent-rgb), .28); }
 .xd-cloud-chip, .xd-role-switch { background: var(--xd-card-2); border-color: var(--xd-line); }
 .xd-chip-opt, .xd-member-pill { background: var(--xd-card-2); border-color: var(--xd-line); }
 .xd-tag-soft, .xd-chip, .xd-tag-env { background: var(--xd-card-2); color: var(--xd-soft); border-color: var(--xd-line); }
@@ -583,7 +587,7 @@ select.xd-conn-input { background: #0b0c0e; color: var(--xd-ink); }
 .xd-proj-foot, .xd-footer { border-top-color: var(--xd-line); }
 
 /* KPI tone icon chips → translucent accent on dark */
-.xd-tone-brand .xd-kpi-icon { background: rgba(61, 113, 217, .18); color: var(--xd-mint); }
+.xd-tone-brand .xd-kpi-icon { background: rgba(var(--xd-accent-rgb), .18); color: var(--xd-mint); }
 .xd-tone-teal  .xd-kpi-icon { background: rgba(87, 148, 242, .18); color: #5794f2; }
 .xd-tone-green .xd-kpi-icon { background: rgba(115, 191, 105, .18); color: #73bf69; }
 .xd-tone-slate .xd-kpi-icon { background: rgba(184, 119, 217, .18); color: #b877d9; }
@@ -594,7 +598,7 @@ select.xd-conn-input { background: #0b0c0e; color: var(--xd-ink); }
 .xd-status-onhold   { background: rgba(250, 222, 42, .16); color: #fade2a; }
 .xd-status-completed{ background: rgba(87, 148, 242, .18); color: #5794f2; }
 .xd-prio-low      { background: rgba(142, 144, 151, .18); color: #b6b9c2; }
-.xd-prio-medium   { background: rgba(61, 113, 217, .18); color: var(--xd-mint); }
+.xd-prio-medium   { background: rgba(var(--xd-accent-rgb), .18); color: var(--xd-mint); }
 .xd-prio-high     { background: rgba(255, 152, 48, .18); color: #ff9830; }
 .xd-prio-critical { background: rgba(242, 73, 92, .18); color: #f2495c; }
 
@@ -615,5 +619,104 @@ select.xd-conn-input { background: #0b0c0e; color: var(--xd-ink); }
 
 /* scrollbars (webkit) */
 .xd-shell ::-webkit-scrollbar { width: 10px; height: 10px; }
-.xd-shell ::-webkit-scrollbar-thumb { background: #2c3235; border-radius: 6px; }
+.xd-shell ::-webkit-scrollbar-thumb { background: var(--xd-line); border-radius: 6px; }
 .xd-shell ::-webkit-scrollbar-track { background: transparent; }
+
+/* ============================================================
+   THEMES — each block overrides the palette variables on the
+   shell. Switched at runtime via [data-theme] (see lib/theme.js).
+   The default (no attribute) is the Grafana Dark palette above.
+   ============================================================ */
+
+/* Emerald Mint — the original xOps green */
+.xd-shell[data-theme="emerald"] {
+  --xd-emerald: #10b981; --xd-teal: #0d9488; --xd-mint: #5eead4;
+  --xd-ink: #d8e3df; --xd-soft: #7e928c; --xd-line: #1f3a33;
+  --xd-bg: #07120f; --xd-card: #0e1f1a; --xd-card-2: #173029;
+  --xd-accent-rgb: 16, 185, 129; --xd-input-bg: #07120f; --xd-raised: #0e1f1a;
+  --xd-topbar-bg: rgba(10, 28, 24, .82);
+}
+
+/* Midnight — indigo / violet dark */
+.xd-shell[data-theme="midnight"] {
+  --xd-emerald: #7c6cff; --xd-teal: #5b4bd6; --xd-mint: #a99bff;
+  --xd-ink: #e4e3f0; --xd-soft: #9b98b5; --xd-line: #2a2742;
+  --xd-bg: #0f0e1a; --xd-card: #1a1830; --xd-card-2: #252247;
+  --xd-accent-rgb: 124, 108, 255; --xd-input-bg: #0f0e1a; --xd-raised: #1f1d38;
+  --xd-topbar-bg: rgba(20, 18, 40, .82);
+}
+
+/* Nord — arctic blue-grey */
+.xd-shell[data-theme="nord"] {
+  --xd-emerald: #88c0d0; --xd-teal: #5e81ac; --xd-mint: #8fbcbb;
+  --xd-ink: #eceff4; --xd-soft: #a3adc0; --xd-line: #3b4252;
+  --xd-bg: #2e3440; --xd-card: #3b4252; --xd-card-2: #434c5e;
+  --xd-accent-rgb: 136, 192, 208; --xd-input-bg: #2e3440; --xd-raised: #3b4252;
+  --xd-topbar-bg: rgba(46, 52, 64, .85);
+}
+
+/* Dracula — dark with violet/pink accents */
+.xd-shell[data-theme="dracula"] {
+  --xd-emerald: #bd93f9; --xd-teal: #ff79c6; --xd-mint: #8be9fd;
+  --xd-ink: #f8f8f2; --xd-soft: #9aa0b5; --xd-line: #44475a;
+  --xd-bg: #282a36; --xd-card: #343746; --xd-card-2: #44475a;
+  --xd-accent-rgb: 189, 147, 249; --xd-input-bg: #21222c; --xd-raised: #343746;
+  --xd-topbar-bg: rgba(40, 42, 54, .85);
+}
+
+/* Solarized — dark teal base */
+.xd-shell[data-theme="solarized"] {
+  --xd-emerald: #268bd2; --xd-teal: #2aa198; --xd-mint: #6ec6e6;
+  --xd-ink: #e9e2cc; --xd-soft: #93a1a1; --xd-line: #0a4b54;
+  --xd-bg: #002b36; --xd-card: #073642; --xd-card-2: #0a4b54;
+  --xd-accent-rgb: 38, 139, 210; --xd-input-bg: #002b36; --xd-raised: #073642;
+  --xd-topbar-bg: rgba(0, 43, 54, .85);
+}
+
+/* Light — clean daylight theme */
+.xd-shell[data-theme="light"] {
+  --xd-emerald: #2563eb; --xd-teal: #0ea5e9; --xd-mint: #2563eb;
+  --xd-ink: #1e293b; --xd-soft: #64748b; --xd-line: #e2e8f0;
+  --xd-bg: #f1f5f9; --xd-card: #ffffff; --xd-card-2: #f8fafc;
+  --xd-accent-rgb: 37, 99, 235; --xd-input-bg: #ffffff; --xd-raised: #f8fafc;
+  --xd-topbar-bg: rgba(255, 255, 255, .85);
+}
+
+/* ── theme switcher (top header) ─────────────────────────── */
+.xd-theme {
+  position: relative; margin-left: auto;
+}
+.xd-theme-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--xd-card-2); border: 1px solid var(--xd-line);
+  color: var(--xd-ink); font: inherit; font-size: 13px; font-weight: 600;
+  padding: 7px 12px; border-radius: 8px; cursor: pointer; transition: all .15s;
+}
+.xd-theme-btn:hover { border-color: var(--xd-emerald); }
+.xd-theme-swatch {
+  width: 13px; height: 13px; border-radius: 50%; flex: 0 0 auto;
+  box-shadow: 0 0 0 2px rgba(var(--xd-accent-rgb), .25);
+}
+.xd-theme-caret { font-size: 14px; color: var(--xd-soft); transition: transform .18s; }
+.xd-theme-caret.open { transform: rotate(180deg); }
+.xd-theme-menu {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 50;
+  min-width: 210px; padding: 6px;
+  background: var(--xd-card); border: 1px solid var(--xd-line);
+  border-radius: 10px; box-shadow: 0 12px 30px rgba(0, 0, 0, .4);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.xd-theme-opt {
+  display: flex; align-items: center; gap: 10px;
+  background: transparent; border: none; cursor: pointer; font: inherit;
+  font-size: 13.5px; font-weight: 600; color: var(--xd-soft);
+  padding: 9px 10px; border-radius: 8px; text-align: left; transition: all .14s;
+}
+.xd-theme-opt:hover { background: rgba(204, 204, 220, .07); color: var(--xd-ink); }
+.xd-theme-opt.active { background: rgba(var(--xd-accent-rgb), .15); color: var(--xd-emerald); }
+.xd-theme-opt-swatch {
+  width: 20px; height: 20px; border-radius: 6px; flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, .15);
+}
+.xd-theme-opt-name { flex: 1; }
+.xd-theme-opt-check { font-size: 15px; color: var(--xd-emerald); }
