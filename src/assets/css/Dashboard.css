@@ -5,16 +5,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 .xd-shell {
-  --xd-emerald: #059669;
-  --xd-teal: #0d9488;
-  --xd-mint: #34d399;
-  --xd-ink: #0f2a28;
-  --xd-soft: #5b7a72;
-  --xd-line: #d9ece4;
-  --xd-bg: #f3faf7;
-  --xd-card: #ffffff;
+  /* Grafana-style dark theme */
+  --xd-emerald: #3d71d9;   /* primary accent (buttons, links, active) */
+  --xd-teal: #2b5cc4;      /* gradient end */
+  --xd-mint: #6e9fff;
+  --xd-ink: #d8d9da;       /* primary text */
+  --xd-soft: #8e9097;      /* secondary text */
+  --xd-line: #2c3235;      /* borders */
+  --xd-bg: #0b0c0e;        /* app background */
+  --xd-card: #181b1f;      /* panel background */
+  --xd-card-2: #22262b;    /* raised / input background */
   --xd-sidebar-w: 256px;
-  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
   color: var(--xd-ink);
   background: var(--xd-bg);
   min-height: 100vh;
@@ -519,3 +521,99 @@ select.xd-conn-input { appearance: none; background-image: url("data:image/svg+x
 
 .xd-section-head-text { flex: 1; }
 .xd-section-actions { margin-left: auto; }
+
+/* ============================================================
+   GRAFANA DARK THEME — overrides for hardcoded light colors.
+   Kept at the end so these rules win over the originals above.
+   ============================================================ */
+
+/* surfaces */
+.xd-sidebar,
+.xd-logout,
+.xd-btn-ghost,
+.xd-conn-input,
+.xd-tag-input-wrap { background: var(--xd-card); }
+.xd-topbar { background: rgba(17, 18, 23, .82); }
+.xd-form-footer { background: var(--xd-card); }
+.xd-assign-row,
+.xd-assign-empty { background: #15181c; border-color: var(--xd-line); }
+.xd-conn-input,
+.xd-tag-input,
+select.xd-conn-input { background: #0b0c0e; color: var(--xd-ink); }
+.xd-conn-input::placeholder, .xd-tag-input::placeholder { color: #6b6e76; }
+
+/* panels: subtle border, tighter radius, no light shadow */
+.xd-kpi, .xd-card, .xd-op-card, .xd-env-card, .xd-measure-card,
+.xd-proj-card, .xd-tenant {
+  background: var(--xd-card);
+  border-color: var(--xd-line);
+  border-radius: 6px;
+  box-shadow: none;
+}
+.xd-kpi:hover { box-shadow: 0 0 0 1px var(--xd-emerald) inset; transform: none; }
+.xd-card h3 { border-bottom: 1px solid var(--xd-line); padding-bottom: 10px; }
+
+/* hovers */
+.xd-nav-group-head:hover,
+.xd-nav-item:hover,
+.xd-btn-ghost:hover,
+.xd-tab:hover { background: rgba(204, 204, 220, .07); }
+.xd-op-card:hover, .xd-env-card:hover, .xd-proj-card-link:hover {
+  transform: translateY(-2px); border-color: var(--xd-emerald);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .4);
+}
+.xd-nav-item.active {
+  background: rgba(61, 113, 217, .15);
+  border-left-color: var(--xd-emerald);
+}
+
+/* chips / pills / soft backgrounds → translucent on dark */
+.xd-tag, .xd-op-badge, .xd-measure-icon, .xd-proj-key, .xd-proj-open {
+  background: rgba(61, 113, 217, .16); color: var(--xd-mint);
+}
+.xd-proj-open:hover { background: rgba(61, 113, 217, .28); }
+.xd-cloud-chip, .xd-role-switch { background: var(--xd-card-2); border-color: var(--xd-line); }
+.xd-chip-opt, .xd-member-pill { background: var(--xd-card-2); border-color: var(--xd-line); }
+.xd-tag-soft, .xd-chip, .xd-tag-env { background: var(--xd-card-2); color: var(--xd-soft); border-color: var(--xd-line); }
+.xd-chip-ok { background: rgba(115, 191, 105, .16); color: #73bf69; }
+
+/* tracks */
+.xd-bar-track, .xd-meter-track { background: rgba(204, 204, 220, .1); }
+.xd-table td { border-bottom-color: var(--xd-line); }
+.xd-proj-foot, .xd-footer { border-top-color: var(--xd-line); }
+
+/* KPI tone icon chips → translucent accent on dark */
+.xd-tone-brand .xd-kpi-icon { background: rgba(61, 113, 217, .18); color: var(--xd-mint); }
+.xd-tone-teal  .xd-kpi-icon { background: rgba(87, 148, 242, .18); color: #5794f2; }
+.xd-tone-green .xd-kpi-icon { background: rgba(115, 191, 105, .18); color: #73bf69; }
+.xd-tone-slate .xd-kpi-icon { background: rgba(184, 119, 217, .18); color: #b877d9; }
+
+/* status / priority badges → translucent */
+.xd-status-planning { background: rgba(142, 144, 151, .18); color: #b6b9c2; }
+.xd-status-active   { background: rgba(115, 191, 105, .18); color: #73bf69; }
+.xd-status-onhold   { background: rgba(250, 222, 42, .16); color: #fade2a; }
+.xd-status-completed{ background: rgba(87, 148, 242, .18); color: #5794f2; }
+.xd-prio-low      { background: rgba(142, 144, 151, .18); color: #b6b9c2; }
+.xd-prio-medium   { background: rgba(61, 113, 217, .18); color: var(--xd-mint); }
+.xd-prio-high     { background: rgba(255, 152, 48, .18); color: #ff9830; }
+.xd-prio-critical { background: rgba(242, 73, 92, .18); color: #f2495c; }
+
+/* demo / misc badges */
+.xd-demo-badge { background: rgba(250, 222, 42, .14); color: #fade2a; border-color: rgba(250, 222, 42, .3); }
+.xd-status-pill.up { background: rgba(115, 191, 105, .16); color: #73bf69; border-color: rgba(115, 191, 105, .35); }
+.xd-status-pill.down { background: rgba(242, 73, 92, .16); color: #f2495c; border-color: rgba(242, 73, 92, .35); }
+.xd-proj-del { color: #f2495c; }
+.xd-proj-del:hover { background: rgba(242, 73, 92, .16); }
+.xd-crumb-sep, .xd-empty svg { color: #5a5e66; }
+.xd-kpi-delta.up { color: #f2495c; }
+.xd-kpi-delta.down { color: #73bf69; }
+.xd-conn-saved { color: #73bf69; }
+.xd-req, .xd-form-error { color: #f2495c; }
+
+/* logout hover */
+.xd-logout:hover { color: #f2495c; border-color: rgba(242, 73, 92, .4); background: rgba(242, 73, 92, .1); }
+
+/* scrollbars (webkit) */
+.xd-shell ::-webkit-scrollbar { width: 10px; height: 10px; }
+.xd-shell ::-webkit-scrollbar-thumb { background: #2c3235; border-radius: 6px; }
+.xd-shell ::-webkit-scrollbar-track { background: transparent; }

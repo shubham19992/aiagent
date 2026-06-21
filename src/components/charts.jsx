@@ -5,7 +5,8 @@
 // ============================================================
 import React from 'react';
 
-export const CHART_COLORS = ['#059669', '#0d9488', '#34d399', '#14b8a6', '#5eead4', '#047857'];
+// Grafana classic palette
+export const CHART_COLORS = ['#73bf69', '#5794f2', '#fade2a', '#ff9830', '#f2495c', '#b877d9', '#705da0', '#37872d'];
 
 /** A single headline metric tile. */
 export function Kpi({ icon, label, value, sub, tone = 'brand', delta }) {
@@ -37,7 +38,7 @@ export function Donut({ data, total, unit = '', centerCap = 'total' }) {
   return (
     <div className="xd-donut">
       <svg viewBox="0 0 140 140" width="150" height="150">
-        <circle cx="70" cy="70" r={r} fill="none" stroke="#eef4f1" strokeWidth="16" />
+        <circle cx="70" cy="70" r={r} fill="none" stroke="#2c3235" strokeWidth="16" />
         {data.map((d, i) => {
           const frac = sum ? d.value / sum : 0;
           const dash = frac * c;
@@ -133,7 +134,7 @@ export function Section({ title, icon, desc, children, actions }) {
  * Filled area sparkline / trend line. values: number[].
  * Renders a smooth-ish polyline with a soft gradient fill + x labels.
  */
-export function Sparkline({ values = [], labels = [], unit = '', color = '#059669', height = 120 }) {
+export function Sparkline({ values = [], labels = [], unit = '', color = '#73bf69', height = 120 }) {
   const w = 520;
   const h = height;
   const padX = 6;

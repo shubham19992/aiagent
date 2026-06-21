@@ -183,7 +183,7 @@ export default function ProjectDashboardPage() {
               </div>
               <div className="xd-card">
                 <h3>Data Transfer Trend (12 mo)</h3>
-                <Sparkline values={network.trend} labels={months} unit="" color="#0d9488" />
+                <Sparkline values={network.trend} labels={months} unit="" color="#5794f2" />
                 <Donut data={network.byEnv} unit=" GB" centerCap="GB total" />
               </div>
             </div>
@@ -211,7 +211,7 @@ export default function ProjectDashboardPage() {
               </div>
               <div className="xd-card">
                 <h3>Instances Trend (12 mo)</h3>
-                <Sparkline values={compute.trend} labels={months} color="#34d399" />
+                <Sparkline values={compute.trend} labels={months} color="#73bf69" />
                 <Donut data={compute.byEnv} unit="" centerCap="instances" />
               </div>
             </div>
@@ -239,7 +239,7 @@ export default function ProjectDashboardPage() {
               </div>
               <div className="xd-card">
                 <h3>Growth Trend (12 mo)</h3>
-                <Sparkline values={storage.trend} labels={months} color="#14b8a6" />
+                <Sparkline values={storage.trend} labels={months} color="#ff9830" />
               </div>
             </div>
           </Section>
@@ -263,7 +263,7 @@ export default function ProjectDashboardPage() {
               </div>
               <div className="xd-card">
                 <h3>Posture Score Trend (12 mo)</h3>
-                <Sparkline values={security.trend} labels={months} color="#047857" />
+                <Sparkline values={security.trend} labels={months} color="#b877d9" />
                 <Meter label="Compliance" value={security.compliancePct} max={100}
                   display={`${security.compliancePct}%`} tone={security.compliancePct < 80 ? 'warn' : undefined} />
               </div>
@@ -283,7 +283,7 @@ export default function ProjectDashboardPage() {
             <div className="xd-grid-2">
               <div className="xd-card">
                 <h3>Uptime Trend (12 mo)</h3>
-                <Sparkline values={reliability.trend} labels={months} color="#059669" />
+                <Sparkline values={reliability.trend} labels={months} color="#73bf69" />
               </div>
               <div className="xd-card">
                 <h3>Delivery</h3>
