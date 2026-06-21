@@ -965,8 +965,7 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
   background: linear-gradient(135deg, var(--xd-emerald), var(--xd-teal));
 }
 
-.xd-am-rolecols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-@media (max-width: 720px) { .xd-am-rolecols { grid-template-columns: 1fr; } }
+.xd-am-rolecols { display: flex; flex-direction: column; gap: 12px; }
 .xd-am-rolecol { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
 .xd-am-rolecol-head {
   display: flex; align-items: center; gap: 6px;
