@@ -1,15 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiCheck, FiUser } from 'react-icons/fi';
+import { FiCheck, FiX, FiActivity } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
-import { listOps, listUsers } from '../../api/observability';
+import { listOps } from '../../api/observability';
 import { addProject } from '../../store/projectsStore';
 
-// Display name from whatever fields the users API returns.
-const userName = (u) =>
-  u.name || u.full_name || u.fullName || u.username || u.email || String(u.id ?? '');
-
 const STATUSES = ['Planning', 'Active', 'On Hold', 'Completed'];
+
+// Short two-letter badge from an op name (AIOps -> "AI").
+const opBadge = (name) => name.replace(/Ops$/i, '').slice(0, 2).toUpperCase();
 
 export default function CreateProjectPage() {
   const navigate = useNavigate();
@@ -26,25 +25,13 @@ export default function CreateProjectPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selected, setSelected] = useState([]);
-  const [assignments, setAssignments] = useState({});
-  const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
-
-  // Members = the logged-in user first, then users fetched from the API.
-  const memberOptions = useMemo(() => {
-    const me = { id: 'me', name: currentUser, role: 'You', you: true };
-    const others = users
-      .map((u, i) => ({ id: u.id ?? `u${i}`, name: userName(u) }))
-      .filter((u) => u.name && u.name !== currentUser);
-    return [me, ...others];
-  }, [currentUser, users]);
 
   useEffect(() => {
     let alive = true;
-    Promise.all([listOps(), listUsers()]).then(([opsRes, usersRes]) => {
+    listOps().then((opsRes) => {
       if (!alive) return;
       setOps(opsRes.items); setSource(opsRes.source);
-      setUsers(usersRes.items);
       setLoading(false);
     });
     return () => { alive = false; };
@@ -52,16 +39,12 @@ export default function CreateProjectPage() {
 
   const toggleOp = (code) => {
     setSelected((s) => (s.includes(code) ? s.filter((c) => c !== code) : [...s, code]));
-    setAssignments((a) => {
-      if (a[code]) { const { [code]: _d, ...rest } = a; return rest; }
-      return { ...a, [code]: [] };
-    });
     setError('');
   };
-  const toggleMember = (code, m) => setAssignments((a) => {
-    const cur = a[code] || [];
-    return { ...a, [code]: cur.includes(m) ? cur.filter((x) => x !== m) : [...cur, m] };
-  });
+
+  const selectedOps = selected
+    .map((code) => ops.find((o) => o.code === code))
+    .filter(Boolean);
 
   const onSubmit = (e) => {
     e.preventDefault();
@@ -70,17 +53,15 @@ export default function CreateProjectPage() {
     if (endDate < startDate) return setError('End date cannot be before start date.');
     if (selected.length === 0) return setError('Select at least one observability to observe.');
 
-    const chosenOps = selected.map((code) => {
-      const op = ops.find((o) => o.code === code);
-      return { code, name: op?.name || code };
-    });
+    const chosenOps = selectedOps.map((op) => ({ code: op.code, name: op.name }));
 
-    addProject({
+    // Create the project with no members yet, then go assign them.
+    const project = addProject({
       name: name.trim(), description: description.trim(),
       status, owner,
-      startDate, endDate, observabilities: chosenOps, assignments, createdBy: currentUser,
+      startDate, endDate, observabilities: chosenOps, assignments: {}, createdBy: currentUser,
     });
-    navigate('/dashboard/projects');
+    navigate(`/dashboard/projects/${project.id}/assign`);
   };
 
   return (
@@ -126,9 +107,8 @@ export default function CreateProjectPage() {
 
                 <div className="xd-conn-field">
                   <label className="xd-conn-label">Project Owner</label>
-                  <select className="xd-conn-input" value={owner} onChange={(e) => setOwner(e.target.value)}>
-                    {memberOptions.map((m) => <option key={m.id} value={m.name}>{m.name}{m.you ? ' (you)' : ''}</option>)}
-                  </select>
+                  <input className="xd-conn-input" value={owner}
+                    onChange={(e) => setOwner(e.target.value)} />
                 </div>
 
                 <div className="xd-field-row2">
@@ -162,34 +142,27 @@ export default function CreateProjectPage() {
                 </div>
               </section>
 
-              {/* ── Column 3: assign members ── */}
+              {/* ── Column 3: selected observability cards ── */}
               <section className="xd-create-col">
-                <h3 className="xd-col-title">Assign Members</h3>
-                <p className="xd-col-hint">Assign members to each selected observability.</p>
-                {selected.length === 0 ? (
-                  <div className="xd-assign-empty">Select an observability first to assign members.</div>
+                <h3 className="xd-col-title">Selected ({selectedOps.length})</h3>
+                <p className="xd-col-hint">Observabilities this project will monitor.</p>
+                {selectedOps.length === 0 ? (
+                  <div className="xd-assign-empty">Nothing selected yet. Pick observabilities from the list.</div>
                 ) : (
-                  <div className="xd-assign-list">
-                    {selected.map((code) => {
-                      const op = ops.find((o) => o.code === code);
-                      return (
-                        <div className="xd-assign-row" key={code}>
-                          <div className="xd-assign-op">{op?.name || code}</div>
-                          <div className="xd-chip-select">
-                            {memberOptions.map((m) => {
-                              const on = (assignments[code] || []).includes(m.name);
-                              return (
-                                <button key={m.id} type="button"
-                                  className={`xd-chip-opt member ${on ? 'on' : ''}`}
-                                  onClick={() => toggleMember(code, m.name)}>
-                                  <FiUser /> {m.name}{m.you ? ' (you)' : ''}
-                                </button>
-                              );
-                            })}
-                          </div>
+                  <div className="xd-sel-list">
+                    {selectedOps.map((op) => (
+                      <div className="xd-sel-card" key={op.code}>
+                        <span className="xd-sel-badge">{opBadge(op.name) || <FiActivity />}</span>
+                        <div className="xd-sel-body">
+                          <div className="xd-sel-name">{op.name}</div>
+                          <div className="xd-sel-desc">{op.description}</div>
                         </div>
-                      );
-                    })}
+                        <button type="button" className="xd-sel-remove" title="Remove"
+                          onClick={() => toggleOp(op.code)}>
+                          <FiX />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </section>
@@ -200,7 +173,7 @@ export default function CreateProjectPage() {
               {error && <div className="xd-form-error">{error}</div>}
               <div className="xd-conn-actions">
                 <button type="button" className="xd-btn-ghost" onClick={() => navigate('/dashboard/projects')}>Cancel</button>
-                <button type="submit" className="xd-btn">Create Project</button>
+                <button type="submit" className="xd-btn">Create &amp; Assign Members</button>
               </div>
             </div>
           </form>

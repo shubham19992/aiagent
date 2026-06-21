@@ -817,3 +817,29 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 
 /* back link sits at the far left of the connect form actions */
 .xd-conn-back { margin-right: auto; display: inline-flex; align-items: center; gap: 6px; }
+
+/* ── selected observability cards (create-project right column) ── */
+.xd-sel-list { display: flex; flex-direction: column; gap: 10px; }
+.xd-sel-card {
+  position: relative; display: flex; align-items: flex-start; gap: 12px;
+  background: var(--xd-card-2); border: 1px solid var(--xd-line);
+  border-radius: 12px; padding: 12px 38px 12px 12px;
+  animation: xd-sel-in .18s ease;
+}
+@keyframes xd-sel-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.xd-sel-badge {
+  width: 40px; height: 40px; flex: 0 0 auto; border-radius: 10px;
+  display: grid; place-items: center; font-size: 14px; font-weight: 800;
+  text-transform: uppercase; color: #fff;
+  background: linear-gradient(135deg, var(--xd-emerald), var(--xd-teal));
+}
+.xd-sel-body { min-width: 0; }
+.xd-sel-name { font-size: 14px; font-weight: 700; }
+.xd-sel-desc { font-size: 12.5px; color: var(--xd-soft); margin-top: 3px; line-height: 1.45; }
+.xd-sel-remove {
+  position: absolute; top: 8px; right: 8px;
+  width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center;
+  border: none; background: transparent; color: var(--xd-soft);
+  cursor: pointer; font-size: 15px; transition: all .14s;
+}
+.xd-sel-remove:hover { background: rgba(242, 73, 92, .16); color: #f2495c; }

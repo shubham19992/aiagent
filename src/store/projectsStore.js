@@ -77,6 +77,17 @@ export function removeProject(id) {
   write(read().filter((p) => p.id !== id));
 }
 
+/** Patch a stored project (e.g. set member assignments). Returns the
+ *  updated project, or null if it isn't a stored (real) project. */
+export function updateProject(id, patch) {
+  const list = read();
+  const idx = list.findIndex((p) => p.id === id);
+  if (idx === -1) return null;
+  list[idx] = { ...list[idx], ...patch };
+  write(list);
+  return list[idx];
+}
+
 /** Unique list of all members assigned across a project's observabilities. */
 export function projectMembers(project) {
   const all = Object.values(project.assignments || {}).flat();
