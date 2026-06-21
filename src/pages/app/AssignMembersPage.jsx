@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiCheck, FiCheckCircle } from 'react-icons/fi';
+import { FiCheck, FiCheckCircle, FiX, FiUsers } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listUsers } from '../../api/observability';
 import { getProject, updateProject } from '../../store/projectsStore';
@@ -28,6 +28,7 @@ export default function AssignMembersPage() {
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
   const [assignments, setAssignments] = useState(project?.assignments || {});
+  const [activeOp, setActiveOp] = useState(project?.observabilities?.[0]?.code || '');
 
   useEffect(() => {
     let alive = true;
@@ -88,43 +89,80 @@ export default function AssignMembersPage() {
       <main className="xd-main">
         <div className="xd-pagelead">
           <h1>Assign Members</h1>
-          <p>Assign team members to each observability in <strong>{project.name}</strong>.</p>
+          <p>Pick an observability and select members on the left — assignments appear on the right.</p>
         </div>
 
         {loading ? (
           <Spinner label="Loading members…" />
         ) : (
           <>
-            <div className="xd-assign-grid">
-              {obs.map((o) => {
-                const picked = assignments[o.code] || [];
-                return (
-                  <div className={`xd-assign-card ${picked.length ? 'covered' : ''}`} key={o.code}>
-                    <div className="xd-assign-card-head">
-                      <span className="xd-sel-badge">{opBadge(o.name)}</span>
-                      <div className="xd-assign-card-meta">
-                        <div className="xd-assign-card-name">{o.name}</div>
-                      </div>
-                      {picked.length > 0 && <FiCheckCircle className="xd-assign-card-tick" />}
-                    </div>
+            <div className="xd-am-2col">
+              {/* ── Left: select members (form) ── */}
+              <div className="xd-card xd-am-panel">
+                <h3 className="xd-col-title">Select members</h3>
 
-                    <div className="xd-assign-members">
-                      {memberOptions.map((m) => {
-                        const on = picked.includes(m.name);
-                        return (
-                          <button key={m.id} type="button"
-                            className={`xd-assign-member ${on ? 'on' : ''}`}
-                            onClick={() => toggleMember(o.code, m.name)}>
-                            <span className="xd-assign-ava">{m.name.charAt(0).toUpperCase()}</span>
-                            <span className="xd-assign-member-name">{m.name}{m.you ? ' (you)' : ''}</span>
-                            {on && <FiCheck className="xd-assign-member-check" />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
+                <label className="xd-conn-label">Observability</label>
+                <div className="xd-am-ops">
+                  {obs.map((o) => {
+                    const count = (assignments[o.code] || []).length;
+                    return (
+                      <button key={o.code} type="button"
+                        className={`xd-am-op ${activeOp === o.code ? 'on' : ''}`}
+                        onClick={() => setActiveOp(o.code)}>
+                        {o.name}
+                        {count > 0 && <span className="xd-am-op-count">{count}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <label className="xd-conn-label">Members for {obs.find((o) => o.code === activeOp)?.name || '—'}</label>
+                <div className="xd-am-userlist">
+                  {memberOptions.map((m) => {
+                    const on = (assignments[activeOp] || []).includes(m.name);
+                    return (
+                      <label key={m.id} className={`xd-am-userrow ${on ? 'on' : ''}`}>
+                        <input type="checkbox" checked={on}
+                          onChange={() => toggleMember(activeOp, m.name)} />
+                        <span className="xd-am-ava">{m.name.charAt(0).toUpperCase()}</span>
+                        <span className="xd-am-username">{m.name}{m.you ? ' (you)' : ''}</span>
+                        {on && <FiCheck className="xd-am-rowcheck" />}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ── Right: selected / assigned ── */}
+              <div className="xd-card xd-am-panel">
+                <h3 className="xd-col-title">Assigned members</h3>
+                <div className="xd-am-summary">
+                  {obs.map((o) => {
+                    const picked = assignments[o.code] || [];
+                    return (
+                      <div className="xd-am-srow" key={o.code}>
+                        <div className="xd-am-shead">
+                          <span className="xd-am-badge">{opBadge(o.name)}</span>
+                          <span className="xd-am-sname">{o.name}</span>
+                        </div>
+                        {picked.length === 0 ? (
+                          <span className="xd-muted xd-am-none"><FiUsers /> No members yet</span>
+                        ) : (
+                          <div className="xd-am-pills">
+                            {picked.map((m) => (
+                              <span className="xd-member-pill" key={m}>
+                                <span className="xd-member-ava">{m.charAt(0).toUpperCase()}</span>{m}
+                                <button type="button" className="xd-am-remove" title="Remove"
+                                  onClick={() => toggleMember(o.code, m)}><FiX /></button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             <div className="xd-assign-bar">
