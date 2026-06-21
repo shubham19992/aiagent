@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiCalendar, FiTrash2, FiPlus, FiFolder, FiBarChart2 } from 'react-icons/fi';
+import { FiCalendar, FiTrash2, FiPlus, FiFolder, FiBarChart2, FiSearch } from 'react-icons/fi';
 import { PageHeader } from './_parts';
 import { listProjects, myProjects, removeProject, projectMembers, isDemoProject } from '../../store/projectsStore';
 
@@ -21,11 +21,26 @@ export default function ProjectListPage() {
   const currentUser = sessionStorage.getItem('uidai_user') || 'You';
   const [scope, setScope] = useState('all');     // 'mine' | 'all'
   const [version, setVersion] = useState(0);     // bump to re-read after delete
+  const [query, setQuery] = useState('');
 
-  const projects = useMemo(
+  const allProjects = useMemo(
     () => (scope === 'mine' ? myProjects(currentUser) : listProjects()),
     [scope, currentUser, version],
   );
+
+  // Filter by name, owner, description or any observability name.
+  const projects = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return allProjects;
+    return allProjects.filter((p) => {
+      const hay = [
+        p.name, p.owner, p.description,
+        ...(p.observabilities || []).map((o) => o.name),
+      ].join(' ').toLowerCase();
+      return hay.includes(q);
+    });
+  }, [allProjects, query]);
+
   const hasDemo = useMemo(() => projects.some(isDemoProject), [projects]);
 
   const del = (id) => {
@@ -43,6 +58,16 @@ export default function ProjectListPage() {
             <p>{scope === 'mine' ? `Projects related to ${currentUser}.` : 'All projects.'}</p>
           </div>
           <div className="xd-list-actions">
+            <div className="xd-search">
+              <FiSearch className="xd-search-icon" />
+              <input
+                className="xd-search-input"
+                type="search"
+                placeholder="Search projects…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </div>
             <div className="xd-role-switch">
               <button className={`xd-role-btn ${scope === 'mine' ? 'active' : ''}`} onClick={() => setScope('mine')} type="button">Mine</button>
               <button className={`xd-role-btn ${scope === 'all' ? 'active' : ''}`} onClick={() => setScope('all')} type="button">All</button>
@@ -52,11 +77,19 @@ export default function ProjectListPage() {
         </div>
 
         {projects.length === 0 ? (
-          <div className="xd-empty">
-            <FiFolder />
-            <p>{scope === 'mine' ? 'No projects assigned to you yet.' : 'No projects created yet.'}</p>
-            <Link to="/dashboard/projects/new" className="xd-btn xd-btn-sm"><FiPlus /> Create your first project</Link>
-          </div>
+          query.trim() ? (
+            <div className="xd-empty">
+              <FiSearch />
+              <p>No projects match “{query.trim()}”.</p>
+              <button className="xd-btn xd-btn-sm" type="button" onClick={() => setQuery('')}>Clear search</button>
+            </div>
+          ) : (
+            <div className="xd-empty">
+              <FiFolder />
+              <p>{scope === 'mine' ? 'No projects assigned to you yet.' : 'No projects created yet.'}</p>
+              <Link to="/dashboard/projects/new" className="xd-btn xd-btn-sm"><FiPlus /> Create your first project</Link>
+            </div>
+          )
         ) : (
           <div className="xd-proj-grid">
             {projects.map((p) => {

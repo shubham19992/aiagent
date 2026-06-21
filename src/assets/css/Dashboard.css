@@ -1030,6 +1030,23 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 .xd-pcard-ava.more { background: var(--xd-card-2); color: var(--xd-soft); }
 .xd-pcard-actions { display: flex; align-items: center; gap: 8px; }
 
+/* ── project search ── */
+.xd-search { position: relative; display: inline-flex; align-items: center; }
+.xd-search-icon {
+  position: absolute; left: 11px; color: var(--xd-soft); font-size: 15px; pointer-events: none;
+}
+.xd-search-input {
+  width: 230px; max-width: 48vw; padding: 9px 12px 9px 32px;
+  border: 1px solid var(--xd-line); border-radius: 9px;
+  background: var(--xd-card-2); color: var(--xd-ink);
+  font: inherit; font-size: 13.5px; transition: border-color .15s, box-shadow .15s;
+}
+.xd-search-input::placeholder { color: var(--xd-soft); }
+.xd-search-input:focus {
+  outline: none; border-color: var(--xd-emerald);
+  box-shadow: 0 0 0 3px rgba(var(--xd-accent-rgb), .18);
+}
+
 /* keep 3-up until the layout collapses to one column */
 @media (max-width: 1100px) {
   .xd-create-cols-sel { grid-template-columns: 1fr; }
