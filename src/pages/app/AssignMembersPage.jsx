@@ -162,20 +162,6 @@ export default function AssignMembersPage() {
                     </div>
                   )}
                 </div>
-
-                <div className="xd-am-chosen">
-                  {(assignments[activeOp] || []).length === 0 ? (
-                    <span className="xd-muted">No members added yet.</span>
-                  ) : (
-                    (assignments[activeOp] || []).map((m) => (
-                      <span className="xd-member-pill" key={m}>
-                        <span className="xd-member-ava">{m.charAt(0).toUpperCase()}</span>{m}
-                        <button type="button" className="xd-am-remove" title="Remove"
-                          onClick={() => toggleMember(activeOp, m)}><FiX /></button>
-                      </span>
-                    ))
-                  )}
-                </div>
               </div>
 
               {/* ── Right: selected / assigned ── */}

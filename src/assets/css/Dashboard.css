@@ -943,8 +943,6 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
   background: linear-gradient(135deg, var(--xd-emerald), var(--xd-teal));
 }
 
-.xd-am-chosen { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-
 .xd-am-summary { display: flex; flex-direction: column; gap: 14px; }
 .xd-am-srow { padding-bottom: 14px; border-bottom: 1px solid var(--xd-line); }
 .xd-am-srow:last-child { padding-bottom: 0; border-bottom: none; }
