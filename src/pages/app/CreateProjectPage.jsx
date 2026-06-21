@@ -7,6 +7,9 @@ import { addProject } from '../../store/projectsStore';
 
 const STATUSES = ['Planning', 'Active', 'On Hold', 'Completed'];
 
+// Short two-letter badge from an op name (AIOps -> "AI").
+const opBadge = (name) => name.replace(/Ops$/i, '').slice(0, 2).toUpperCase();
+
 // Display name from whatever fields the users API returns.
 const userName = (u) =>
   u.name || u.full_name || u.fullName || u.username || u.email || String(u.id ?? '');
@@ -176,13 +179,19 @@ export default function CreateProjectPage() {
               <section className="xd-create-col">
                 <h3 className="xd-col-title">What do you want to observe?<span className="xd-req">*</span></h3>
                 <p className="xd-col-hint">Select the observability domains this project will monitor.</p>
-                <div className="xd-chip-select xd-chip-stack">
+                <div className="xd-obs-grid">
                   {ops.map((op) => {
                     const on = selected.includes(op.code);
                     return (
-                      <button key={op.code} type="button" className={`xd-chip-opt ${on ? 'on' : ''}`}
+                      <button key={op.code} type="button"
+                        className={`xd-obs-card ${on ? 'on' : ''}`}
                         onClick={() => toggleOp(op.code)}>
-                        {on && <FiCheck />} {op.name}
+                        <span className="xd-obs-badge">{opBadge(op.name)}</span>
+                        <span className="xd-obs-body">
+                          <span className="xd-obs-name">{op.name}</span>
+                          <span className="xd-obs-desc">{op.description}</span>
+                        </span>
+                        {on && <FiCheck className="xd-obs-check" />}
                       </button>
                     );
                   })}
