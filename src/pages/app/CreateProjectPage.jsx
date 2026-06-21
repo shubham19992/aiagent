@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiCheck, FiX, FiActivity, FiImage } from 'react-icons/fi';
+import { FiCheck, FiX, FiImage } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listOps, listUsers } from '../../api/observability';
 import { addProject } from '../../store/projectsStore';
@@ -10,9 +10,6 @@ const STATUSES = ['Planning', 'Active', 'On Hold', 'Completed'];
 // Display name from whatever fields the users API returns.
 const userName = (u) =>
   u.name || u.full_name || u.fullName || u.username || u.email || String(u.id ?? '');
-
-// Short two-letter badge from an op name (AIOps -> "AI").
-const opBadge = (name) => name.replace(/Ops$/i, '').slice(0, 2).toUpperCase();
 
 export default function CreateProjectPage() {
   const navigate = useNavigate();
@@ -109,7 +106,7 @@ export default function CreateProjectPage() {
         ) : (
           <form className="xd-proj-form xd-card" onSubmit={onSubmit}>
             <div className="xd-form-body">
-            <div className="xd-create-cols xd-create-cols-sel">
+            <div className="xd-create-cols xd-create-cols-2">
               {/* ── Column 1: project details ── */}
               <section className="xd-create-col">
                 <h3 className="xd-col-title">Project Details</h3>
@@ -190,31 +187,6 @@ export default function CreateProjectPage() {
                     );
                   })}
                 </div>
-              </section>
-
-              {/* ── Column 3: selected observability cards (3 per row) ── */}
-              <section className="xd-create-col xd-create-col-sel">
-                <h3 className="xd-col-title">Selected ({selectedOps.length})</h3>
-                <p className="xd-col-hint">Observabilities this project will monitor.</p>
-                {selectedOps.length === 0 ? (
-                  <div className="xd-assign-empty">Nothing selected yet. Pick observabilities from the list.</div>
-                ) : (
-                  <div className="xd-sel-grid">
-                    {selectedOps.map((op) => (
-                      <div className="xd-sel-card" key={op.code}>
-                        <span className="xd-sel-badge">{opBadge(op.name) || <FiActivity />}</span>
-                        <div className="xd-sel-body">
-                          <div className="xd-sel-name">{op.name}</div>
-                          <div className="xd-sel-desc">{op.description}</div>
-                        </div>
-                        <button type="button" className="xd-sel-remove" title="Remove"
-                          onClick={() => toggleOp(op.code)}>
-                          <FiX />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </section>
             </div>
             </div>
