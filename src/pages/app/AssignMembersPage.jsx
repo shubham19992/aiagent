@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers } from 'react-icons/fi';
+import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers, FiUserPlus } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listUsers } from '../../api/observability';
 import { getProject, updateProject } from '../../store/projectsStore';
@@ -101,7 +101,7 @@ export default function AssignMembersPage() {
         ]}
         source={source}
       />
-      <main className="xd-main">
+      <main className="xd-main xd-am-main">
         <div className="xd-pagelead">
           <h1>Assign Members</h1>
           <p>Pick an observability and select members on the left — assignments appear on the right.</p>
@@ -114,7 +114,7 @@ export default function AssignMembersPage() {
             <div className="xd-am-2col">
               {/* ── Left: select members (form) ── */}
               <div className="xd-card xd-am-panel">
-                <h3 className="xd-col-title">Select members</h3>
+                <div className="xd-am-head"><FiUserPlus /><h3>Select members</h3></div>
 
                 <label className="xd-conn-label">Observability</label>
                 <div className="xd-am-ops">
@@ -166,7 +166,7 @@ export default function AssignMembersPage() {
 
               {/* ── Right: selected / assigned ── */}
               <div className="xd-card xd-am-panel">
-                <h3 className="xd-col-title">Assigned members</h3>
+                <div className="xd-am-head"><FiUsers /><h3>Assigned members</h3></div>
                 <div className="xd-am-summary">
                   {obs.map((o) => {
                     const picked = assignments[o.code] || [];
