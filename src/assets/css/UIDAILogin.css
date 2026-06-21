@@ -8,9 +8,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --xl-accent: #3d71d9;
-  --xl-accent-2: #5794f2;
-  --xl-accent-3: #6e9fff;
+  --xl-accent: #7c5cff;
+  --xl-accent-2: #9a86ff;
+  --xl-accent-3: #b4a6ff;
   --xl-bg: #0b0c0e;          /* page / right panel */
   --xl-card: #15181c;        /* card surface */
   --xl-raised: #1d2127;      /* inputs */
@@ -45,8 +45,8 @@
   overflow: hidden;
   padding: 48px 56px;
   background:
-    radial-gradient(900px 540px at 18% 12%, rgba(61, 113, 217, .28), transparent 60%),
-    radial-gradient(720px 600px at 88% 92%, rgba(110, 159, 255, .16), transparent 55%),
+    radial-gradient(900px 540px at 18% 12%, rgba(124, 92, 255, .28), transparent 60%),
+    radial-gradient(720px 600px at 88% 92%, rgba(180, 166, 255, .16), transparent 55%),
     linear-gradient(160deg, #0e1730 0%, #0a0e1a 55%, #07090f 100%);
   display: flex;
 }
@@ -64,7 +64,7 @@
 .xlogin-hero-glow {
   position: absolute; top: -120px; right: -120px;
   width: 460px; height: 460px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(61, 113, 217, .45), transparent 65%);
+  background: radial-gradient(circle, rgba(124, 92, 255, .45), transparent 65%);
   filter: blur(30px);
   pointer-events: none;
 }
@@ -83,8 +83,8 @@
   font-size: 12.5px; font-weight: 700; letter-spacing: 1.4px;
   text-transform: uppercase;
   color: var(--xl-accent-3);
-  background: rgba(61, 113, 217, .14);
-  border: 1px solid rgba(61, 113, 217, .3);
+  background: rgba(124, 92, 255, .14);
+  border: 1px solid rgba(124, 92, 255, .3);
   padding: 6px 12px; border-radius: 999px;
   margin-bottom: 22px;
 }
@@ -108,8 +108,8 @@
   width: 42px; height: 42px; flex: 0 0 auto;
   display: grid; place-items: center; font-size: 19px;
   border-radius: 11px; color: #fff;
-  background: linear-gradient(135deg, var(--xl-accent), #2b5cc4);
-  box-shadow: 0 6px 18px rgba(61, 113, 217, .35);
+  background: linear-gradient(135deg, var(--xl-accent), #5b3fd6);
+  box-shadow: 0 6px 18px rgba(124, 92, 255, .35);
 }
 .xlogin-feature div { display: flex; flex-direction: column; gap: 2px; }
 .xlogin-feature strong { font-size: 15px; font-weight: 700; color: #f3f4f6; }
@@ -134,7 +134,7 @@
   display: flex; align-items: center; justify-content: center;
   padding: 40px 32px;
   background:
-    radial-gradient(700px 500px at 80% 0%, rgba(61, 113, 217, .08), transparent 60%),
+    radial-gradient(700px 500px at 80% 0%, rgba(124, 92, 255, .08), transparent 60%),
     var(--xl-bg);
 }
 .xlogin-card {
@@ -176,7 +176,7 @@
 .xlogin-input:focus {
   outline: none; border-color: var(--xl-accent-2);
   background: #1a1f27;
-  box-shadow: 0 0 0 3px rgba(61, 113, 217, .22);
+  box-shadow: 0 0 0 3px rgba(124, 92, 255, .22);
 }
 .xlogin-input-wrap .xlogin-input { padding-right: 44px; }
 .xlogin-input-error { border-color: var(--xl-red); background: rgba(242, 73, 92, .08); }
@@ -212,16 +212,16 @@
   width: 100%; margin-top: 6px;
   display: inline-flex; align-items: center; justify-content: center; gap: 9px;
   padding: 13px; border: none; border-radius: 10px;
-  background: linear-gradient(90deg, var(--xl-accent) 0%, #2b5cc4 100%);
+  background: linear-gradient(90deg, var(--xl-accent) 0%, #5b3fd6 100%);
   color: #fff; font: inherit; font-weight: 700; font-size: 14.5px;
   letter-spacing: .2px; cursor: pointer;
-  box-shadow: 0 6px 18px rgba(61, 113, 217, .32);
+  box-shadow: 0 6px 18px rgba(124, 92, 255, .32);
   transition: transform .15s, box-shadow .15s, opacity .15s;
 }
 .xlogin-btn svg { font-size: 17px; }
 .xlogin-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 10px 26px rgba(61, 113, 217, .42);
+  box-shadow: 0 10px 26px rgba(124, 92, 255, .42);
 }
 .xlogin-btn:active:not(:disabled) { transform: translateY(0); }
 .xlogin-btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }

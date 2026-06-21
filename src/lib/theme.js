@@ -11,8 +11,8 @@
 import { useEffect, useState } from 'react';
 
 export const THEMES = [
-  { id: 'grafana-dark', name: 'Dark',  swatch: '#3d71d9', bg: '#0e1014' },
-  { id: 'light',        name: 'Light', swatch: '#2563eb', bg: '#f1f5f9' },
+  { id: 'grafana-dark', name: 'Dark',  swatch: '#7c5cff', bg: '#0e1014' },
+  { id: 'light',        name: 'Light', swatch: '#6d4ee0', bg: '#f3f5f9' },
 ];
 
 const KEY = 'xops_theme';

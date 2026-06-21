@@ -6,16 +6,16 @@
 
 .xd-shell {
   /* Grafana-style dark theme */
-  --xd-emerald: #4d80e6;   /* primary accent (buttons, links, active) */
-  --xd-teal: #3a66c9;      /* gradient end */
-  --xd-mint: #8fb4ff;
+  --xd-emerald: #7c5cff;   /* primary accent (buttons, links, active) */
+  --xd-teal: #5b3fd6;      /* gradient end */
+  --xd-mint: #a99bff;
   --xd-ink: #c4c8d0;       /* primary text — soft off-white, easy on eyes */
   --xd-soft: #9398a3;      /* secondary text */
   --xd-line: #2a2f36;      /* borders */
   --xd-bg: #0e1014;        /* app background — lifted off pure black */
   --xd-card: #181b20;      /* panel background */
   --xd-card-2: #22262d;    /* raised / input background */
-  --xd-accent-rgb: 61, 113, 217;      /* accent as r,g,b for translucent chips */
+  --xd-accent-rgb: 124, 92, 255;      /* accent as r,g,b for translucent chips */
   --xd-input-bg: #0b0c0e;             /* form inputs */
   --xd-raised: #15181c;               /* assign rows / raised wells */
   --xd-topbar-bg: rgba(17, 18, 23, .82);
@@ -593,7 +593,7 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 
 /* KPI tone icon chips → translucent accent on dark */
 .xd-tone-brand .xd-kpi-icon { background: rgba(var(--xd-accent-rgb), .18); color: var(--xd-mint); }
-.xd-tone-teal  .xd-kpi-icon { background: rgba(87, 148, 242, .18); color: #5794f2; }
+.xd-tone-teal  .xd-kpi-icon { background: rgba(45, 212, 191, .18); color: #2dd4bf; }
 .xd-tone-green .xd-kpi-icon { background: rgba(115, 191, 105, .18); color: #73bf69; }
 .xd-tone-slate .xd-kpi-icon { background: rgba(184, 119, 217, .18); color: #b877d9; }
 
@@ -601,7 +601,7 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 .xd-status-planning { background: rgba(142, 144, 151, .18); color: #b6b9c2; }
 .xd-status-active   { background: rgba(115, 191, 105, .18); color: #73bf69; }
 .xd-status-onhold   { background: rgba(250, 222, 42, .16); color: #fade2a; }
-.xd-status-completed{ background: rgba(87, 148, 242, .18); color: #5794f2; }
+.xd-status-completed{ background: rgba(124, 92, 255, .18); color: #9a86ff; }
 .xd-prio-low      { background: rgba(142, 144, 151, .18); color: #b6b9c2; }
 .xd-prio-medium   { background: rgba(var(--xd-accent-rgb), .18); color: var(--xd-mint); }
 .xd-prio-high     { background: rgba(255, 152, 48, .18); color: #ff9830; }
@@ -636,10 +636,10 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 /* Light — clean daylight theme; ink is a soft slate, not pure black */
 .xd-shell[data-theme="light"] {
   color-scheme: light;
-  --xd-emerald: #2563eb; --xd-teal: #1d4ed8; --xd-mint: #2563eb;
+  --xd-emerald: #6d4ee0; --xd-teal: #5b3fd6; --xd-mint: #6d4ee0;
   --xd-ink: #33415a; --xd-soft: #64748b; --xd-line: #e2e8f0;
   --xd-bg: #f3f5f9; --xd-card: #ffffff; --xd-card-2: #f6f8fb;
-  --xd-accent-rgb: 37, 99, 235; --xd-input-bg: #ffffff; --xd-raised: #f6f8fb;
+  --xd-accent-rgb: 109, 78, 224; --xd-input-bg: #ffffff; --xd-raised: #f6f8fb;
   --xd-topbar-bg: rgba(255, 255, 255, .85);
 }
 

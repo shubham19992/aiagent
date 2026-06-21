@@ -183,7 +183,7 @@ export default function ProjectDashboardPage() {
               </div>
               <div className="xd-card">
                 <h3>Data Transfer Trend (12 mo)</h3>
-                <Sparkline values={network.trend} labels={months} unit="" color="#5794f2" />
+                <Sparkline values={network.trend} labels={months} unit="" color="#7c5cff" />
                 <Donut data={network.byEnv} unit=" GB" centerCap="GB total" />
               </div>
             </div>
