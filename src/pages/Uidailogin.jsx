@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import {
+  FiActivity, FiShield, FiZap, FiCloud, FiEye, FiEyeOff,
+  FiArrowLeft, FiCheckCircle, FiArrowRight,
+} from 'react-icons/fi';
 import '../assets/css/UIDAILogin.css';
 import XopsLogo from '../components/XopsLogo';
 import * as auth from '../api/auth';
@@ -10,6 +14,13 @@ const RESEND_COOLDOWN_SECONDS = 60;
 // placeholder token (after the fields are filled). Set to false to require
 // a successful backend login.
 const DEMO_BYPASS = false;
+
+// Marketing highlights shown on the brand panel — purely presentational.
+const FEATURES = [
+  { icon: FiActivity, title: 'Real-time observability', desc: 'Live metrics across AIOps, InfraOps & SecOps' },
+  { icon: FiZap, title: 'Automation, on autopilot', desc: 'Orchestrate operations without the toil' },
+  { icon: FiCloud, title: 'Every cloud, one pane', desc: 'Azure, AWS & GCP in a single dashboard' },
+];
 
 const UIDAILogin = () => {
   const navigate = useNavigate();
@@ -33,7 +44,6 @@ const UIDAILogin = () => {
   const [otpError, setOtpError] = useState('');
   const [resendIn, setResendIn] = useState(0);
 
-  const eyeButtonRef = useRef(null);
   const otpInputRef = useRef(null);
 
   const validateUsername = (v) => (v.trim() ? '' : 'Username is required');
@@ -157,134 +167,67 @@ const UIDAILogin = () => {
     setResendIn(0);
   };
 
-  /* Accessibility: text-size resizer */
-  const STEPS = [80, 90, 100, 110, 125];
-  const DEFAULT_IDX = 2;
-  const [zoomIdx, setZoomIdx] = useState(DEFAULT_IDX);
-
-  useEffect(() => {
-    const pct = STEPS[zoomIdx];
-    const root = document.body;
-    const supportsZoom = (() => {
-      const probe = document.createElement('div');
-      probe.style.zoom = '2';
-      return probe.style.zoom === '2';
-    })();
-    if (supportsZoom) {
-      root.style.zoom = (pct / 100).toString();
-      root.style.transform = '';
-      root.style.width = '';
-    } else {
-      root.style.transformOrigin = 'top left';
-      root.style.transform = `scale(${pct / 100})`;
-      root.style.width = `${(100 * 100) / pct}%`;
-    }
-    return () => {
-      root.style.zoom = '';
-      root.style.transform = '';
-      root.style.width = '';
-      root.style.transformOrigin = '';
-    };
-  }, [zoomIdx]);
-
   const channelMobile = channels?.sms || channels?.mobile || channels?.phone;
   const channelEmail = channels?.email;
 
-  // Floating header: collapse the a11y (text-size) strip once the user
-  // scrolls past a small threshold so only the brand bar stays pinned
-  // at the top. Mirrors the PMIS Project Management reference behavior.
-  // Hysteresis: hide above 28px, reveal back below 4px — avoids jitter
-  // when scroll position oscillates near the boundary.
-  const [a11yCollapsed, setA11yCollapsed] = useState(false);
-  useEffect(() => {
-    const HIDE_AT = 28;
-    const SHOW_AT = 4;
-    const overlay = document.querySelector('.uidai-overlay');
-    let ticking = false;
-    let hidden = false;
-    const update = () => {
-      const top = Math.max(overlay?.scrollTop || 0, window.scrollY || 0);
-      if (!hidden && top > HIDE_AT) {
-        hidden = true;
-        setA11yCollapsed(true);
-      } else if (hidden && top < SHOW_AT) {
-        hidden = false;
-        setA11yCollapsed(false);
-      }
-      ticking = false;
-    };
-    const onScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(update);
-        ticking = true;
-      }
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    if (overlay) overlay.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      if (overlay) overlay.removeEventListener('scroll', onScroll);
-    };
-  }, []);
-
   return (
-    <div className="uidai-login-page">
-      <header className="site-header" role="banner">
-        <div className={`header-accessibility-strip${a11yCollapsed ? ' collapsed' : ''}`}>
-          <span className="a11y-label" aria-hidden="true">Text Size:</span>
-          <div className="font-resizer" role="group" aria-label="Adjust text size">
-            <button
-              type="button"
-              className="fr-plus"
-              aria-label="Increase text size"
-              title="Increase text size"
-              aria-pressed={zoomIdx === STEPS.length - 1}
-              onClick={() => setZoomIdx((i) => Math.min(STEPS.length - 1, i + 1))}
-            >+A</button>
-            <button
-              type="button"
-              className="fr-reset"
-              aria-label="Reset text size to default"
-              title="Reset text size"
-              aria-pressed={zoomIdx === DEFAULT_IDX}
-              onClick={() => setZoomIdx(DEFAULT_IDX)}
-            >A</button>
-            <button
-              type="button"
-              className="fr-minus"
-              aria-label="Decrease text size"
-              title="Decrease text size"
-              aria-pressed={zoomIdx === 0}
-              onClick={() => setZoomIdx((i) => Math.max(0, i - 1))}
-            >-A</button>
+    <div className="xlogin">
+      {/* ── Left: brand / product hero ── */}
+      <aside className="xlogin-hero">
+        <div className="xlogin-hero-grid" aria-hidden="true" />
+        <div className="xlogin-hero-glow" aria-hidden="true" />
+
+        <div className="xlogin-hero-inner">
+          <div className="xlogin-brand">
+            <XopsLogo height={40} />
+          </div>
+
+          <div className="xlogin-hero-body">
+            <span className="xlogin-eyebrow">Automation Governance Platform</span>
+            <h1 className="xlogin-hero-title">
+              Run every operation<br />from a single pane.
+            </h1>
+            <p className="xlogin-hero-sub">
+              Monitor your clouds, automate operations and govern your
+              infrastructure — securely, in real time.
+            </p>
+
+            <ul className="xlogin-features">
+              {FEATURES.map(({ icon: Icon, title, desc }) => (
+                <li key={title} className="xlogin-feature">
+                  <span className="xlogin-feat-icon"><Icon /></span>
+                  <div>
+                    <strong>{title}</strong>
+                    <span>{desc}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="xlogin-hero-foot">
+            <span className="xlogin-trust">
+              <FiShield /> Enterprise-grade security · SSO + OTP
+            </span>
+            <span className="xlogin-copy">© 2026 xOps · Internal Use Only</span>
           </div>
         </div>
-        <div className="header-main">
-          <div className="header-brand">
-            <XopsLogo height={44} />
+      </aside>
+
+      {/* ── Right: sign-in card ── */}
+      <main className="xlogin-panel" id="mainContent">
+        <div className="xlogin-card">
+          <div className="xlogin-card-brand">
+            <XopsLogo variant="mark" height={46} />
           </div>
-          <h1 className="header-title">xOps Automation Governance Tool</h1>
-          <div className="header-authority">
-            Automation Governance<br />Platform
-          </div>
-        </div>
-      </header>
 
-      <main className="uidai-main" id="mainContent">
-        <div className="uidai-overlay">
-          <div className="uidai-card-loginfix">
-            <div className="uidai-card-head">
-              <XopsLogo variant="mark" height={52} style={{ marginBottom: 10 }} />
-              <h1>xOps Secure Login</h1>
-              <div className="uidai-sub">Authorized access only</div>
-            </div>
+          {step === 'creds' && (
+            <>
+              <div className="xlogin-card-head">
+                <h2>Welcome back</h2>
+                <p>Sign in to your xOps workspace to continue.</p>
+              </div>
 
-            <div className="uidai-tabs">
-              <div className="uidai-tab uidai-tab-active">User Login</div>
-              <div className="uidai-tab">Admin Login</div>
-            </div>
-
-            {step === 'creds' && (
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -293,82 +236,81 @@ const UIDAILogin = () => {
                 }}
                 noValidate
               >
-                <div className="uidai-field">
-                  <label className="uidai-label uidai-required">Username</label>
+                <div className="xlogin-field">
+                  <label className="xlogin-label" htmlFor="username">Username</label>
                   <input
                     type="text"
                     id="username"
-                    className={`uidai-input ${usernameTouched && usernameError ? 'uidai-input-error' : ''}`}
-                    placeholder="Enter Username"
+                    className={`xlogin-input ${usernameTouched && usernameError ? 'xlogin-input-error' : ''}`}
+                    placeholder="you@organisation.gov"
+                    autoComplete="username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     onBlur={() => setUsernameTouched(true)}
                   />
                   {usernameTouched && usernameError && (
-                    <div className="uidai-error-msg">{usernameError}</div>
+                    <div className="xlogin-error-msg">{usernameError}</div>
                   )}
                 </div>
 
-                <div className="uidai-field">
-                  <label className="uidai-label uidai-required">Password</label>
-                  <div className="uidai-password-wrapper">
+                <div className="xlogin-field">
+                  <div className="xlogin-label-row">
+                    <label className="xlogin-label" htmlFor="password">Password</label>
+                    <Link to="/forgot-password" className="xlogin-forgot">Forgot password?</Link>
+                  </div>
+                  <div className="xlogin-input-wrap">
                     <input
                       type={showPassword ? 'text' : 'password'}
                       id="password"
-                      className={`uidai-input ${passwordTouched && passwordError ? 'uidai-input-error' : ''}`}
-                      placeholder="Enter Password"
+                      className={`xlogin-input ${passwordTouched && passwordError ? 'xlogin-input-error' : ''}`}
+                      placeholder="Enter your password"
+                      autoComplete="current-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       onBlur={() => setPasswordTouched(true)}
                     />
-                    <button
-                      type="button"
-                      className="uidai-eye-btn"
-                      ref={eyeButtonRef}
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      aria-pressed={showPassword ? 'true' : 'false'}
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={togglePasswordVisibility}
-                      style={{ display: password ? 'flex' : 'none' }}
-                    >
-                      {showPassword ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-                          <path
-                            fill="currentColor"
-                            d="M2 5l17 17-1.5 1.5-3.2-3.2C13.5 20.8 12.8 21 12 21c-7 0-10-7-10-7a17.6 17.6 0 0 1 5.2-6.1L.5 6.5 2 5zm10 2c5.5 0 8.7 4.5 9.7 6-.4.6-1.3 1.9-2.7 3.2l-1.5-1.5A5 5 0 0 0 12 7zm0 3a2 2 0 0 1 2 2c0 .3-.1.6-.2.9l-2.7-2.7c.3-.1.6-.2.9-.2z"
-                          />
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-                          <path
-                            fill="currentColor"
-                            d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"
-                          />
-                        </svg>
-                      )}
-                    </button>
+                    {password && (
+                      <button
+                        type="button"
+                        className="xlogin-eye-btn"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        aria-pressed={showPassword}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={togglePasswordVisibility}
+                      >
+                        {showPassword ? <FiEyeOff /> : <FiEye />}
+                      </button>
+                    )}
                   </div>
                   {passwordTouched && passwordError && (
-                    <div className="uidai-error-msg">{passwordError}</div>
+                    <div className="xlogin-error-msg">{passwordError}</div>
                   )}
                 </div>
 
                 {submitError && (
-                  <div className="uidai-error-msg" style={{ marginBottom: 8 }}>{submitError}</div>
+                  <div className="xlogin-alert" role="alert">{submitError}</div>
                 )}
 
                 <button
                   type="submit"
-                  className="uidai-btn-primary"
+                  className="xlogin-btn"
                   id="sendOtpBtn"
                   disabled={isStep1Disabled || submitting}
                 >
-                  {submitting ? 'Please wait…' : DEMO_BYPASS ? 'Login' : 'Send OTP'}
+                  {submitting ? 'Please wait…' : DEMO_BYPASS ? 'Sign in' : 'Continue'}
+                  {!submitting && <FiArrowRight />}
                 </button>
               </form>
-            )}
+            </>
+          )}
 
-            {step === 'otp' && (
+          {step === 'otp' && (
+            <>
+              <div className="xlogin-card-head">
+                <h2>Verify it's you</h2>
+                <p>Enter the 6-digit code we just sent you.</p>
+              </div>
+
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -377,23 +319,22 @@ const UIDAILogin = () => {
                 }}
                 noValidate
               >
-                <div className="uidai-otp-sent-box">
-                  <strong>✓ OTP sent successfully</strong>
-                  {channelMobile && (
-                    <>Mobile: <span>{channelMobile}</span><br /></>
-                  )}
-                  {channelEmail && (
-                    <>Email: <span>{channelEmail}</span></>
-                  )}
+                <div className="xlogin-otp-sent">
+                  <FiCheckCircle />
+                  <div>
+                    <strong>One-time code sent</strong>
+                    {channelMobile && <span>Mobile · {channelMobile}</span>}
+                    {channelEmail && <span>Email · {channelEmail}</span>}
+                  </div>
                 </div>
 
-                <div className="uidai-field">
-                  <label className="uidai-label uidai-required">Enter 6-digit OTP</label>
+                <div className="xlogin-field">
+                  <label className="xlogin-label" htmlFor="otp">6-digit code</label>
                   <input
                     ref={otpInputRef}
                     type="password"
                     id="otp"
-                    className={`uidai-input ${otpError ? 'uidai-input-error' : ''}`}
+                    className={`xlogin-input xlogin-otp ${otpError ? 'xlogin-input-error' : ''}`}
                     maxLength={6}
                     inputMode="numeric"
                     autoComplete="one-time-code"
@@ -401,47 +342,42 @@ const UIDAILogin = () => {
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   />
-                  {otpError && <div className="uidai-error-msg">{otpError}</div>}
+                  {otpError && <div className="xlogin-error-msg">{otpError}</div>}
                 </div>
 
                 <button
                   type="submit"
-                  className="uidai-btn-primary"
+                  className="xlogin-btn"
                   id="loginBtn"
                   disabled={isOtpDisabled || submitting}
                 >
-                  {submitting ? 'Signing In…' : 'Sign In'}
+                  {submitting ? 'Signing in…' : 'Sign in'}
                 </button>
 
-                <div className="uidai-otp-actions">
+                <div className="xlogin-otp-actions">
                   <button
                     type="button"
-                    className="uidai-link-btn"
+                    className="xlogin-link-btn"
                     onClick={handleBackToCreds}
                     disabled={submitting}
                   >
-                    ← Back
+                    <FiArrowLeft /> Back
                   </button>
                   <button
                     type="button"
-                    className="uidai-link-btn"
+                    className="xlogin-link-btn"
                     onClick={handleResendOtp}
                     disabled={resendIn > 0 || submitting}
                   >
-                    {resendIn > 0 ? `Resend OTP in ${resendIn}s` : 'Resend OTP'}
+                    {resendIn > 0 ? `Resend in ${resendIn}s` : 'Resend code'}
                   </button>
                 </div>
               </form>
-            )}
+            </>
+          )}
 
-            <div className="uidai-links">
-              <Link to="/forgot-password">Forgot Password?</Link>
-              <a href="#help">Help</a>
-            </div>
-
-            <div className="uidai-footer">
-              © 2026 xOps · Automation Tool · Internal Use Only
-            </div>
+          <div className="xlogin-card-foot">
+            <span>Need access? <a href="#help">Contact your administrator</a></span>
           </div>
         </div>
       </main>
