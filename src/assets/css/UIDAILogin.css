@@ -108,7 +108,7 @@
   width: 42px; height: 42px; flex: 0 0 auto;
   display: grid; place-items: center; font-size: 19px;
   border-radius: 11px; color: #fff;
-  background: linear-gradient(135deg, var(--xl-accent), #fba919);
+  background: linear-gradient(135deg, var(--xl-accent), #ef7716);
   box-shadow: 0 6px 18px rgba(245, 112, 28, .35);
 }
 .xlogin-feature div { display: flex; flex-direction: column; gap: 2px; }
@@ -212,7 +212,7 @@
   width: 100%; margin-top: 6px;
   display: inline-flex; align-items: center; justify-content: center; gap: 9px;
   padding: 13px; border: none; border-radius: 10px;
-  background: linear-gradient(90deg, var(--xl-accent) 0%, #fba919 100%);
+  background: linear-gradient(90deg, var(--xl-accent) 0%, #ef7716 100%);
   color: #fff; font: inherit; font-weight: 700; font-size: 14.5px;
   letter-spacing: .2px; cursor: pointer;
   box-shadow: 0 6px 18px rgba(245, 112, 28, .32);

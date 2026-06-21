@@ -7,7 +7,7 @@
 .xd-shell {
   /* Grafana-style dark theme */
   --xd-emerald: #f5701c;   /* accent → Grafana orange (links, active, icons) */
-  --xd-teal: #fba919;      /* gradient end → amber */
+  --xd-teal: #ef7716;      /* gradient end → orange (kept dark enough for white glyphs) */
   --xd-mint: #ffb454;      /* chip text (light orange) */
   --xd-ink: #cdd1d9;       /* primary text — crisp soft-white */
   --xd-soft: #8b909c;      /* secondary text */
@@ -637,7 +637,7 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
    white cards, crisp near-black text */
 .xd-shell[data-theme="light"] {
   color-scheme: light;
-  --xd-emerald: #e2620e; --xd-teal: #f59e0b; --xd-mint: #e2620e;
+  --xd-emerald: #e2620e; --xd-teal: #e8730c; --xd-mint: #e2620e;
   --xd-ink: #1a1d27; --xd-soft: #5b6472; --xd-line: #e5e7eb;
   --xd-bg: #f3f4f6; --xd-card: #ffffff; --xd-card-2: #f7f8fa;
   --xd-accent-rgb: 226, 98, 14; --xd-input-bg: #ffffff; --xd-raised: #f7f8fa;
