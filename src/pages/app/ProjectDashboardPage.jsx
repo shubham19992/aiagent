@@ -183,7 +183,7 @@ export default function ProjectDashboardPage() {
               </div>
               <div className="xd-card">
                 <h3>Data Transfer Trend (12 mo)</h3>
-                <Sparkline values={network.trend} labels={months} unit="" color="#7c5cff" />
+                <Sparkline values={network.trend} labels={months} unit="" color="#94a3b8" />
                 <Donut data={network.byEnv} unit=" GB" centerCap="GB total" />
               </div>
             </div>
@@ -263,7 +263,7 @@ export default function ProjectDashboardPage() {
               </div>
               <div className="xd-card">
                 <h3>Posture Score Trend (12 mo)</h3>
-                <Sparkline values={security.trend} labels={months} color="#b877d9" />
+                <Sparkline values={security.trend} labels={months} color="#94a3b8" />
                 <Meter label="Compliance" value={security.compliancePct} max={100}
                   display={`${security.compliancePct}%`} tone={security.compliancePct < 80 ? 'warn' : undefined} />
               </div>

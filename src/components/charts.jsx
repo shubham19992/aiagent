@@ -5,8 +5,8 @@
 // ============================================================
 import React from 'react';
 
-// Grafana classic palette
-export const CHART_COLORS = ['#73bf69', '#5794f2', '#fade2a', '#ff9830', '#f2495c', '#b877d9', '#705da0', '#37872d'];
+// Grafana classic palette (purples swapped for neutral teal/slate)
+export const CHART_COLORS = ['#73bf69', '#5794f2', '#fade2a', '#ff9830', '#f2495c', '#2dd4bf', '#94a3b8', '#37872d'];
 
 /** A single headline metric tile. */
 export function Kpi({ icon, label, value, sub, tone = 'brand', delta }) {

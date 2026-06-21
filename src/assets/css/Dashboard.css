@@ -6,19 +6,19 @@
 
 .xd-shell {
   /* Grafana-style dark theme */
-  --xd-emerald: #7c5cff;   /* primary accent (buttons, links, active) */
-  --xd-teal: #5b3fd6;      /* gradient end */
-  --xd-mint: #a99bff;
-  --xd-ink: #c4c8d0;       /* primary text — soft off-white, easy on eyes */
-  --xd-soft: #9398a3;      /* secondary text */
-  --xd-line: #2a2f36;      /* borders */
-  --xd-bg: #0e1014;        /* app background — lifted off pure black */
-  --xd-card: #181b20;      /* panel background */
-  --xd-card-2: #22262d;    /* raised / input background */
-  --xd-accent-rgb: 124, 92, 255;      /* accent as r,g,b for translucent chips */
-  --xd-input-bg: #0b0c0e;             /* form inputs */
-  --xd-raised: #15181c;               /* assign rows / raised wells */
-  --xd-topbar-bg: rgba(17, 18, 23, .82);
+  --xd-emerald: #e6e8ec;   /* accent → neutral near-white (links, active, icons) */
+  --xd-teal: #c4c8d0;      /* gradient end (neutral) */
+  --xd-mint: #e6e8ec;      /* chip text (neutral light) */
+  --xd-ink: #cdd1d9;       /* primary text — crisp soft-white */
+  --xd-soft: #8b909c;      /* secondary text */
+  --xd-line: #25272f;      /* borders */
+  --xd-bg: #0a0b10;        /* app background — deep, cool near-black */
+  --xd-card: #15161d;      /* panel background */
+  --xd-card-2: #1e2029;    /* raised / input background */
+  --xd-accent-rgb: 205, 210, 220;     /* neutral grey for translucent chips */
+  --xd-input-bg: #101117;             /* form inputs */
+  --xd-raised: #1a1c24;               /* assign rows / raised wells */
+  --xd-topbar-bg: rgba(12, 13, 18, .85);
   --xd-sidebar-w: 256px;
   font-family: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
   color: var(--xd-ink);
@@ -595,13 +595,13 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 .xd-tone-brand .xd-kpi-icon { background: rgba(var(--xd-accent-rgb), .18); color: var(--xd-mint); }
 .xd-tone-teal  .xd-kpi-icon { background: rgba(45, 212, 191, .18); color: #2dd4bf; }
 .xd-tone-green .xd-kpi-icon { background: rgba(115, 191, 105, .18); color: #73bf69; }
-.xd-tone-slate .xd-kpi-icon { background: rgba(184, 119, 217, .18); color: #b877d9; }
+.xd-tone-slate .xd-kpi-icon { background: rgba(148, 163, 184, .18); color: #94a3b8; }
 
 /* status / priority badges → translucent */
 .xd-status-planning { background: rgba(142, 144, 151, .18); color: #b6b9c2; }
 .xd-status-active   { background: rgba(115, 191, 105, .18); color: #73bf69; }
 .xd-status-onhold   { background: rgba(250, 222, 42, .16); color: #fade2a; }
-.xd-status-completed{ background: rgba(124, 92, 255, .18); color: #9a86ff; }
+.xd-status-completed{ background: rgba(148, 163, 184, .18); color: #94a3b8; }
 .xd-prio-low      { background: rgba(142, 144, 151, .18); color: #b6b9c2; }
 .xd-prio-medium   { background: rgba(var(--xd-accent-rgb), .18); color: var(--xd-mint); }
 .xd-prio-high     { background: rgba(255, 152, 48, .18); color: #ff9830; }
@@ -637,10 +637,10 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
    white cards, crisp near-black text */
 .xd-shell[data-theme="light"] {
   color-scheme: light;
-  --xd-emerald: #6d4ee0; --xd-teal: #5b3fd6; --xd-mint: #6d4ee0;
+  --xd-emerald: #334155; --xd-teal: #1f2937; --xd-mint: #334155;
   --xd-ink: #1a1d27; --xd-soft: #5b6472; --xd-line: #e5e7eb;
   --xd-bg: #f3f4f6; --xd-card: #ffffff; --xd-card-2: #f7f8fa;
-  --xd-accent-rgb: 109, 78, 224; --xd-input-bg: #ffffff; --xd-raised: #f7f8fa;
+  --xd-accent-rgb: 51, 65, 85; --xd-input-bg: #ffffff; --xd-raised: #f7f8fa;
   --xd-topbar-bg: rgba(255, 255, 255, .9);
 }
 
@@ -662,6 +662,35 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 }
 .xd-shell[data-theme="light"] .xd-sidebar { background: var(--xd-card); }
 .xd-shell[data-theme="light"] .xd-side-foot { background: #f7f8fa; }
+
+/* ── dark theme: neutral grey buttons/badges (accent is near-white, so
+   gradient fills must use a real grey to keep white glyphs legible) ── */
+.xd-shell:not([data-theme="light"]) .xd-btn {
+  background: linear-gradient(90deg, #34373f, #2a2d35);
+  color: #eef0f3; border: 1px solid #3d414b; box-shadow: none;
+}
+.xd-shell:not([data-theme="light"]) .xd-btn:hover:not(:disabled) {
+  background: linear-gradient(90deg, #3d414b, #30333c);
+  box-shadow: none; transform: translateY(-1px);
+}
+.xd-shell:not([data-theme="light"]) .xd-role-btn.active {
+  background: #30333c; color: #eef0f3; box-shadow: none;
+}
+.xd-shell:not([data-theme="light"]) .xd-avatar,
+.xd-shell:not([data-theme="light"]) .xd-section-icon,
+.xd-shell:not([data-theme="light"]) .xd-op-card-badge,
+.xd-shell:not([data-theme="light"]) .xd-sel-badge,
+.xd-shell:not([data-theme="light"]) .xd-assign-ava,
+.xd-shell:not([data-theme="light"]) .xd-pcard-ava,
+.xd-shell:not([data-theme="light"]) .xd-member-ava,
+.xd-shell:not([data-theme="light"]) .xd-connect-cta-icon,
+.xd-shell:not([data-theme="light"]) .xd-nav-item.active .xd-op-badge {
+  background: linear-gradient(135deg, #3b3f4a, #2a2d35);
+}
+.xd-shell:not([data-theme="light"]) .xd-connect-cta-icon { box-shadow: none; }
+.xd-shell:not([data-theme="light"]) .xd-meter-fill {
+  background: linear-gradient(90deg, #6a6f7a, #45484f);
+}
 
 /* ── theme switcher (top header) ─────────────────────────── */
 .xd-theme {
