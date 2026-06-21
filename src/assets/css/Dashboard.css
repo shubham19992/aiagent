@@ -633,15 +633,35 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
    for comfortable, low-glare reading in both.
    ============================================================ */
 
-/* Light — clean daylight theme; ink is a soft slate, not pure black */
+/* Light — clean daylight theme (Grafana-Cloud style): light-grey canvas,
+   white cards, crisp near-black text */
 .xd-shell[data-theme="light"] {
   color-scheme: light;
   --xd-emerald: #6d4ee0; --xd-teal: #5b3fd6; --xd-mint: #6d4ee0;
-  --xd-ink: #33415a; --xd-soft: #64748b; --xd-line: #e2e8f0;
-  --xd-bg: #f3f5f9; --xd-card: #ffffff; --xd-card-2: #f6f8fb;
-  --xd-accent-rgb: 109, 78, 224; --xd-input-bg: #ffffff; --xd-raised: #f6f8fb;
-  --xd-topbar-bg: rgba(255, 255, 255, .85);
+  --xd-ink: #1a1d27; --xd-soft: #5b6472; --xd-line: #e5e7eb;
+  --xd-bg: #f3f4f6; --xd-card: #ffffff; --xd-card-2: #f7f8fa;
+  --xd-accent-rgb: 109, 78, 224; --xd-input-bg: #ffffff; --xd-raised: #f7f8fa;
+  --xd-topbar-bg: rgba(255, 255, 255, .9);
 }
+
+/* light-theme polish: visible grey hovers + soft card shadows for depth */
+.xd-shell[data-theme="light"] .xd-nav-group-head:hover,
+.xd-shell[data-theme="light"] .xd-nav-item:hover,
+.xd-shell[data-theme="light"] .xd-btn-ghost:hover,
+.xd-shell[data-theme="light"] .xd-tab:hover { background: #eef0f3; }
+.xd-shell[data-theme="light"] .xd-kpi,
+.xd-shell[data-theme="light"] .xd-card,
+.xd-shell[data-theme="light"] .xd-op-card,
+.xd-shell[data-theme="light"] .xd-env-card,
+.xd-shell[data-theme="light"] .xd-measure-card,
+.xd-shell[data-theme="light"] .xd-proj-card,
+.xd-shell[data-theme="light"] .xd-pcard,
+.xd-shell[data-theme="light"] .xd-assign-card,
+.xd-shell[data-theme="light"] .xd-assign-stat {
+  box-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 1px 3px rgba(16, 24, 40, .07);
+}
+.xd-shell[data-theme="light"] .xd-sidebar { background: var(--xd-card); }
+.xd-shell[data-theme="light"] .xd-side-foot { background: #f7f8fa; }
 
 /* ── theme switcher (top header) ─────────────────────────── */
 .xd-theme {
