@@ -818,7 +818,22 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 /* back link sits at the far left of the connect form actions */
 .xd-conn-back { margin-right: auto; display: inline-flex; align-items: center; gap: 6px; }
 
-/* ── selected observability cards (create-project right column) ── */
+/* ── selected observability cards (create-project) ── */
+/* two-column top section (details | observe) for this page */
+.xd-create-cols-2 { grid-template-columns: 1fr 1fr; }
+
+/* full-width selected section below the columns, cards 3 per row */
+.xd-sel-section {
+  margin-top: 22px; padding-top: 22px;
+  border-top: 1px solid var(--xd-line);
+}
+.xd-sel-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  margin-top: 12px;
+}
+@media (max-width: 1100px) { .xd-sel-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 720px)  { .xd-sel-grid { grid-template-columns: 1fr; } }
+
 .xd-sel-list { display: flex; flex-direction: column; gap: 10px; }
 .xd-sel-card {
   position: relative; display: flex; align-items: flex-start; gap: 12px;
