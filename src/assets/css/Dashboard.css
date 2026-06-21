@@ -965,6 +965,35 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
   background: linear-gradient(135deg, var(--xd-emerald), var(--xd-teal));
 }
 
+.xd-am-roles {
+  background: var(--xd-card-2); border: 1px solid var(--xd-line);
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 14px;
+  display: flex; flex-direction: column; gap: 9px;
+}
+.xd-am-roles-head {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--xd-soft); margin-bottom: 1px;
+}
+.xd-am-rolerow { display: flex; align-items: center; gap: 9px; }
+.xd-am-rolename { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xd-am-roleselect {
+  flex: 0 0 auto; border: 1px solid var(--xd-line); background: var(--xd-card);
+  color: inherit; border-radius: 8px; padding: 5px 8px; font-size: 12.5px;
+  font-weight: 600; cursor: pointer;
+}
+.xd-am-roleselect:focus { outline: none; border-color: var(--xd-emerald); }
+.xd-am-roletag {
+  font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .03em;
+  padding: 1px 6px; border-radius: 999px; color: var(--xd-soft);
+  background: rgba(204, 204, 220, .12); border: 1px solid var(--xd-line);
+}
+.xd-am-roletag.admin {
+  color: var(--xd-mint); background: rgba(var(--xd-accent-rgb), .16);
+  border-color: rgba(var(--xd-accent-rgb), .4);
+}
+
 .xd-am-summary { display: flex; flex-direction: column; gap: 12px; }
 .xd-am-srow {
   background: var(--xd-card-2); border: 1px solid var(--xd-line);

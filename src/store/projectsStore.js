@@ -56,7 +56,7 @@ export function getProject(id) {
 
 export function addProject({
   name, key, description, priority, status, owner, environments,
-  tags, image, startDate, endDate, observabilities, assignments, createdBy,
+  tags, image, startDate, endDate, observabilities, assignments, roles, createdBy,
 }) {
   const list = read();
   const project = {
@@ -74,6 +74,7 @@ export function addProject({
     endDate,
     observabilities: observabilities || [],      // [{ code, name }]
     assignments: assignments || {},              // { opCode: [memberName, ...] }
+    roles: roles || {},                          // { memberName: 'member' | 'admin' }
     createdBy: createdBy || 'Unknown',
     createdAt: new Date().toISOString(),
   };

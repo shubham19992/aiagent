@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers, FiUserPlus } from 'react-icons/fi';
+import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers, FiUserPlus, FiShield } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listUsers } from '../../api/observability';
 import { getProject, updateProject } from '../../store/projectsStore';
@@ -11,6 +11,12 @@ const userName = (u) =>
 
 // Short two-letter badge from an op name (AIOps -> "AI").
 const opBadge = (name) => name.replace(/Ops$/i, '').slice(0, 2).toUpperCase();
+
+// Project-level roles a member can hold.
+const ROLE_OPTIONS = [
+  { value: 'member', label: 'Project Member' },
+  { value: 'admin', label: 'Project Admin' },
+];
 
 /**
  * Second step of project creation: assign members to each observability the
@@ -28,6 +34,7 @@ export default function AssignMembersPage() {
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
   const [assignments, setAssignments] = useState(project?.assignments || {});
+  const [roles, setRoles] = useState(project?.roles || {});
   const [activeOp, setActiveOp] = useState(project?.observabilities?.[0]?.code || '');
   const [memberOpen, setMemberOpen] = useState(false);
   const msRef = useRef(null);
@@ -67,11 +74,27 @@ export default function AssignMembersPage() {
 
   const toggleMember = (code, m) => setAssignments((a) => {
     const cur = a[code] || [];
-    return { ...a, [code]: cur.includes(m) ? cur.filter((x) => x !== m) : [...cur, m] };
+    const next = cur.includes(m) ? cur.filter((x) => x !== m) : [...cur, m];
+    // Give a newly added member a default project role.
+    if (!cur.includes(m)) setRoles((r) => (r[m] ? r : { ...r, [m]: 'member' }));
+    return { ...a, [code]: next };
   });
 
+  const setMemberRole = (m, role) => setRoles((r) => ({ ...r, [m]: role }));
+
+  // Unique members assigned across every observability, for the roles panel.
+  const assignedMembers = useMemo(() => {
+    const all = Object.values(assignments).flat();
+    return [...new Set(all)];
+  }, [assignments]);
+
   const save = () => {
-    updateProject(projectId, { assignments });
+    // Drop roles for members no longer assigned anywhere.
+    const cleanRoles = assignedMembers.reduce((acc, m) => {
+      acc[m] = roles[m] || 'member';
+      return acc;
+    }, {});
+    updateProject(projectId, { assignments, roles: cleanRoles });
     navigate('/dashboard/projects');
   };
 
@@ -168,6 +191,25 @@ export default function AssignMembersPage() {
               {/* ── Right: selected / assigned ── */}
               <div className="xd-am-panel">
                 <div className="xd-am-head"><FiUsers /><h3>Assigned members</h3></div>
+
+                {assignedMembers.length > 0 && (
+                  <div className="xd-am-roles">
+                    <div className="xd-am-roles-head"><FiShield /> Project roles</div>
+                    {assignedMembers.map((m) => (
+                      <div className="xd-am-rolerow" key={m}>
+                        <span className="xd-am-ava">{m.charAt(0).toUpperCase()}</span>
+                        <span className="xd-am-rolename">{m}</span>
+                        <select className="xd-am-roleselect" value={roles[m] || 'member'}
+                          onChange={(e) => setMemberRole(m, e.target.value)}>
+                          {ROLE_OPTIONS.map((r) => (
+                            <option key={r.value} value={r.value}>{r.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div className="xd-am-summary">
                   {obs.map((o) => {
                     const picked = assignments[o.code] || [];
@@ -184,6 +226,9 @@ export default function AssignMembersPage() {
                             {picked.map((m) => (
                               <span className="xd-member-pill" key={m}>
                                 <span className="xd-member-ava">{m.charAt(0).toUpperCase()}</span>{m}
+                                <span className={`xd-am-roletag ${roles[m] === 'admin' ? 'admin' : ''}`}>
+                                  {roles[m] === 'admin' ? 'Admin' : 'Member'}
+                                </span>
                                 <button type="button" className="xd-am-remove" title="Remove"
                                   onClick={() => toggleMember(o.code, m)}><FiX /></button>
                               </span>
