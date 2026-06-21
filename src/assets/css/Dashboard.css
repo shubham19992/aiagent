@@ -67,9 +67,11 @@
   background: transparent; border: none; cursor: pointer; font: inherit;
   padding: 9px 12px; margin: 1px 0; border-radius: 9px;
   color: var(--xd-soft); font-size: 13.5px; font-weight: 600; text-align: left;
+  text-decoration: none;
   border-left: 2px solid transparent;
   transition: all .14s;
 }
+.xd-nav-item:hover, .xd-nav-item:focus, .xd-nav-item.active { text-decoration: none; }
 .xd-nav-item-icon { display: inline-flex; font-size: 15px; }
 .xd-nav-item:hover { background: #f1f7f4; color: var(--xd-emerald); }
 .xd-nav-item.active {
