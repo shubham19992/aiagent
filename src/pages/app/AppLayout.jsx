@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FiActivity, FiChevronDown, FiLogOut, FiLoader, FiFolder, FiPlusCircle, FiList } from 'react-icons/fi';
+import { FiActivity, FiChevronDown, FiLogOut, FiLoader, FiFolder, FiPlusCircle, FiList, FiMenu } from 'react-icons/fi';
 import '../../assets/css/Dashboard.css';
 import XopsLogo from '../../components/XopsLogo';
 import * as auth from '../../api/auth';
@@ -17,7 +17,7 @@ import { useSidebar } from '../../lib/sidebar';
 export default function AppLayout() {
   const navigate = useNavigate();
   const [theme] = useTheme();
-  const [collapsed] = useSidebar();
+  const [collapsed, toggleSidebar] = useSidebar();
   const userName = sessionStorage.getItem('uidai_user') || 'User';
   const [ops, setOps] = useState([]);
   const [source, setSource] = useState('api');
@@ -50,8 +50,19 @@ export default function AppLayout() {
     <div className={`xd-shell ${collapsed ? 'is-collapsed' : ''}`} data-theme={theme}>
       <aside className="xd-sidebar">
         <div className="xd-side-logo">
-          <XopsLogo height={32} />
-          <span className="xd-side-tag">Automation Governance</span>
+          <div className="xd-side-logo-row">
+            {!collapsed && <XopsLogo height={30} />}
+            <button
+              className="xd-side-toggle"
+              type="button"
+              onClick={toggleSidebar}
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              <FiMenu />
+            </button>
+          </div>
+          {!collapsed && <span className="xd-side-tag">Automation Governance</span>}
         </div>
 
         <nav className="xd-nav">
@@ -84,7 +95,7 @@ export default function AppLayout() {
                       className={({ isActive }) => `xd-nav-item ${isActive ? 'active' : ''}`}
                     >
                       <span className="xd-op-badge">{op.name.replace(/Ops$/i, '').slice(0, 2)}</span>
-                      {op.name}
+                      <span className="xd-nav-item-text">{op.name}</span>
                     </NavLink>
                   </li>
                 ))}
@@ -110,13 +121,15 @@ export default function AppLayout() {
                 <li>
                   <NavLink to="/dashboard/projects/new"
                     className={({ isActive }) => `xd-nav-item ${isActive ? 'active' : ''}`}>
-                    <span className="xd-nav-item-icon"><FiPlusCircle /></span> Create Project
+                    <span className="xd-nav-item-icon"><FiPlusCircle /></span>
+                    <span className="xd-nav-item-text">Create Project</span>
                   </NavLink>
                 </li>
                 <li>
                   <NavLink to="/dashboard/projects" end
                     className={({ isActive }) => `xd-nav-item ${isActive ? 'active' : ''}`}>
-                    <span className="xd-nav-item-icon"><FiList /></span> Project List
+                    <span className="xd-nav-item-icon"><FiList /></span>
+                    <span className="xd-nav-item-text">Project List</span>
                   </NavLink>
                 </li>
               </ul>
