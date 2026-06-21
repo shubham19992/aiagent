@@ -891,7 +891,11 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
    remaining height and the assigned list scrolls inside its panel. */
 .xd-am-main { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 16px; }
 .xd-am-main .xd-pagelead { margin-bottom: 0; }
-.xd-am-main .xd-assign-bar { margin-top: 0; }
+/* pinned footer action bar flush to the bottom edge */
+.xd-am-main .xd-assign-bar {
+  margin: 0 -24px -24px; padding: 14px 24px;
+  background: var(--xd-card); border-top: 1px solid var(--xd-line);
+}
 
 .xd-am-2col {
   flex: 1; min-height: 0;
