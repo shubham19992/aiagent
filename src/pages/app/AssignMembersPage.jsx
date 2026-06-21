@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiCheckCircle, FiX, FiUsers } from 'react-icons/fi';
+import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listUsers } from '../../api/observability';
 import { getProject, updateProject } from '../../store/projectsStore';
@@ -29,6 +29,21 @@ export default function AssignMembersPage() {
   const [loading, setLoading] = useState(true);
   const [assignments, setAssignments] = useState(project?.assignments || {});
   const [activeOp, setActiveOp] = useState(project?.observabilities?.[0]?.code || '');
+  const [memberOpen, setMemberOpen] = useState(false);
+  const msRef = useRef(null);
+
+  // Close the member dropdown on outside click / Escape.
+  useEffect(() => {
+    if (!memberOpen) return undefined;
+    const onDown = (e) => { if (msRef.current && !msRef.current.contains(e.target)) setMemberOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setMemberOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [memberOpen]);
 
   useEffect(() => {
     let alive = true;
@@ -101,31 +116,52 @@ export default function AssignMembersPage() {
               <div className="xd-card xd-am-panel">
                 <h3 className="xd-col-title">Select members</h3>
 
-                <label className="xd-conn-label" htmlFor="am-op-select">Observability</label>
-                <select id="am-op-select" className="xd-conn-input"
-                  value={activeOp} onChange={(e) => setActiveOp(e.target.value)}>
+                <label className="xd-conn-label">Observability</label>
+                <div className="xd-am-ops">
                   {obs.map((o) => {
                     const count = (assignments[o.code] || []).length;
                     return (
-                      <option key={o.code} value={o.code}>
-                        {o.name}{count > 0 ? ` · ${count} assigned` : ''}
-                      </option>
+                      <button key={o.code} type="button"
+                        className={`xd-am-op ${activeOp === o.code ? 'on' : ''}`}
+                        onClick={() => setActiveOp(o.code)}>
+                        {o.name}
+                        {count > 0 && <span className="xd-am-op-count">{count}</span>}
+                      </button>
                     );
                   })}
-                </select>
+                </div>
 
-                <label className="xd-conn-label" htmlFor="am-member-select">
-                  Add member to {obs.find((o) => o.code === activeOp)?.name || '—'}
+                <label className="xd-conn-label">
+                  Members for {obs.find((o) => o.code === activeOp)?.name || '—'}
                 </label>
-                <select id="am-member-select" className="xd-conn-input" value=""
-                  onChange={(e) => { if (e.target.value) toggleMember(activeOp, e.target.value); }}>
-                  <option value="" disabled>Select a member to add…</option>
-                  {memberOptions
-                    .filter((m) => !(assignments[activeOp] || []).includes(m.name))
-                    .map((m) => (
-                      <option key={m.id} value={m.name}>{m.name}{m.you ? ' (you)' : ''}</option>
-                    ))}
-                </select>
+                <div className="xd-ms" ref={msRef}>
+                  <button type="button" className="xd-ms-btn"
+                    onClick={() => setMemberOpen((v) => !v)}
+                    aria-haspopup="listbox" aria-expanded={memberOpen}>
+                    <span className="xd-ms-btn-label">
+                      {(assignments[activeOp] || []).length
+                        ? `${(assignments[activeOp] || []).length} member(s) selected`
+                        : 'Select members…'}
+                    </span>
+                    <FiChevronDown className={`xd-ms-caret ${memberOpen ? 'open' : ''}`} />
+                  </button>
+                  {memberOpen && (
+                    <div className="xd-ms-menu" role="listbox" aria-multiselectable="true">
+                      {memberOptions.map((m) => {
+                        const on = (assignments[activeOp] || []).includes(m.name);
+                        return (
+                          <label key={m.id} className={`xd-ms-opt ${on ? 'on' : ''}`} role="option" aria-selected={on}>
+                            <input type="checkbox" checked={on}
+                              onChange={() => toggleMember(activeOp, m.name)} />
+                            <span className="xd-am-ava">{m.name.charAt(0).toUpperCase()}</span>
+                            <span className="xd-ms-opt-name">{m.name}{m.you ? ' (you)' : ''}</span>
+                            {on && <FiCheck className="xd-ms-opt-check" />}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
 
                 <div className="xd-am-chosen">
                   {(assignments[activeOp] || []).length === 0 ? (
