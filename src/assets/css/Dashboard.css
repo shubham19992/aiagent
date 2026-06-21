@@ -818,43 +818,45 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 /* back link sits at the far left of the connect form actions */
 .xd-conn-back { margin-right: auto; display: inline-flex; align-items: center; gap: 6px; }
 
-/* ── selected observability cards (create-project) ── */
-/* two-column top section (details | observe) for this page */
-.xd-create-cols-2 { grid-template-columns: 1fr 1fr; }
+/* ── selected observability cards (create-project, 3rd column) ── */
+/* widen the selected column so 3 compact cards fit per row */
+.xd-create-cols-sel { grid-template-columns: 1fr 0.85fr 1.55fr; }
 
-/* full-width selected section below the columns, cards 3 per row */
-.xd-sel-section {
-  margin-top: 22px; padding-top: 22px;
-  border-top: 1px solid var(--xd-line);
-}
+/* cards: 3 per row inside the column */
 .xd-sel-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
   margin-top: 12px;
 }
-@media (max-width: 1100px) { .xd-sel-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 720px)  { .xd-sel-grid { grid-template-columns: 1fr; } }
-
-.xd-sel-list { display: flex; flex-direction: column; gap: 10px; }
 .xd-sel-card {
-  position: relative; display: flex; align-items: flex-start; gap: 12px;
+  position: relative; display: flex; flex-direction: column; gap: 8px;
   background: var(--xd-card-2); border: 1px solid var(--xd-line);
-  border-radius: 12px; padding: 12px 38px 12px 12px;
+  border-radius: 10px; padding: 12px 12px 13px;
   animation: xd-sel-in .18s ease;
 }
 @keyframes xd-sel-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 .xd-sel-badge {
-  width: 40px; height: 40px; flex: 0 0 auto; border-radius: 10px;
-  display: grid; place-items: center; font-size: 14px; font-weight: 800;
+  width: 36px; height: 36px; flex: 0 0 auto; border-radius: 9px;
+  display: grid; place-items: center; font-size: 13px; font-weight: 800;
   text-transform: uppercase; color: #fff;
   background: linear-gradient(135deg, var(--xd-emerald), var(--xd-teal));
 }
 .xd-sel-body { min-width: 0; }
-.xd-sel-name { font-size: 14px; font-weight: 700; }
-.xd-sel-desc { font-size: 12.5px; color: var(--xd-soft); margin-top: 3px; line-height: 1.45; }
+.xd-sel-name { font-size: 13px; font-weight: 700; line-height: 1.2; }
+.xd-sel-desc {
+  font-size: 11.5px; color: var(--xd-soft); margin-top: 4px; line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
 .xd-sel-remove {
-  position: absolute; top: 8px; right: 8px;
-  width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center;
+  position: absolute; top: 7px; right: 7px;
+  width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center;
   border: none; background: transparent; color: var(--xd-soft);
-  cursor: pointer; font-size: 15px; transition: all .14s;
+  cursor: pointer; font-size: 14px; transition: all .14s;
 }
 .xd-sel-remove:hover { background: rgba(242, 73, 92, .16); color: #f2495c; }
+
+/* keep 3-up until the layout collapses to one column */
+@media (max-width: 1100px) {
+  .xd-create-cols-sel { grid-template-columns: 1fr; }
+  .xd-sel-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 620px) { .xd-sel-grid { grid-template-columns: repeat(2, 1fr); } }

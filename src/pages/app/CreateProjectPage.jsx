@@ -80,7 +80,7 @@ export default function CreateProjectPage() {
         ) : (
           <form className="xd-proj-form xd-card" onSubmit={onSubmit}>
             <div className="xd-form-body">
-            <div className="xd-create-cols xd-create-cols-2">
+            <div className="xd-create-cols xd-create-cols-sel">
               {/* ── Column 1: project details ── */}
               <section className="xd-create-col">
                 <h3 className="xd-col-title">Project Details</h3>
@@ -141,32 +141,32 @@ export default function CreateProjectPage() {
                   })}
                 </div>
               </section>
-            </div>
 
-            {/* ── Selected observability cards (3 per row) ── */}
-            <section className="xd-sel-section">
-              <h3 className="xd-col-title">Selected ({selectedOps.length})</h3>
-              <p className="xd-col-hint">Observabilities this project will monitor.</p>
-              {selectedOps.length === 0 ? (
-                <div className="xd-assign-empty">Nothing selected yet. Pick observabilities from the list above.</div>
-              ) : (
-                <div className="xd-sel-grid">
-                  {selectedOps.map((op) => (
-                    <div className="xd-sel-card" key={op.code}>
-                      <span className="xd-sel-badge">{opBadge(op.name) || <FiActivity />}</span>
-                      <div className="xd-sel-body">
-                        <div className="xd-sel-name">{op.name}</div>
-                        <div className="xd-sel-desc">{op.description}</div>
+              {/* ── Column 3: selected observability cards (3 per row) ── */}
+              <section className="xd-create-col xd-create-col-sel">
+                <h3 className="xd-col-title">Selected ({selectedOps.length})</h3>
+                <p className="xd-col-hint">Observabilities this project will monitor.</p>
+                {selectedOps.length === 0 ? (
+                  <div className="xd-assign-empty">Nothing selected yet. Pick observabilities from the list.</div>
+                ) : (
+                  <div className="xd-sel-grid">
+                    {selectedOps.map((op) => (
+                      <div className="xd-sel-card" key={op.code}>
+                        <span className="xd-sel-badge">{opBadge(op.name) || <FiActivity />}</span>
+                        <div className="xd-sel-body">
+                          <div className="xd-sel-name">{op.name}</div>
+                          <div className="xd-sel-desc">{op.description}</div>
+                        </div>
+                        <button type="button" className="xd-sel-remove" title="Remove"
+                          onClick={() => toggleOp(op.code)}>
+                          <FiX />
+                        </button>
                       </div>
-                      <button type="button" className="xd-sel-remove" title="Remove"
-                        onClick={() => toggleOp(op.code)}>
-                        <FiX />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </div>
             </div>
 
             <div className="xd-form-footer">
