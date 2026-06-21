@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiLoader, FiChevronRight, FiChevronDown, FiCheck, FiDroplet } from 'react-icons/fi';
+import { FiLoader, FiChevronRight, FiChevronDown, FiCheck, FiDroplet, FiMenu } from 'react-icons/fi';
 import { THEMES, useTheme } from '../../lib/theme';
+import { useSidebar } from '../../lib/sidebar';
 
 /** Dropdown theme picker shown in the top header. Lets you preview the
  *  available color themes and switch live — the choice persists in
@@ -69,8 +70,19 @@ export function ThemePicker() {
 /** Sticky topbar with a breadcrumb trail + optional demo-data badge.
  *  crumbs: array of { label, to? } — the last one renders as current. */
 export function PageHeader({ crumbs = [], source }) {
+  const [collapsed, toggleSidebar] = useSidebar();
   return (
     <header className="xd-topbar">
+      <button
+        type="button"
+        className="xd-hamburger"
+        onClick={toggleSidebar}
+        aria-label={collapsed ? 'Open sidebar' : 'Close sidebar'}
+        aria-pressed={!collapsed}
+        title={collapsed ? 'Open sidebar' : 'Close sidebar'}
+      >
+        <FiMenu />
+      </button>
       <nav className="xd-crumbs" aria-label="Breadcrumb">
         {crumbs.map((c, i) => {
           const last = i === crumbs.length - 1;

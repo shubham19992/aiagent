@@ -6,6 +6,7 @@ import XopsLogo from '../../components/XopsLogo';
 import * as auth from '../../api/auth';
 import { listOps } from '../../api/observability';
 import { useTheme } from '../../lib/theme';
+import { useSidebar } from '../../lib/sidebar';
 
 /**
  * Persistent app shell shown after login. The left sidebar lists the
@@ -16,6 +17,7 @@ import { useTheme } from '../../lib/theme';
 export default function AppLayout() {
   const navigate = useNavigate();
   const [theme] = useTheme();
+  const [collapsed] = useSidebar();
   const userName = sessionStorage.getItem('uidai_user') || 'User';
   const [ops, setOps] = useState([]);
   const [source, setSource] = useState('api');
@@ -45,7 +47,7 @@ export default function AppLayout() {
   };
 
   return (
-    <div className="xd-shell" data-theme={theme}>
+    <div className={`xd-shell ${collapsed ? 'is-collapsed' : ''}`} data-theme={theme}>
       <aside className="xd-sidebar">
         <div className="xd-side-logo">
           <XopsLogo height={32} />
