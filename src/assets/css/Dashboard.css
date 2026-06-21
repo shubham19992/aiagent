@@ -836,8 +836,8 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 /* back link sits at the far left of the connect form actions */
 .xd-conn-back { margin-right: auto; display: inline-flex; align-items: center; gap: 6px; }
 
-/* ── create-project: two columns (details | what to observe) ── */
-.xd-create-cols-2 { grid-template-columns: 1fr 1.5fr; }
+/* ── create-project: two equal columns (details | what to observe) ── */
+.xd-create-cols-2 { grid-template-columns: 1fr 1fr; }
 
 /* observe options as selectable cards (project-card style), 3 per row */
 .xd-obs-grid {
