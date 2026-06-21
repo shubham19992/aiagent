@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiCheck, FiCheckCircle, FiUsers, FiLayers, FiUserCheck } from 'react-icons/fi';
+import { FiCheck, FiCheckCircle } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listUsers } from '../../api/observability';
 import { getProject, updateProject } from '../../store/projectsStore';
@@ -74,8 +74,6 @@ export default function AssignMembersPage() {
   }
 
   const obs = project.observabilities || [];
-  const totalAssigned = new Set(Object.values(assignments).flat()).size;
-  const coveredOps = obs.filter((o) => (assignments[o.code] || []).length > 0).length;
 
   return (
     <>
@@ -93,31 +91,6 @@ export default function AssignMembersPage() {
           <p>Assign team members to each observability in <strong>{project.name}</strong>.</p>
         </div>
 
-        {/* summary strip */}
-        <div className="xd-assign-summary">
-          <div className="xd-assign-stat">
-            <span className="xd-assign-stat-icon"><FiLayers /></span>
-            <div>
-              <div className="xd-assign-stat-num">{obs.length}</div>
-              <div className="xd-assign-stat-cap">Observabilities</div>
-            </div>
-          </div>
-          <div className="xd-assign-stat">
-            <span className="xd-assign-stat-icon"><FiUserCheck /></span>
-            <div>
-              <div className="xd-assign-stat-num">{coveredOps}/{obs.length}</div>
-              <div className="xd-assign-stat-cap">Covered</div>
-            </div>
-          </div>
-          <div className="xd-assign-stat">
-            <span className="xd-assign-stat-icon"><FiUsers /></span>
-            <div>
-              <div className="xd-assign-stat-num">{totalAssigned}</div>
-              <div className="xd-assign-stat-cap">Members</div>
-            </div>
-          </div>
-        </div>
-
         {loading ? (
           <Spinner label="Loading members…" />
         ) : (
@@ -131,9 +104,6 @@ export default function AssignMembersPage() {
                       <span className="xd-sel-badge">{opBadge(o.name)}</span>
                       <div className="xd-assign-card-meta">
                         <div className="xd-assign-card-name">{o.name}</div>
-                        <div className="xd-assign-card-count">
-                          {picked.length ? `${picked.length} member${picked.length > 1 ? 's' : ''} assigned` : 'No members yet'}
-                        </div>
                       </div>
                       {picked.length > 0 && <FiCheckCircle className="xd-assign-card-tick" />}
                     </div>
@@ -158,11 +128,6 @@ export default function AssignMembersPage() {
             </div>
 
             <div className="xd-assign-bar">
-              <span className="xd-assign-bar-hint">
-                {coveredOps === obs.length
-                  ? 'All observabilities have members assigned.'
-                  : `${obs.length - coveredOps} observability(ies) still need members.`}
-              </span>
               <div className="xd-assign-bar-actions">
                 <button type="button" className="xd-btn-ghost" onClick={() => navigate('/dashboard/projects')}>
                   Skip for now
