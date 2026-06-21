@@ -101,20 +101,18 @@ export default function AssignMembersPage() {
               <div className="xd-card xd-am-panel">
                 <h3 className="xd-col-title">Select members</h3>
 
-                <label className="xd-conn-label">Observability</label>
-                <div className="xd-am-ops">
+                <label className="xd-conn-label" htmlFor="am-op-select">Observability</label>
+                <select id="am-op-select" className="xd-conn-input"
+                  value={activeOp} onChange={(e) => setActiveOp(e.target.value)}>
                   {obs.map((o) => {
                     const count = (assignments[o.code] || []).length;
                     return (
-                      <button key={o.code} type="button"
-                        className={`xd-am-op ${activeOp === o.code ? 'on' : ''}`}
-                        onClick={() => setActiveOp(o.code)}>
-                        {o.name}
-                        {count > 0 && <span className="xd-am-op-count">{count}</span>}
-                      </button>
+                      <option key={o.code} value={o.code}>
+                        {o.name}{count > 0 ? ` · ${count} assigned` : ''}
+                      </option>
                     );
                   })}
-                </div>
+                </select>
 
                 <label className="xd-conn-label">Members for {obs.find((o) => o.code === activeOp)?.name || '—'}</label>
                 <div className="xd-am-userlist">

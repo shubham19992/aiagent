@@ -893,21 +893,6 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 .xd-am-panel .xd-conn-label { margin-top: 14px; }
 .xd-am-panel .xd-conn-label:first-of-type { margin-top: 0; }
 
-.xd-am-ops { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
-.xd-am-op {
-  display: inline-flex; align-items: center; gap: 7px;
-  background: var(--xd-card-2); border: 1px solid var(--xd-line);
-  color: var(--xd-soft); border-radius: 999px; padding: 7px 13px;
-  font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .14s;
-}
-.xd-am-op:hover { border-color: var(--xd-emerald); color: var(--xd-ink); }
-.xd-am-op.on { background: rgba(var(--xd-accent-rgb), .14); border-color: var(--xd-emerald); color: var(--xd-emerald); }
-.xd-am-op-count {
-  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
-  display: inline-grid; place-items: center; font-size: 11px; font-weight: 800;
-  background: var(--xd-emerald); color: #fff;
-}
-
 .xd-am-userlist {
   display: flex; flex-direction: column; gap: 6px; margin-top: 8px;
   max-height: 380px; overflow-y: auto;
