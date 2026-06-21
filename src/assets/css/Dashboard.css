@@ -799,3 +799,21 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .xd-user-role { font-size: 11px; font-weight: 600; color: #73bf69; }
+
+/* ── connect CTA (env page → connection-parameters page) ── */
+.xd-connect-cta { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.xd-connect-cta-icon {
+  width: 52px; height: 52px; flex: 0 0 auto; border-radius: 13px;
+  display: grid; place-items: center; font-size: 23px; color: #fff;
+  background: linear-gradient(135deg, var(--xd-emerald), var(--xd-teal));
+  box-shadow: 0 6px 18px rgba(var(--xd-accent-rgb), .3);
+}
+.xd-connect-cta-text { flex: 1; min-width: 220px; }
+.xd-connect-cta-title { font-size: 16px; font-weight: 800; }
+.xd-connect-cta-text p { margin: 4px 0 0; color: var(--xd-soft); font-size: 13.5px; line-height: 1.5; }
+.xd-connect-cta-btn {
+  text-decoration: none; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
+}
+
+/* back link sits at the far left of the connect form actions */
+.xd-conn-back { margin-right: auto; display: inline-flex; align-items: center; gap: 6px; }
