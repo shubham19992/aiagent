@@ -893,25 +893,7 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 .xd-am-panel .xd-conn-label { margin-top: 14px; }
 .xd-am-panel .xd-conn-label:first-of-type { margin-top: 0; }
 
-.xd-am-userlist {
-  display: flex; flex-direction: column; gap: 6px; margin-top: 8px;
-  max-height: 380px; overflow-y: auto;
-}
-.xd-am-userrow {
-  display: flex; align-items: center; gap: 10px; cursor: pointer;
-  padding: 9px 11px; border-radius: 10px;
-  border: 1px solid var(--xd-line); background: var(--xd-card-2); transition: all .14s;
-}
-.xd-am-userrow:hover { border-color: var(--xd-emerald); }
-.xd-am-userrow.on { border-color: var(--xd-emerald); background: rgba(var(--xd-accent-rgb), .10); }
-.xd-am-userrow input { width: 16px; height: 16px; cursor: pointer; accent-color: var(--xd-emerald); flex: 0 0 auto; }
-.xd-am-ava {
-  width: 28px; height: 28px; flex: 0 0 auto; border-radius: 50%;
-  display: grid; place-items: center; font-size: 11px; font-weight: 800; color: #fff;
-  background: linear-gradient(135deg, var(--xd-emerald), var(--xd-teal));
-}
-.xd-am-username { flex: 1; font-size: 13.5px; font-weight: 600; }
-.xd-am-rowcheck { color: var(--xd-emerald); font-size: 15px; }
+.xd-am-chosen { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 
 .xd-am-summary { display: flex; flex-direction: column; gap: 14px; }
 .xd-am-srow { padding-bottom: 14px; border-bottom: 1px solid var(--xd-line); }

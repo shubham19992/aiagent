@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiCheck, FiCheckCircle, FiX, FiUsers } from 'react-icons/fi';
+import { FiCheckCircle, FiX, FiUsers } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listUsers } from '../../api/observability';
 import { getProject, updateProject } from '../../store/projectsStore';
@@ -114,20 +114,31 @@ export default function AssignMembersPage() {
                   })}
                 </select>
 
-                <label className="xd-conn-label">Members for {obs.find((o) => o.code === activeOp)?.name || '—'}</label>
-                <div className="xd-am-userlist">
-                  {memberOptions.map((m) => {
-                    const on = (assignments[activeOp] || []).includes(m.name);
-                    return (
-                      <label key={m.id} className={`xd-am-userrow ${on ? 'on' : ''}`}>
-                        <input type="checkbox" checked={on}
-                          onChange={() => toggleMember(activeOp, m.name)} />
-                        <span className="xd-am-ava">{m.name.charAt(0).toUpperCase()}</span>
-                        <span className="xd-am-username">{m.name}{m.you ? ' (you)' : ''}</span>
-                        {on && <FiCheck className="xd-am-rowcheck" />}
-                      </label>
-                    );
-                  })}
+                <label className="xd-conn-label" htmlFor="am-member-select">
+                  Add member to {obs.find((o) => o.code === activeOp)?.name || '—'}
+                </label>
+                <select id="am-member-select" className="xd-conn-input" value=""
+                  onChange={(e) => { if (e.target.value) toggleMember(activeOp, e.target.value); }}>
+                  <option value="" disabled>Select a member to add…</option>
+                  {memberOptions
+                    .filter((m) => !(assignments[activeOp] || []).includes(m.name))
+                    .map((m) => (
+                      <option key={m.id} value={m.name}>{m.name}{m.you ? ' (you)' : ''}</option>
+                    ))}
+                </select>
+
+                <div className="xd-am-chosen">
+                  {(assignments[activeOp] || []).length === 0 ? (
+                    <span className="xd-muted">No members added yet.</span>
+                  ) : (
+                    (assignments[activeOp] || []).map((m) => (
+                      <span className="xd-member-pill" key={m}>
+                        <span className="xd-member-ava">{m.charAt(0).toUpperCase()}</span>{m}
+                        <button type="button" className="xd-am-remove" title="Remove"
+                          onClick={() => toggleMember(activeOp, m)}><FiX /></button>
+                      </span>
+                    ))
+                  )}
                 </div>
               </div>
 
