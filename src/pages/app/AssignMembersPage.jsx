@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiCheckCircle, FiX, FiUsers, FiUserPlus } from 'react-icons/fi';
+import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers, FiUserPlus, FiShield } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listUsers } from '../../api/observability';
 import { getProject, updateProject } from '../../store/projectsStore';
@@ -36,6 +36,21 @@ export default function AssignMembersPage() {
   const [assignments, setAssignments] = useState(project?.assignments || {});
   const [roles, setRoles] = useState(project?.roles || {});
   const [activeOp, setActiveOp] = useState(project?.observabilities?.[0]?.code || '');
+  const [openRole, setOpenRole] = useState(null); // null | 'member' | 'admin'
+  const msRef = useRef(null);
+
+  // Close the open user dropdown on outside click / Escape.
+  useEffect(() => {
+    if (!openRole) return undefined;
+    const onDown = (e) => { if (msRef.current && !msRef.current.contains(e.target)) setOpenRole(null); };
+    const onKey = (e) => { if (e.key === 'Escape') setOpenRole(null); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [openRole]);
 
   useEffect(() => {
     let alive = true;
@@ -65,10 +80,11 @@ export default function AssignMembersPage() {
     ...a, [code]: (a[code] || []).filter((x) => x !== m),
   }));
 
-  // Set a user's role for the given observability. An empty role unassigns
-  // them; otherwise they're added to the op and their project role is set.
-  const setUserRole = (code, m, role) => {
-    if (!role) {
+  // Toggle a user under a specific role for the given observability.
+  // Picking a user already on that role removes them; a user on the other
+  // role switches over to this one.
+  const pickRole = (code, m, role) => {
+    if (isOn(code, m) && roleOf(m) === role) {
       removeMember(code, m);
       return;
     }
@@ -78,6 +94,10 @@ export default function AssignMembersPage() {
     });
     setRoles((r) => ({ ...r, [m]: role }));
   };
+
+  // Count of members assigned to an op under a given role.
+  const roleCount = (code, role) =>
+    (assignments[code] || []).filter((m) => roleOf(m) === role).length;
 
   // Unique members assigned across every observability, for the roles panel.
   const assignedMembers = useMemo(() => {
@@ -124,7 +144,7 @@ export default function AssignMembersPage() {
       <main className="xd-main xd-am-main">
         <div className="xd-pagelead">
           <h1>Assign Members</h1>
-          <p>Pick an observability, then set each user's role — assignments appear on the right.</p>
+          <p>Pick an observability, then select users for each role — assignments appear on the right.</p>
         </div>
 
         {loading ? (
@@ -155,27 +175,48 @@ export default function AssignMembersPage() {
                 <label className="xd-conn-label">
                   Members for {obs.find((o) => o.code === activeOp)?.name || '—'}
                 </label>
-                <div className="xd-am-table">
+                <div className="xd-am-table" ref={msRef}>
                   <div className="xd-am-trow xd-am-thead">
-                    <span>User</span>
                     <span>Role</span>
+                    <span>Users</span>
                   </div>
-                  {memberOptions.map((m) => {
-                    const on = isOn(activeOp, m.name);
+                  {ROLE_OPTIONS.map((role) => {
+                    const open = openRole === role.value;
+                    const count = roleCount(activeOp, role.value);
                     return (
-                      <div className={`xd-am-trow ${on ? 'on' : ''}`} key={m.id}>
-                        <span className="xd-am-tuser">
-                          <span className="xd-am-ava">{m.name.charAt(0).toUpperCase()}</span>
-                          <span className="xd-am-tname">{m.name}{m.you ? ' (you)' : ''}</span>
-                        </span>
-                        <select className="xd-conn-input xd-am-trole"
-                          value={on ? roleOf(m.name) : ''}
-                          onChange={(e) => setUserRole(activeOp, m.name, e.target.value)}>
-                          <option value="">Unassigned</option>
-                          {ROLE_OPTIONS.map((r) => (
-                            <option key={r.value} value={r.value}>{r.label}</option>
-                          ))}
-                        </select>
+                      <div className="xd-am-trow" key={role.value}>
+                        <span className="xd-am-trole-label"><FiShield /> {role.label}</span>
+                        <div className="xd-ms">
+                          <button type="button" className="xd-ms-btn"
+                            onClick={() => setOpenRole(open ? null : role.value)}
+                            aria-haspopup="listbox" aria-expanded={open}>
+                            <span className="xd-ms-btn-label">
+                              {count ? `${count} selected` : 'Select users…'}
+                            </span>
+                            <FiChevronDown className={`xd-ms-caret ${open ? 'open' : ''}`} />
+                          </button>
+                          {open && (
+                            <div className="xd-ms-menu" role="listbox" aria-multiselectable="true">
+                              {memberOptions.map((m) => {
+                                const on = isOn(activeOp, m.name) && roleOf(m.name) === role.value;
+                                const otherRole = isOn(activeOp, m.name) && roleOf(m.name) !== role.value;
+                                return (
+                                  <label key={m.id} className={`xd-ms-opt ${on ? 'on' : ''}`}
+                                    role="option" aria-selected={on}>
+                                    <input type="checkbox" checked={on}
+                                      onChange={() => pickRole(activeOp, m.name, role.value)} />
+                                    <span className="xd-am-ava">{m.name.charAt(0).toUpperCase()}</span>
+                                    <span className="xd-ms-opt-name">
+                                      {m.name}{m.you ? ' (you)' : ''}
+                                      {otherRole && <span className="xd-am-othertag">already {roleOf(m.name)}</span>}
+                                    </span>
+                                    {on && <FiCheck className="xd-ms-opt-check" />}
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })}

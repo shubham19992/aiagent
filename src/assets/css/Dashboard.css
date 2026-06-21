@@ -967,25 +967,27 @@ select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink
 
 .xd-am-table {
   margin-top: 8px; border: 1px solid var(--xd-line); border-radius: 10px;
-  overflow: hidden;
 }
 .xd-am-trow {
-  display: grid; grid-template-columns: 1fr 160px; align-items: center; gap: 12px;
-  padding: 9px 12px;
+  display: grid; grid-template-columns: 1fr 1.4fr; align-items: center; gap: 12px;
+  padding: 10px 12px;
 }
 .xd-am-trow + .xd-am-trow { border-top: 1px solid var(--xd-line); }
-.xd-am-trow.on { background: rgba(var(--xd-accent-rgb), .07); }
 .xd-am-thead {
   background: var(--xd-card-2); border-bottom: 1px solid var(--xd-line);
   font-size: 11px; font-weight: 800; text-transform: uppercase;
   letter-spacing: .04em; color: var(--xd-soft);
+  border-radius: 10px 10px 0 0;
 }
-.xd-am-tuser { display: flex; align-items: center; gap: 9px; min-width: 0; }
-.xd-am-tname {
-  font-size: 13.5px; font-weight: 600; min-width: 0;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+.xd-am-trole-label {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13.5px; font-weight: 700;
 }
-.xd-am-trole { padding: 7px 30px 7px 10px; font-size: 13px; }
+.xd-am-table .xd-ms { margin-top: 0; }
+.xd-am-othertag {
+  margin-left: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .03em; color: var(--xd-soft);
+}
 
 .xd-am-roletag {
   font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .03em;
