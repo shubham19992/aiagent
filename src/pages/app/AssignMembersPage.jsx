@@ -39,7 +39,7 @@ export default function AssignMembersPage() {
   const [openRole, setOpenRole] = useState(null); // null | 'member' | 'admin'
   const msRef = useRef(null);
 
-  // Close the open role dropdown on outside click / Escape.
+  // Close the open user dropdown on outside click / Escape.
   useEffect(() => {
     if (!openRole) return undefined;
     const onDown = (e) => { if (msRef.current && !msRef.current.contains(e.target)) setOpenRole(null); };
@@ -80,9 +80,9 @@ export default function AssignMembersPage() {
     ...a, [code]: (a[code] || []).filter((x) => x !== m),
   }));
 
-  // Toggle a member under a specific role for the given observability.
-  // Picking a member already on that role removes them; picking a member
-  // who is on the other role just switches their role.
+  // Toggle a user under a specific role for the given observability.
+  // Picking a user already on that role removes them; a user on the other
+  // role switches over to this one.
   const pickRole = (code, m, role) => {
     if (isOn(code, m) && roleOf(m) === role) {
       removeMember(code, m);
@@ -144,7 +144,7 @@ export default function AssignMembersPage() {
       <main className="xd-main xd-am-main">
         <div className="xd-pagelead">
           <h1>Assign Members</h1>
-          <p>Pick an observability, then choose members under Project Member or Project Admin — assignments appear on the right.</p>
+          <p>Pick an observability, then select users for each role — assignments appear on the right.</p>
         </div>
 
         {loading ? (
@@ -175,22 +175,23 @@ export default function AssignMembersPage() {
                 <label className="xd-conn-label">
                   Members for {obs.find((o) => o.code === activeOp)?.name || '—'}
                 </label>
-                <div className="xd-am-rolecols" ref={msRef}>
+                <div className="xd-am-table" ref={msRef}>
+                  <div className="xd-am-trow xd-am-thead">
+                    <span>Role</span>
+                    <span>Users</span>
+                  </div>
                   {ROLE_OPTIONS.map((role) => {
                     const open = openRole === role.value;
                     const count = roleCount(activeOp, role.value);
                     return (
-                      <div className="xd-am-rolecol" key={role.value}>
-                        <div className="xd-am-rolecol-head">
-                          <FiShield /> {role.label}
-                          {count > 0 && <span className="xd-am-op-count">{count}</span>}
-                        </div>
+                      <div className="xd-am-trow" key={role.value}>
+                        <span className="xd-am-trole-label"><FiShield /> {role.label}</span>
                         <div className="xd-ms">
                           <button type="button" className="xd-ms-btn"
                             onClick={() => setOpenRole(open ? null : role.value)}
                             aria-haspopup="listbox" aria-expanded={open}>
                             <span className="xd-ms-btn-label">
-                              {count ? `${count} selected` : 'Select members…'}
+                              {count ? `${count} selected` : 'Select users…'}
                             </span>
                             <FiChevronDown className={`xd-ms-caret ${open ? 'open' : ''}`} />
                           </button>
