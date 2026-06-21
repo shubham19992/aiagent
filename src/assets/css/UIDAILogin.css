@@ -8,18 +8,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --xl-accent: #6b7280;
-  --xl-accent-2: #9aa1ad;
-  --xl-accent-3: #b4bac3;
-  --xl-bg: #0a0b10;          /* page / right panel */
-  --xl-card: #15161d;        /* card surface */
-  --xl-raised: #1e2029;      /* inputs */
-  --xl-border: #25272f;
-  --xl-text: #d6d9e0;
-  --xl-text-soft: #969ba6;
-  --xl-text-mute: #6b7280;
-  --xl-red: #f2495c;
-  --xl-green: #73bf69;
+  --xl-accent: #334155;      /* button / icon fill (dark slate on light) */
+  --xl-accent-2: #475569;    /* links */
+  --xl-accent-3: #1f2937;    /* links hover */
+  --xl-bg: #f3f4f6;          /* page / right panel */
+  --xl-card: #ffffff;        /* card surface */
+  --xl-raised: #f7f8fa;      /* inputs */
+  --xl-border: #e5e7eb;
+  --xl-text: #1a1d27;
+  --xl-text-soft: #5b6472;
+  --xl-text-mute: #9aa1ad;
+  --xl-red: #dc2626;
+  --xl-green: #16a34a;
 }
 
 .xlogin,
@@ -45,26 +45,26 @@
   overflow: hidden;
   padding: 48px 56px;
   background:
-    radial-gradient(900px 540px at 18% 12%, rgba(120, 130, 145, .28), transparent 60%),
-    radial-gradient(720px 600px at 88% 92%, rgba(150, 160, 175, .16), transparent 55%),
-    linear-gradient(160deg, #0e1730 0%, #0a0e1a 55%, #07090f 100%);
+    radial-gradient(900px 540px at 18% 12%, rgba(100, 116, 139, .10), transparent 60%),
+    linear-gradient(160deg, #eef0f3 0%, #e8eaef 55%, #edeff2 100%);
+  border-right: 1px solid var(--xl-border);
   display: flex;
 }
 /* faint blueprint grid */
 .xlogin-hero-grid {
   position: absolute; inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, .04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, .04) 1px, transparent 1px);
+    linear-gradient(rgba(0, 0, 0, .04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, .04) 1px, transparent 1px);
   background-size: 44px 44px;
   mask-image: radial-gradient(120% 120% at 30% 20%, #000 35%, transparent 75%);
   pointer-events: none;
 }
-/* soft moving accent glow */
+/* soft accent glow */
 .xlogin-hero-glow {
   position: absolute; top: -120px; right: -120px;
   width: 460px; height: 460px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(120, 130, 145, .45), transparent 65%);
+  background: radial-gradient(circle, rgba(100, 116, 139, .14), transparent 65%);
   filter: blur(30px);
   pointer-events: none;
 }
@@ -83,15 +83,15 @@
   font-size: 12.5px; font-weight: 700; letter-spacing: 1.4px;
   text-transform: uppercase;
   color: var(--xl-accent-3);
-  background: rgba(120, 130, 145, .14);
-  border: 1px solid rgba(120, 130, 145, .3);
+  background: rgba(100, 116, 139, .12);
+  border: 1px solid rgba(100, 116, 139, .25);
   padding: 6px 12px; border-radius: 999px;
   margin-bottom: 22px;
 }
 .xlogin-hero-title {
   font-size: 40px; font-weight: 800; line-height: 1.12;
   letter-spacing: -1px; margin: 0 0 16px;
-  color: #eceef3;
+  color: var(--xl-text);
 }
 .xlogin-hero-sub {
   font-size: 15.5px; line-height: 1.6;
@@ -109,20 +109,20 @@
   display: grid; place-items: center; font-size: 19px;
   border-radius: 11px; color: #fff;
   background: linear-gradient(135deg, var(--xl-accent), #475569);
-  box-shadow: 0 6px 18px rgba(120, 130, 145, .35);
+  box-shadow: 0 6px 18px rgba(100, 116, 139, .28);
 }
 .xlogin-feature div { display: flex; flex-direction: column; gap: 2px; }
-.xlogin-feature strong { font-size: 15px; font-weight: 700; color: #f3f4f6; }
+.xlogin-feature strong { font-size: 15px; font-weight: 700; color: var(--xl-text); }
 .xlogin-feature span { font-size: 13.5px; color: var(--xl-text-soft); }
 
 .xlogin-hero-foot {
   display: flex; flex-direction: column; gap: 10px;
   margin-top: 48px; padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, .08);
+  border-top: 1px solid rgba(0, 0, 0, .08);
 }
 .xlogin-trust {
   display: inline-flex; align-items: center; gap: 8px;
-  font-size: 13px; font-weight: 600; color: #b9c2d0;
+  font-size: 13px; font-weight: 600; color: var(--xl-text-soft);
 }
 .xlogin-trust svg { color: var(--xl-green); }
 .xlogin-copy { font-size: 12px; color: var(--xl-text-mute); }
@@ -133,9 +133,7 @@
 .xlogin-panel {
   display: flex; align-items: center; justify-content: center;
   padding: 40px 32px;
-  background:
-    radial-gradient(700px 500px at 80% 0%, rgba(120, 130, 145, .08), transparent 60%),
-    var(--xl-bg);
+  background: var(--xl-card);
 }
 .xlogin-card {
   width: 100%; max-width: 408px;
@@ -145,7 +143,7 @@
 .xlogin-card-head { margin-bottom: 26px; }
 .xlogin-card-head h2 {
   font-size: 26px; font-weight: 800; letter-spacing: -.6px;
-  margin: 0 0 7px; color: #eceef3;
+  margin: 0 0 7px; color: var(--xl-text);
 }
 .xlogin-card-head p {
   font-size: 14.5px; color: var(--xl-text-soft); margin: 0; line-height: 1.5;
@@ -174,9 +172,9 @@
 }
 .xlogin-input::placeholder { color: var(--xl-text-mute); }
 .xlogin-input:focus {
-  outline: none; border-color: var(--xl-accent-2);
-  background: #1a1f27;
-  box-shadow: 0 0 0 3px rgba(120, 130, 145, .22);
+  outline: none; border-color: var(--xl-accent);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(100, 116, 139, .18);
 }
 .xlogin-input-wrap .xlogin-input { padding-right: 44px; }
 .xlogin-input-error { border-color: var(--xl-red); background: rgba(242, 73, 92, .08); }
@@ -191,8 +189,8 @@
   line-height: 1.4; font-weight: 500;
 }
 .xlogin-alert {
-  font-size: 13px; font-weight: 500; color: #ffb3bb;
-  background: rgba(242, 73, 92, .1); border: 1px solid rgba(242, 73, 92, .32);
+  font-size: 13px; font-weight: 500; color: #b91c1c;
+  background: rgba(220, 38, 38, .08); border: 1px solid rgba(220, 38, 38, .28);
   border-radius: 9px; padding: 10px 13px; margin-bottom: 16px;
 }
 
@@ -204,7 +202,7 @@
   border: none; background: transparent; color: var(--xl-text-mute);
   cursor: pointer; font-size: 17px; transition: color .15s, background .15s;
 }
-.xlogin-eye-btn:hover { color: var(--xl-accent-2); background: rgba(204, 204, 220, .08); }
+.xlogin-eye-btn:hover { color: var(--xl-accent-2); background: rgba(0, 0, 0, .05); }
 .xlogin-eye-btn:focus-visible { outline: 2px solid var(--xl-accent-2); outline-offset: 1px; }
 
 /* ─── Primary button ─── */
@@ -229,13 +227,13 @@
 /* ─── OTP sent banner ─── */
 .xlogin-otp-sent {
   display: flex; align-items: flex-start; gap: 12px;
-  background: rgba(115, 191, 105, .1);
-  border: 1px solid rgba(115, 191, 105, .32);
+  background: rgba(22, 163, 74, .08);
+  border: 1px solid rgba(22, 163, 74, .28);
   border-radius: 10px; padding: 13px 15px; margin-bottom: 20px;
 }
 .xlogin-otp-sent svg { color: var(--xl-green); font-size: 20px; flex: 0 0 auto; margin-top: 1px; }
 .xlogin-otp-sent div { display: flex; flex-direction: column; gap: 3px; }
-.xlogin-otp-sent strong { font-size: 14px; font-weight: 700; color: #a9d6a1; }
+.xlogin-otp-sent strong { font-size: 14px; font-weight: 700; color: #15803d; }
 .xlogin-otp-sent span { font-size: 13px; color: var(--xl-text-soft); }
 
 .xlogin-otp-actions {
