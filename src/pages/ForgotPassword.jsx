@@ -63,7 +63,7 @@ const ForgotPassword = () => {
             <ul className="xlogin-features">
               {FEATURES.map(({ icon: Icon, title, desc }) => (
                 <li key={title} className="xlogin-feature">
-                  <span className="xlogin-feat-icon"><Icon /></span>
+                  <span className="xlogin-feat-icon"><Icon style={{ color: 'white' }}/></span>
                   <div>
                     <strong>{title}</strong>
                     <span>{desc}</span>

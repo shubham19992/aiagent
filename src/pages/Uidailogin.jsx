@@ -195,7 +195,7 @@ const UIDAILogin = () => {
             <ul className="xlogin-features">
               {FEATURES.map(({ icon: Icon, title, desc }) => (
                 <li key={title} className="xlogin-feature">
-                  <span className="xlogin-feat-icon"><Icon /></span>
+                  <span className="xlogin-feat-icon"><Icon style={{ color: 'white' }} /></span>
                   <div>
                     <strong>{title}</strong>
                     <span>{desc}</span>
@@ -207,7 +207,7 @@ const UIDAILogin = () => {
 
           <div className="xlogin-hero-foot">
             <span className="xlogin-trust">
-              <FiShield /> Enterprise-grade security · SSO + OTP
+              <FiShield style={{ color: 'white' }} /> Enterprise-grade security · SSO + OTP
             </span>
             <span className="xlogin-copy">© 2026 xOps · Internal Use Only</span>
           </div>
