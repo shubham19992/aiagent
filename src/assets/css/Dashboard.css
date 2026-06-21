@@ -837,11 +837,11 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 .xd-conn-back { margin-right: auto; display: inline-flex; align-items: center; gap: 6px; }
 
 /* ── create-project: two columns (details | what to observe) ── */
-.xd-create-cols-2 { grid-template-columns: 1fr 1.1fr; }
+.xd-create-cols-2 { grid-template-columns: 1fr 1.5fr; }
 
-/* observe options as selectable cards (project-card style), 2 per row */
+/* observe options as selectable cards (project-card style), 3 per row */
 .xd-obs-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 4px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 4px;
 }
 .xd-obs-card {
   position: relative; display: flex; flex-direction: column;
@@ -860,7 +860,7 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 }
 /* gradient cover with the op initials */
 .xd-obs-cover {
-  position: relative; display: block; height: 72px;
+  position: relative; display: block; height: 60px;
 }
 .xd-obs-cover::after {
   content: ''; position: absolute; inset: 0;
@@ -883,6 +883,7 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
   font-size: 12px; color: var(--xd-soft); margin-top: 5px; line-height: 1.45;
   display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
 }
+@media (max-width: 1100px) { .xd-obs-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px) { .xd-obs-grid { grid-template-columns: 1fr; } }
 
 /* ── assign members page ── */
