@@ -889,11 +889,7 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 /* ── assign members page: select (left) + assigned (right) ──
    Fits the viewport: the page is a flex column, the two panels fill the
    remaining height and the assigned list scrolls inside its panel. */
-.xd-am-main {
-  height: calc(100vh - 63px);   /* viewport minus the sticky topbar */
-  min-height: 0; overflow: hidden;
-  display: flex; flex-direction: column; gap: 16px;
-}
+.xd-am-main { display: flex; flex-direction: column; gap: 16px; }
 .xd-am-main .xd-pagelead { margin-bottom: 0; }
 /* pinned footer action bar flush to the bottom edge */
 .xd-am-main .xd-assign-bar {
@@ -902,11 +898,9 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 }
 
 /* one card holding both panels */
-.xd-am-card {
-  flex: 1; min-height: 0; padding: 0; overflow: hidden; display: flex;
-}
+.xd-am-card { padding: 0; display: flex; }
 .xd-am-2col {
-  flex: 1; min-height: 0;
+  flex: 1;
   display: grid; grid-template-columns: 1fr 1fr; align-items: stretch;
 }
 @media (max-width: 900px) { .xd-am-2col { grid-template-columns: 1fr; } }
@@ -971,10 +965,7 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
   background: linear-gradient(135deg, var(--xd-emerald), var(--xd-teal));
 }
 
-.xd-am-summary {
-  flex: 1; min-height: 0; overflow: hidden;
-  display: flex; flex-direction: column; gap: 12px;
-}
+.xd-am-summary { display: flex; flex-direction: column; gap: 12px; }
 .xd-am-srow {
   background: var(--xd-card-2); border: 1px solid var(--xd-line);
   border-radius: 10px; padding: 12px 14px;
