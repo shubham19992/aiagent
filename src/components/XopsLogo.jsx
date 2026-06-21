@@ -27,8 +27,8 @@ const XopsLogo = ({ height = 40, variant = 'full', style, className }) => {
     >
       <defs>
         <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#6b7280" />
-          <stop offset="100%" stopColor="#475569" />
+          <stop offset="0%" stopColor="#f15a24" />
+          <stop offset="100%" stopColor="#fba919" />
         </linearGradient>
       </defs>
       <rect x="0" y="0" width="44" height="44" rx="11" fill={`url(#${gradId})`} />
@@ -67,7 +67,7 @@ const XopsLogo = ({ height = 40, variant = 'full', style, className }) => {
           lineHeight: 1,
         }}
       >
-        <span style={{ color: '#64748b' }}>x</span>
+        <span style={{ color: '#f15a24' }}>x</span>
         <span style={{ color: 'currentColor' }}>Ops</span>
       </span>
     </span>

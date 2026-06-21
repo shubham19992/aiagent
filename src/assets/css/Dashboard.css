@@ -6,16 +6,16 @@
 
 .xd-shell {
   /* Grafana-style dark theme */
-  --xd-emerald: #e6e8ec;   /* accent → neutral near-white (links, active, icons) */
-  --xd-teal: #c4c8d0;      /* gradient end (neutral) */
-  --xd-mint: #e6e8ec;      /* chip text (neutral light) */
+  --xd-emerald: #f5701c;   /* accent → Grafana orange (links, active, icons) */
+  --xd-teal: #fba919;      /* gradient end → amber */
+  --xd-mint: #ffb454;      /* chip text (light orange) */
   --xd-ink: #cdd1d9;       /* primary text — crisp soft-white */
   --xd-soft: #8b909c;      /* secondary text */
   --xd-line: #25272f;      /* borders */
   --xd-bg: #0a0b10;        /* app background — deep, cool near-black */
   --xd-card: #15161d;      /* panel background */
   --xd-card-2: #1e2029;    /* raised / input background */
-  --xd-accent-rgb: 205, 210, 220;     /* neutral grey for translucent chips */
+  --xd-accent-rgb: 245, 112, 28;      /* orange for translucent chips */
   --xd-input-bg: #101117;             /* form inputs */
   --xd-raised: #1a1c24;               /* assign rows / raised wells */
   --xd-topbar-bg: rgba(12, 13, 18, .85);
@@ -637,10 +637,10 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
    white cards, crisp near-black text */
 .xd-shell[data-theme="light"] {
   color-scheme: light;
-  --xd-emerald: #334155; --xd-teal: #1f2937; --xd-mint: #334155;
+  --xd-emerald: #e2620e; --xd-teal: #f59e0b; --xd-mint: #e2620e;
   --xd-ink: #1a1d27; --xd-soft: #5b6472; --xd-line: #e5e7eb;
   --xd-bg: #f3f4f6; --xd-card: #ffffff; --xd-card-2: #f7f8fa;
-  --xd-accent-rgb: 51, 65, 85; --xd-input-bg: #ffffff; --xd-raised: #f7f8fa;
+  --xd-accent-rgb: 226, 98, 14; --xd-input-bg: #ffffff; --xd-raised: #f7f8fa;
   --xd-topbar-bg: rgba(255, 255, 255, .9);
 }
 
@@ -662,35 +662,6 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 }
 .xd-shell[data-theme="light"] .xd-sidebar { background: var(--xd-card); }
 .xd-shell[data-theme="light"] .xd-side-foot { background: #f7f8fa; }
-
-/* ── dark theme: neutral grey buttons/badges (accent is near-white, so
-   gradient fills must use a real grey to keep white glyphs legible) ── */
-.xd-shell:not([data-theme="light"]) .xd-btn {
-  background: linear-gradient(90deg, #34373f, #2a2d35);
-  color: #eef0f3; border: 1px solid #3d414b; box-shadow: none;
-}
-.xd-shell:not([data-theme="light"]) .xd-btn:hover:not(:disabled) {
-  background: linear-gradient(90deg, #3d414b, #30333c);
-  box-shadow: none; transform: translateY(-1px);
-}
-.xd-shell:not([data-theme="light"]) .xd-role-btn.active {
-  background: #30333c; color: #eef0f3; box-shadow: none;
-}
-.xd-shell:not([data-theme="light"]) .xd-avatar,
-.xd-shell:not([data-theme="light"]) .xd-section-icon,
-.xd-shell:not([data-theme="light"]) .xd-op-card-badge,
-.xd-shell:not([data-theme="light"]) .xd-sel-badge,
-.xd-shell:not([data-theme="light"]) .xd-assign-ava,
-.xd-shell:not([data-theme="light"]) .xd-pcard-ava,
-.xd-shell:not([data-theme="light"]) .xd-member-ava,
-.xd-shell:not([data-theme="light"]) .xd-connect-cta-icon,
-.xd-shell:not([data-theme="light"]) .xd-nav-item.active .xd-op-badge {
-  background: linear-gradient(135deg, #3b3f4a, #2a2d35);
-}
-.xd-shell:not([data-theme="light"]) .xd-connect-cta-icon { box-shadow: none; }
-.xd-shell:not([data-theme="light"]) .xd-meter-fill {
-  background: linear-gradient(90deg, #6a6f7a, #45484f);
-}
 
 /* ── theme switcher (top header) ─────────────────────────── */
 .xd-theme {
