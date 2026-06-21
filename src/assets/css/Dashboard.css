@@ -972,8 +972,8 @@ select.xd-conn-input { background: var(--xd-input-bg); color: var(--xd-ink); }
 }
 
 .xd-am-summary {
-  flex: 1; min-height: 0; overflow-y: auto;
-  display: flex; flex-direction: column; gap: 12px; padding-right: 4px;
+  flex: 1; min-height: 0; overflow: hidden;
+  display: flex; flex-direction: column; gap: 12px;
 }
 .xd-am-srow {
   background: var(--xd-card-2); border: 1px solid var(--xd-line);
