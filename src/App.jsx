@@ -16,6 +16,7 @@ import OpPage from "./pages/app/OpPage";
 import EnvPage from "./pages/app/EnvPage";
 import ConnectPage from "./pages/app/ConnectPage";
 import CreateProjectPage from "./pages/app/CreateProjectPage";
+import EditProjectPage from "./pages/app/EditProjectPage";
 import ProjectListPage from "./pages/app/ProjectListPage";
 import AssignMembersPage from "./pages/app/AssignMembersPage";
 import ProjectDashboardPage from "./pages/app/ProjectDashboardPage";
@@ -64,6 +65,7 @@ export default function App() {
           <Route path="observability/:opCode/:envCode/connect" element={<ConnectPage />} />
           <Route path="projects" element={<ProjectListPage />} />
           <Route path="projects/new" element={<CreateProjectPage />} />
+          <Route path="projects/:projectId/edit" element={<EditProjectPage />} />
           <Route path="projects/:projectId/assign" element={<AssignMembersPage />} />
           <Route path="projects/:projectId" element={<ProjectDashboardPage />} />
         </Route>
