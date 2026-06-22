@@ -4,7 +4,7 @@ import { FiActivity, FiChevronDown, FiLogOut, FiLoader, FiFolder, FiPlusCircle, 
 import '../../assets/css/Dashboard.css';
 import XopsLogo from '../../components/XopsLogo';
 import * as auth from '../../api/auth';
-import { listOps } from '../../api/observability';
+import { listMenu } from '../../api/observability';
 import { useTheme } from '../../lib/theme';
 import { useSidebar } from '../../lib/sidebar';
 
@@ -27,7 +27,7 @@ export default function AppLayout() {
 
   useEffect(() => {
     let alive = true;
-    listOps().then(({ items, source: src }) => {
+    listMenu().then(({ items, source: src }) => {
       if (!alive) return;
       setOps(items);
       setSource(src);
@@ -91,7 +91,7 @@ export default function AppLayout() {
                 {!loading && ops.map((op) => (
                   <li key={op.code}>
                     <NavLink
-                      to={`/dashboard/observability/${op.code}`}
+                      to={op.url ? `/${op.url.replace(/^\/+/, '')}` : `/dashboard/observability/${op.code}`}
                       className={({ isActive }) => `xd-nav-item ${isActive ? 'active' : ''}`}
                     >
                       <span className="xd-op-badge">{op.name.replace(/Ops$/i, '').slice(0, 2)}</span>
