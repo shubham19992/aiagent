@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiCalendar, FiTrash2, FiPlus, FiFolder, FiBarChart2, FiSearch, FiMoreVertical, FiUserPlus, FiEdit2 } from 'react-icons/fi';
-import { PageHeader } from './_parts';
-import { listProjects, myProjects, removeProject, projectMembers, isDemoProject } from '../../store/projectsStore';
+import { PageHeader, Spinner } from './_parts';
+import { listProjects, deleteProject } from '../../api/projects';
+import { projectMembers, isDemoProject, isMine, clearMembership } from '../../store/projectsStore';
 
 const fmtDate = (d) => {
   if (!d) return '—';
@@ -23,6 +24,27 @@ export default function ProjectListPage() {
   const [version, setVersion] = useState(0);     // bump to re-read after delete
   const [query, setQuery] = useState('');
   const [openMenu, setOpenMenu] = useState(null); // project id of the open ⋯ menu
+  const [all, setAll] = useState([]);            // all projects from the API
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Load projects from the backend (re-runs after a delete).
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    listProjects().then((items) => {
+      if (!alive) return;
+      setAll(items);
+      setError('');
+      setLoading(false);
+    }).catch((err) => {
+      if (!alive) return;
+      setAll([]);
+      setError(err?.message || 'Failed to load projects.');
+      setLoading(false);
+    });
+    return () => { alive = false; };
+  }, [version]);
 
   // Close the open card menu on outside click / Escape.
   useEffect(() => {
@@ -38,8 +60,8 @@ export default function ProjectListPage() {
   }, [openMenu]);
 
   const allProjects = useMemo(
-    () => (scope === 'mine' ? myProjects(currentUser) : listProjects()),
-    [scope, currentUser, version],
+    () => (scope === 'mine' ? all.filter((p) => isMine(p, currentUser)) : all),
+    [scope, currentUser, all],
   );
 
   // Filter by name, owner, description or any observability name.
@@ -57,9 +79,15 @@ export default function ProjectListPage() {
 
   const hasDemo = useMemo(() => projects.some(isDemoProject), [projects]);
 
-  const del = (id) => {
-    removeProject(id);
-    setVersion((v) => v + 1);
+  const del = async (id) => {
+    if (!window.confirm('Delete this project? This cannot be undone.')) return;
+    try {
+      await deleteProject(id);
+      clearMembership(id);
+      setVersion((v) => v + 1);
+    } catch (err) {
+      setError(err?.message || 'Failed to delete project.');
+    }
   };
 
   return (
@@ -90,7 +118,15 @@ export default function ProjectListPage() {
           </div>
         </div>
 
-        {projects.length === 0 ? (
+        {loading ? (
+          <Spinner label="Loading projects…" />
+        ) : error ? (
+          <div className="xd-empty">
+            <FiFolder />
+            <p>{error}</p>
+            <button className="xd-btn xd-btn-sm" type="button" onClick={() => setVersion((v) => v + 1)}>Retry</button>
+          </div>
+        ) : projects.length === 0 ? (
           query.trim() ? (
             <div className="xd-empty">
               <FiSearch />

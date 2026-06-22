@@ -2,8 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers, FiUserPlus, FiShield } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
-import { listUsers } from '../../api/observability';
-import { getProject, updateProject } from '../../store/projectsStore';
+import { listUsers } from '../../api/users';
+import { getProject } from '../../api/projects';
+import { getMembership, setMembership } from '../../store/projectsStore';
 
 // Display name from whatever fields the users API returns.
 const userName = (u) =>
@@ -28,14 +29,16 @@ export default function AssignMembersPage() {
   const navigate = useNavigate();
   const currentUser = sessionStorage.getItem('uidai_user') || 'You';
 
-  const project = getProject(projectId);
+  const [project, setProject] = useState(null);
+  const [notFound, setNotFound] = useState(false);
 
   const [users, setUsers] = useState([]);
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
-  const [assignments, setAssignments] = useState(project?.assignments || {});
-  const [roles, setRoles] = useState(project?.roles || {});
-  const [activeOp, setActiveOp] = useState(project?.observabilities?.[0]?.code || '');
+  const membership = getMembership(projectId);
+  const [assignments, setAssignments] = useState(membership.assignments);
+  const [roles, setRoles] = useState(membership.roles);
+  const [activeOp, setActiveOp] = useState('');
   const [openRole, setOpenRole] = useState(null); // null | 'member' | 'admin'
   const msRef = useRef(null);
 
@@ -54,14 +57,21 @@ export default function AssignMembersPage() {
 
   useEffect(() => {
     let alive = true;
-    listUsers().then((res) => {
+    setLoading(true);
+    Promise.all([getProject(projectId), listUsers()]).then(([proj, res]) => {
       if (!alive) return;
+      setProject(proj);
+      setActiveOp(proj?.observabilities?.[0]?.code || '');
       setUsers(res.items);
       setSource(res.source);
       setLoading(false);
+    }).catch(() => {
+      if (!alive) return;
+      setNotFound(true);
+      setLoading(false);
     });
     return () => { alive = false; };
-  }, []);
+  }, [projectId]);
 
   // Members = the logged-in user first, then users fetched from the API.
   const memberOptions = useMemo(() => {
@@ -111,11 +121,11 @@ export default function AssignMembersPage() {
       acc[m] = roles[m] || 'member';
       return acc;
     }, {});
-    updateProject(projectId, { assignments, roles: cleanRoles });
+    setMembership(projectId, { assignments, roles: cleanRoles });
     navigate('/dashboard/projects');
   };
 
-  if (!project) {
+  if (notFound) {
     return (
       <>
         <PageHeader crumbs={[{ label: 'Manage Project', to: '/dashboard/projects' }, { label: 'Assign Members' }]} />
@@ -129,14 +139,14 @@ export default function AssignMembersPage() {
     );
   }
 
-  const obs = project.observabilities || [];
+  const obs = project?.observabilities || [];
 
   return (
     <>
       <PageHeader
         crumbs={[
           { label: 'Manage Project', to: '/dashboard/projects' },
-          { label: project.name, to: `/dashboard/projects/${project.id}` },
+          ...(project ? [{ label: project.name, to: `/dashboard/projects/${project.id}` }] : []),
           { label: 'Assign Members' },
         ]}
         source={source}

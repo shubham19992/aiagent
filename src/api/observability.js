@@ -53,11 +53,6 @@ export async function listMeasures(opCode, env, { includeInactive = false } = {}
   return { items, source: 'api' };
 }
 
-export async function listUsers() {
-  const items = await getElements('/api/v3/users');
-  return { items, source: 'api' };
-}
-
 export async function listConnectionParams(opCode, env, { includeInactive = false } = {}) {
   const items = await getElements(`/api/v3/observability/${enc(opCode)}/connection-params?env=${enc(env)}&include_inactive=${includeInactive}`);
   return { items, source: 'api' };

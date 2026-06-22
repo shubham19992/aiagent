@@ -2,8 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiCheck, FiX, FiImage } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
-import { listOps, listUsers } from '../../api/observability';
-import { addProject } from '../../store/projectsStore';
+import { listMenu } from '../../api/observability';
+import { listUsers } from '../../api/users';
+import { createProject } from '../../api/projects';
+import { tokenStore } from '../../api/client';
 
 const STATUSES = ['Planning', 'Active', 'On Hold', 'Completed'];
 
@@ -24,6 +26,8 @@ const userName = (u) =>
 export default function CreateProjectPage() {
   const navigate = useNavigate();
   const currentUser = sessionStorage.getItem('uidai_user') || 'You';
+  const me = tokenStore.getUser() || {};
+  const myId = me.id || me.user_id || me.uuid || 'me';
 
   const [ops, setOps] = useState([]);
   const [users, setUsers] = useState([]);
@@ -32,22 +36,23 @@ export default function CreateProjectPage() {
 
   // Owner options = the logged-in user first, then users from the API.
   const ownerOptions = useMemo(() => {
-    const me = { id: 'me', name: currentUser, you: true };
+    const meOpt = { id: myId, name: currentUser, you: true };
     const others = users
       .map((u, i) => ({ id: u.id ?? `u${i}`, name: userName(u) }))
       .filter((u) => u.name && u.name !== currentUser);
-    return [me, ...others];
-  }, [currentUser, users]);
+    return [meOpt, ...others];
+  }, [currentUser, myId, users]);
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('Planning');
-  const [owner, setOwner] = useState(currentUser);
+  const [ownerId, setOwnerId] = useState(myId);
   const [image, setImage] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selected, setSelected] = useState([]);
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const onPickImage = (e) => {
     const file = e.target.files?.[0];
@@ -64,7 +69,7 @@ export default function CreateProjectPage() {
 
   useEffect(() => {
     let alive = true;
-    Promise.all([listOps(), listUsers()]).then(([opsRes, usersRes]) => {
+    Promise.all([listMenu(), listUsers()]).then(([opsRes, usersRes]) => {
       if (!alive) return;
       setOps(opsRes.items); setSource(opsRes.source);
       setUsers(usersRes.items);
@@ -82,7 +87,7 @@ export default function CreateProjectPage() {
     .map((code) => ops.find((o) => o.code === code))
     .filter(Boolean);
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) return setError('Project name is required.');
     if (!startDate || !endDate) return setError('Start and end date are required.');
@@ -90,14 +95,22 @@ export default function CreateProjectPage() {
     if (selected.length === 0) return setError('Select at least one observability to observe.');
 
     const chosenOps = selectedOps.map((op) => ({ code: op.code, name: op.name }));
+    const ownerOpt = ownerOptions.find((o) => o.id === ownerId);
 
-    // Create the project with no members yet, then go assign them.
-    const project = addProject({
-      name: name.trim(), description: description.trim(),
-      status, owner, image,
-      startDate, endDate, observabilities: chosenOps, assignments: {}, createdBy: currentUser,
-    });
-    navigate(`/dashboard/projects/${project.id}/assign`);
+    setSaving(true);
+    setError('');
+    try {
+      // Create the project on the backend, then go assign members.
+      const project = await createProject({
+        name: name.trim(), description: description.trim(),
+        status, owner: ownerOpt?.name || currentUser, ownerUserId: ownerId, image,
+        startDate, endDate, observabilities: chosenOps,
+      });
+      navigate(`/dashboard/projects/${project.id}/assign`);
+    } catch (err) {
+      setError(err?.message || 'Failed to create project.');
+      setSaving(false);
+    }
   };
 
   return (
@@ -160,9 +173,9 @@ export default function CreateProjectPage() {
                   </div>
                   <div className="xd-conn-field">
                     <label className="xd-conn-label">Project Owner</label>
-                    <select className="xd-conn-input" value={owner} onChange={(e) => setOwner(e.target.value)}>
+                    <select className="xd-conn-input" value={ownerId} onChange={(e) => setOwnerId(e.target.value)}>
                       {ownerOptions.map((m) => (
-                        <option key={m.id} value={m.name}>{m.name}{m.you ? ' (you)' : ''}</option>
+                        <option key={m.id} value={m.id}>{m.name}{m.you ? ' (you)' : ''}</option>
                       ))}
                     </select>
                   </div>
@@ -212,8 +225,8 @@ export default function CreateProjectPage() {
             <div className="xd-form-footer">
               {error && <div className="xd-form-error">{error}</div>}
               <div className="xd-conn-actions">
-                <button type="button" className="xd-btn-ghost" onClick={() => navigate('/dashboard/projects')}>Cancel</button>
-                <button type="submit" className="xd-btn">Create Project</button>
+                <button type="button" className="xd-btn-ghost" onClick={() => navigate('/dashboard/projects')} disabled={saving}>Cancel</button>
+                <button type="submit" className="xd-btn" disabled={saving}>{saving ? 'Creating…' : 'Create Project'}</button>
               </div>
             </div>
           </form>

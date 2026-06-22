@@ -2,8 +2,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiCheck, FiX, FiImage } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
-import { listOps, listUsers } from '../../api/observability';
-import { getProject, updateProject } from '../../store/projectsStore';
+import { listMenu } from '../../api/observability';
+import { listUsers } from '../../api/users';
+import { getProject, updateProject } from '../../api/projects';
+import { getMembership, setMembership } from '../../store/projectsStore';
+import { tokenStore } from '../../api/client';
 
 const STATUSES = ['Planning', 'Active', 'On Hold', 'Completed'];
 
@@ -25,8 +28,11 @@ export default function EditProjectPage() {
   const navigate = useNavigate();
   const { projectId } = useParams();
   const currentUser = sessionStorage.getItem('uidai_user') || 'You';
+  const me = tokenStore.getUser() || {};
+  const myId = me.id || me.user_id || me.uuid || 'me';
 
-  const project = getProject(projectId);
+  const [project, setProject] = useState(null);
+  const [notFound, setNotFound] = useState(false);
 
   const [ops, setOps] = useState([]);
   const [users, setUsers] = useState([]);
@@ -35,22 +41,24 @@ export default function EditProjectPage() {
 
   // Owner options = the logged-in user first, then users from the API.
   const ownerOptions = useMemo(() => {
-    const me = { id: 'me', name: currentUser, you: true };
+    const meOpt = { id: myId, name: currentUser, you: true };
     const others = users
       .map((u, i) => ({ id: u.id ?? `u${i}`, name: userName(u) }))
       .filter((u) => u.name && u.name !== currentUser);
-    return [me, ...others];
-  }, [currentUser, users]);
+    return [meOpt, ...others];
+  }, [currentUser, myId, users]);
 
-  const [name, setName] = useState(project?.name || '');
-  const [description, setDescription] = useState(project?.description || '');
-  const [status, setStatus] = useState(project?.status || 'Planning');
-  const [owner, setOwner] = useState(project?.owner || currentUser);
-  const [image, setImage] = useState(project?.image || '');
-  const [startDate, setStartDate] = useState(project?.startDate || '');
-  const [endDate, setEndDate] = useState(project?.endDate || '');
-  const [selected, setSelected] = useState((project?.observabilities || []).map((o) => o.code));
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [status, setStatus] = useState('Planning');
+  const [ownerId, setOwnerId] = useState(myId);
+  const [image, setImage] = useState('');
+  const [imageChanged, setImageChanged] = useState(false);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [selected, setSelected] = useState([]);
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const onPickImage = (e) => {
     const file = e.target.files?.[0];
@@ -61,20 +69,35 @@ export default function EditProjectPage() {
       return;
     }
     const reader = new FileReader();
-    reader.onload = () => { setImage(String(reader.result)); setError(''); };
+    reader.onload = () => { setImage(String(reader.result)); setImageChanged(true); setError(''); };
     reader.readAsDataURL(file);
   };
 
   useEffect(() => {
     let alive = true;
-    Promise.all([listOps(), listUsers()]).then(([opsRes, usersRes]) => {
+    setLoading(true);
+    Promise.all([getProject(projectId), listMenu(), listUsers()]).then(([proj, opsRes, usersRes]) => {
       if (!alive) return;
+      setProject(proj);
+      // Seed the form from the loaded project.
+      setName(proj.name || '');
+      setDescription(proj.description || '');
+      setStatus(proj.status || 'Planning');
+      setOwnerId(proj.ownerUserId || myId);
+      setImage(proj.image || '');
+      setStartDate(proj.startDate || '');
+      setEndDate(proj.endDate || '');
+      setSelected((proj.observabilities || []).map((o) => o.code));
       setOps(opsRes.items); setSource(opsRes.source);
       setUsers(usersRes.items);
       setLoading(false);
+    }).catch(() => {
+      if (!alive) return;
+      setNotFound(true);
+      setLoading(false);
     });
     return () => { alive = false; };
-  }, []);
+  }, [projectId, myId]);
 
   const toggleOp = (code) => {
     setSelected((s) => (s.includes(code) ? s.filter((c) => c !== code) : [...s, code]));
@@ -85,7 +108,7 @@ export default function EditProjectPage() {
     .map((code) => ops.find((o) => o.code === code))
     .filter(Boolean);
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) return setError('Project name is required.');
     if (!startDate || !endDate) return setError('Start and end date are required.');
@@ -93,22 +116,36 @@ export default function EditProjectPage() {
     if (selected.length === 0) return setError('Select at least one observability to observe.');
 
     const chosenOps = selectedOps.map((op) => ({ code: op.code, name: op.name }));
+    const ownerOpt = ownerOptions.find((o) => o.id === ownerId);
 
-    // Keep assignments only for observabilities the project still watches.
-    const keep = new Set(chosenOps.map((o) => o.code));
-    const assignments = Object.fromEntries(
-      Object.entries(project.assignments || {}).filter(([code]) => keep.has(code)),
-    );
-
-    updateProject(projectId, {
+    const payload = {
       name: name.trim(), description: description.trim(),
-      status, owner, image,
-      startDate, endDate, observabilities: chosenOps, assignments,
-    });
-    navigate(`/dashboard/projects/${projectId}`);
+      status, owner: ownerOpt?.name || currentUser, ownerUserId: ownerId,
+      startDate, endDate, observabilities: chosenOps,
+    };
+    // Only send the cover image when it actually changed (a new data URL,
+    // or '' to clear it) — never re-send the read-back image_url.
+    if (imageChanged) payload.image = image || '';
+
+    setSaving(true);
+    setError('');
+    try {
+      await updateProject(projectId, payload);
+      // Prune local member assignments for observabilities no longer watched.
+      const keep = new Set(chosenOps.map((o) => o.code));
+      const { assignments, roles } = getMembership(projectId);
+      const kept = Object.fromEntries(
+        Object.entries(assignments).filter(([code]) => keep.has(code)),
+      );
+      setMembership(projectId, { assignments: kept, roles });
+      navigate(`/dashboard/projects/${projectId}`);
+    } catch (err) {
+      setError(err?.message || 'Failed to save changes.');
+      setSaving(false);
+    }
   };
 
-  if (!project) {
+  if (notFound) {
     return (
       <>
         <PageHeader crumbs={[{ label: 'Manage Project', to: '/dashboard/projects' }, { label: 'Edit Project' }]} />
@@ -127,7 +164,7 @@ export default function EditProjectPage() {
       <PageHeader
         crumbs={[
           { label: 'Manage Project', to: '/dashboard/projects' },
-          { label: project.name, to: `/dashboard/projects/${project.id}` },
+          ...(project ? [{ label: project.name, to: `/dashboard/projects/${project.id}` }] : []),
           { label: 'Edit Project' },
         ]}
         source={source}

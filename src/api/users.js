@@ -1,0 +1,17 @@
+// ============================================================
+// users.js — client for the user directory on the main API gateway
+// (VITE_API_BASE_URL, 8081), NOT the observability service (8085).
+// Backs the owner / member dropdowns on the project pages.
+// ============================================================
+import { api } from './client';
+import { ENDPOINTS } from './endpoint';
+
+// GET /api/v3/users?offset=&include_deleted=
+// Returns { items, source } to match the shape the pages already expect.
+export async function listUsers({ offset = 1, includeDeleted = false } = {}) {
+  const json = await api.get(ENDPOINTS.users.list, {
+    query: { offset, include_deleted: includeDeleted },
+  });
+  const els = json?.data?._embedded?.elements;
+  return { items: Array.isArray(els) ? els : [], source: 'api' };
+}

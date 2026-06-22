@@ -1,119 +1,81 @@
 // ============================================================
-// projectsStore.js — local (localStorage) store for projects.
-// No backend endpoint for projects yet, so we persist them in the
-// browser. A project records which observabilities it watches and
-// which members are assigned per observability.
+// projectsStore.js — local (localStorage) overlay for project MEMBER
+// assignments.
+//
+// Project data itself (name, dates, observabilities, …) now lives on the
+// backend — see src/api/projects.js. There is no confirmed members API
+// yet, so per-observability assignments and per-member roles are kept in
+// the browser, keyed by the project's backend id.
 // ============================================================
 
-import { DUMMY_PROJECTS } from '../data/projectsDummy';
+const KEY = 'xops_project_members';
 
-const KEY = 'xops_projects';
-
-function read() {
+function readAll() {
   try {
     const raw = localStorage.getItem(KEY);
-    const list = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(list)) return [];
-    // Drop any previously-seeded demo projects — no dummy data anymore.
-    return list.filter((p) => !String(p.id || '').startsWith('p_seed_'));
+    const obj = raw ? JSON.parse(raw) : {};
+    return obj && typeof obj === 'object' ? obj : {};
   } catch {
-    return [];
+    return {};
   }
 }
 
-function write(list) {
+function writeAll(obj) {
   try {
-    localStorage.setItem(KEY, JSON.stringify(list));
+    localStorage.setItem(KEY, JSON.stringify(obj));
   } catch {
-    // Most likely the storage quota was exceeded (e.g. a large project
-    // image). Retry once without images so the project still persists.
-    try {
-      localStorage.setItem(KEY, JSON.stringify(list.map((p) => ({ ...p, image: '' }))));
-    } catch { /* give up silently */ }
+    /* quota exceeded — ignore */
   }
 }
 
-/** A demo/sample project (not stored, can't be deleted). */
-export const isDemoProject = (p) => String(p?.id || '').startsWith('p_demo_');
-
-/** Whether any demo projects are currently shown (always true for now). */
-export function usingDummyProjects() {
-  return DUMMY_PROJECTS.length > 0;
-}
-
-/** Real projects first, then the demo set so the list is never sparse. */
-export function listProjects() {
-  return [...read(), ...DUMMY_PROJECTS];
-}
-
-export function getProject(id) {
-  return (
-    read().find((p) => p.id === id) ||
-    DUMMY_PROJECTS.find((p) => p.id === id) ||
-    null
-  );
-}
-
-export function addProject({
-  name, key, description, priority, status, owner, environments,
-  tags, image, startDate, endDate, observabilities, assignments, roles, createdBy,
-}) {
-  const list = read();
-  const project = {
-    id: `p_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-    name,
-    key: key || '',
-    description: description || '',
-    priority: priority || 'Medium',
-    status: status || 'Planning',
-    owner: owner || '',
-    environments: environments || [],            // ['aws','azure',...]
-    tags: tags || [],                            // ['migration', ...]
-    image: image || '',                          // data URL or ''
-    startDate,
-    endDate,
-    observabilities: observabilities || [],      // [{ code, name }]
-    assignments: assignments || {},              // { opCode: [memberName, ...] }
-    roles: roles || {},                          // { memberName: 'member' | 'admin' }
-    createdBy: createdBy || 'Unknown',
-    createdAt: new Date().toISOString(),
+/** Membership overlay for a project: { assignments, roles }. */
+export function getMembership(id) {
+  const m = readAll()[id];
+  return {
+    assignments: (m && m.assignments) || {},   // { opCode: [memberName, ...] }
+    roles: (m && m.roles) || {},                // { memberName: 'member' | 'admin' }
   };
-  list.push(project);
-  write(list);
-  return project;
 }
 
-export function removeProject(id) {
-  write(read().filter((p) => p.id !== id));
+/** Persist the membership overlay for a project. */
+export function setMembership(id, { assignments, roles } = {}) {
+  const all = readAll();
+  all[id] = { assignments: assignments || {}, roles: roles || {} };
+  writeAll(all);
+  return all[id];
 }
 
-/** Patch a stored project (e.g. set member assignments). Returns the
- *  updated project, or null if it isn't a stored (real) project. */
-export function updateProject(id, patch) {
-  const list = read();
-  const idx = list.findIndex((p) => p.id === id);
-  if (idx === -1) return null;
-  list[idx] = { ...list[idx], ...patch };
-  write(list);
-  return list[idx];
+/** Drop the overlay for a deleted project. */
+export function clearMembership(id) {
+  const all = readAll();
+  if (all[id]) { delete all[id]; writeAll(all); }
+}
+
+/** Merge a backend project with its local membership overlay. */
+export function withMembership(project) {
+  if (!project || !project.id) return project;
+  const { assignments, roles } = getMembership(project.id);
+  return { ...project, assignments, roles };
 }
 
 /** Unique list of all members assigned across a project's observabilities. */
 export function projectMembers(project) {
-  const all = Object.values(project.assignments || {}).flat();
+  const assignments = (project && Object.keys(project.assignments || {}).length)
+    ? project.assignments
+    : getMembership(project?.id).assignments;
+  const all = Object.values(assignments || {}).flat();
   return [...new Set(all)];
 }
 
-/** Projects relevant to a given logged-in user: created by them OR where
- *  they're assigned to any observability. Used for the "My Projects" view. */
-export function myProjects(username) {
+/** Whether a project is relevant to a given logged-in user: they own it,
+ *  created it, or are assigned to one of its observabilities. */
+export function isMine(project, username) {
   const u = (username || '').trim().toLowerCase();
-  const mine = u
-    ? read().filter((p) => {
-        if ((p.createdBy || '').trim().toLowerCase() === u) return true;
-        return projectMembers(p).some((m) => (m || '').trim().toLowerCase() === u);
-      })
-    : [];
-  // Always append the demo set so the overview / "Mine" view stays populated.
-  return [...mine, ...DUMMY_PROJECTS];
+  if (!u || !project) return false;
+  if ((project.owner || '').trim().toLowerCase() === u) return true;
+  if ((project.createdBy || '').trim().toLowerCase() === u) return true;
+  return projectMembers(project).some((m) => (m || '').trim().toLowerCase() === u);
 }
+
+/** No demo/sample projects anymore — kept so existing callers stay valid. */
+export const isDemoProject = () => false;

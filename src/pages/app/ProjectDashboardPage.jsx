@@ -1,13 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   FiDollarSign, FiWifi, FiCpu, FiDatabase, FiShield, FiActivity,
   FiTrendingUp, FiTrendingDown, FiAlertTriangle, FiCheckCircle, FiClock,
   FiArrowLeft, FiGrid, FiZap, FiHardDrive, FiServer,
 } from 'react-icons/fi';
-import { PageHeader } from './_parts';
+import { PageHeader, Spinner } from './_parts';
 import { Kpi, Donut, BarList, Meter, Section, Sparkline } from '../../components/charts';
-import { getProject } from '../../store/projectsStore';
+import { getProject } from '../../api/projects';
+import { withMembership } from '../../store/projectsStore';
 import { buildProjectMetrics, fmtUSD, fmtGB, fmtNum } from '../../lib/projectMetrics';
 
 const TABS = [
@@ -25,8 +26,33 @@ const utilTone = (pct) => (pct >= 85 ? 'bad' : pct >= 70 ? 'warn' : undefined);
 export default function ProjectDashboardPage() {
   const { projectId } = useParams();
   const [tab, setTab] = useState('overview');
-  const project = useMemo(() => getProject(projectId), [projectId]);
+  const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
   const m = useMemo(() => (project ? buildProjectMetrics(project) : null), [project]);
+
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    getProject(projectId).then((proj) => {
+      if (!alive) return;
+      setProject(withMembership(proj));
+      setLoading(false);
+    }).catch(() => {
+      if (!alive) return;
+      setProject(null);
+      setLoading(false);
+    });
+    return () => { alive = false; };
+  }, [projectId]);
+
+  if (loading) {
+    return (
+      <>
+        <PageHeader crumbs={[{ label: 'Manage Project', to: '/dashboard/projects' }, { label: 'Loading…' }]} />
+        <main className="xd-main"><Spinner label="Loading project…" /></main>
+      </>
+    );
+  }
 
   if (!project) {
     return (

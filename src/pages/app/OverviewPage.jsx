@@ -1,15 +1,25 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useOutletContext } from 'react-router-dom';
 import { FiArrowRight, FiCalendar, FiPlus } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
-import { myProjects, projectMembers } from '../../store/projectsStore';
+import { isMine, projectMembers } from '../../store/projectsStore';
+import { listProjects } from '../../api/projects';
 
 /** Landing page: the user's projects + grid of all observability ops. */
 export default function OverviewPage() {
   const { ops, source, loading } = useOutletContext();
   const navigate = useNavigate();
   const currentUser = sessionStorage.getItem('uidai_user') || 'You';
-  const mine = myProjects(currentUser);
+  const [mine, setMine] = useState([]);
+
+  useEffect(() => {
+    let alive = true;
+    listProjects().then((items) => {
+      if (!alive) return;
+      setMine(items.filter((p) => isMine(p, currentUser)));
+    }).catch(() => { if (alive) setMine([]); });
+    return () => { alive = false; };
+  }, [currentUser]);
 
   return (
     <>
