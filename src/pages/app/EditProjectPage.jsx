@@ -223,9 +223,9 @@ export default function EditProjectPage() {
                   </div>
                   <div className="xd-conn-field">
                     <label className="xd-conn-label">Project Owner</label>
-                    <select className="xd-conn-input" value={owner} onChange={(e) => setOwner(e.target.value)}>
+                    <select className="xd-conn-input" value={ownerId} onChange={(e) => setOwnerId(e.target.value)}>
                       {ownerOptions.map((m) => (
-                        <option key={m.id} value={m.name}>{m.name}{m.you ? ' (you)' : ''}</option>
+                        <option key={m.id} value={m.id}>{m.name}{m.you ? ' (you)' : ''}</option>
                       ))}
                     </select>
                   </div>
