@@ -6,7 +6,6 @@ const RAW_BASE = import.meta.env.VITE_API_BASE_URL || 'http://10.1.151.228:8081/
 // Normalized to NOT end with a slash so callers can do `${API_BASE}${ENDPOINTS.x}`.
 export const API_BASE = RAW_BASE.replace(/\/+$/, '');
 
-const BASE = RAW_BASE;
 const REFRESH_PATH = '/api/v3/users/refresh';
 
 const TOKEN_KEY = 'pmis_token';
@@ -279,7 +278,10 @@ export async function authorizedFetch(input, init = {}) {
 }
 
 async function request(method, path, { body, query, auth = true, signal } = {}) {
-  const url = new URL(path.startsWith('http') ? path : BASE + path);
+  // Use the slash-normalized API_BASE (not RAW_BASE) so a trailing slash on
+  // VITE_API_BASE_URL — common in the deployed build — doesn't produce a
+  // double slash like ".../8081//api/v3/...". `path` always starts with '/'.
+  const url = new URL(path.startsWith('http') ? path : API_BASE + path);
   if (query) {
     Object.entries(query).forEach(([k, v]) => {
       if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
