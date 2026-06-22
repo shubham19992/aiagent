@@ -33,6 +33,10 @@ export default function OpPage() {
       setEnvs(items);
       setSource(src);
       setLoading(false);
+    }).catch(() => {
+      if (!alive) return;
+      setEnvs([]);
+      setLoading(false);
     });
     return () => { alive = false; };
   }, [opCode]);
