@@ -10,8 +10,10 @@ import {
 } from '../data/observabilityDummy';
 import { DEMO_USERS } from '../data/demoUsers';
 
-// Every API shares one base URL (VITE_API_BASE_URL).
-const RAW = import.meta.env.VITE_API_BASE_URL || 'http://10.1.151.228:8081';
+// The observability service runs on its own host/port (8085), separate
+// from the main API gateway (VITE_API_BASE_URL, 8081). Override with
+// VITE_OBS_BASE_URL.
+const RAW = import.meta.env.VITE_OBS_BASE_URL || 'http://10.1.151.228:8085';
 export const OBS_BASE = RAW.replace(/\/+$/, '');
 
 const enc = encodeURIComponent;
