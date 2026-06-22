@@ -32,6 +32,10 @@ export default function AppLayout() {
       setOps(items);
       setSource(src);
       setLoading(false);
+    }).catch(() => {
+      if (!alive) return;
+      setOps([]);
+      setLoading(false);
     });
     return () => { alive = false; };
   }, []);

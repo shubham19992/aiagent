@@ -32,7 +32,11 @@ export default function EnvPage() {
     listMeasures(opCode, envCode).then((m) => {
       if (!alive) return;
       setMeasures(m.items);
-      setSource(m.source === 'dummy' ? 'dummy' : 'api');
+      setSource('api');
+      setLoading(false);
+    }).catch(() => {
+      if (!alive) return;
+      setMeasures([]);
       setLoading(false);
     });
     return () => { alive = false; };

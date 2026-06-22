@@ -31,8 +31,13 @@ export default function ConnectPage() {
     listConnectionParams(opCode, envCode).then((p) => {
       if (!alive) return;
       setParams(p.items);
-      setSource(p.source === 'dummy' ? 'dummy' : 'api');
+      setSource('api');
       setForm(Object.fromEntries(p.items.map((x) => [x.param_key, x.default_value || ''])));
+      setLoading(false);
+    }).catch(() => {
+      if (!alive) return;
+      setParams([]);
+      setForm({});
       setLoading(false);
     });
     return () => { alive = false; };
