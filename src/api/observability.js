@@ -40,6 +40,22 @@ export async function listOps({ includeInactive = false } = {}) {
   }
 }
 
+// Observability side-menu entries. Same shape as listOps() but each item
+// also carries a `url` (e.g. "dashboard/observability/aiops") the sidebar
+// links to directly. Falls back to dummy ops (url derived from code).
+export async function listMenu({ includeInactive = false } = {}) {
+  try {
+    const items = await getElements(`/api/v3/observability/menu?include_inactive=${includeInactive}`);
+    return { items, source: 'api' };
+  } catch {
+    const items = DUMMY_OPS.map((op) => ({
+      ...op,
+      url: `dashboard/observability/${op.code}`,
+    }));
+    return { items, source: 'dummy' };
+  }
+}
+
 export async function listEnvs(opCode, { includeInactive = false } = {}) {
   try {
     const items = await getElements(`/api/v3/observability/${enc(opCode)}/envs?include_inactive=${includeInactive}`);
