@@ -308,6 +308,9 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 }
 .xd-env-card:hover { transform: translateY(-3px); border-color: #b9e6cf; box-shadow: 0 14px 30px rgba(5, 150, 105, .12); }
 .xd-env-icon { font-size: 38px; line-height: 1; margin-bottom: 6px; }
+/* API-provided inline SVG icons carry no width/height — constrain them so
+   they don't render at their raw viewBox size. */
+.xd-env-icon > svg { width: 42px; height: 42px; display: block; }
 .xd-env-name { font-size: 17px; font-weight: 700; }
 .xd-env-desc { font-size: 13px; color: var(--xd-soft); flex: 1; }
 .xd-env-cta { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--xd-emerald); margin-top: 6px; }
