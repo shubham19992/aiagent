@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiCalendar, FiTrash2, FiPlus, FiFolder, FiBarChart2, FiSearch, FiMoreVertical, FiUserPlus } from 'react-icons/fi';
+import { FiCalendar, FiTrash2, FiPlus, FiFolder, FiBarChart2, FiSearch, FiMoreVertical, FiUserPlus, FiEdit2 } from 'react-icons/fi';
 import { PageHeader } from './_parts';
 import { listProjects, myProjects, removeProject, projectMembers, isDemoProject } from '../../store/projectsStore';
 
@@ -124,15 +124,11 @@ export default function ProjectListPage() {
                           onClick={() => setOpenMenu(null)}>
                           <FiUserPlus /> Assign Members
                         </Link>
-                        <Link to={`/dashboard/projects/${p.id}`} className="xd-pcard-menu-item" role="menuitem"
-                          onClick={() => setOpenMenu(null)}>
-                          <FiBarChart2 /> Open
-                        </Link>
                         {!isDemoProject(p) && (
-                          <button type="button" className="xd-pcard-menu-item danger" role="menuitem"
-                            onClick={() => { setOpenMenu(null); del(p.id); }}>
-                            <FiTrash2 /> Delete project
-                          </button>
+                          <Link to={`/dashboard/projects/${p.id}/edit`} className="xd-pcard-menu-item" role="menuitem"
+                            onClick={() => setOpenMenu(null)}>
+                            <FiEdit2 /> Edit Project
+                          </Link>
                         )}
                       </div>
                     )}
