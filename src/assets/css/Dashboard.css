@@ -1103,10 +1103,33 @@ select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink
 
 /* ── project cards (project list) ── */
 .xd-pcard {
+  position: relative;
   background: var(--xd-card); border: 1px solid var(--xd-line);
   border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;
   transition: transform .16s, box-shadow .16s, border-color .16s;
 }
+.xd-pcard-menu { position: absolute; top: 8px; right: 8px; z-index: 3; }
+.xd-pcard-menu-btn {
+  width: 30px; height: 30px; display: grid; place-items: center;
+  border: none; border-radius: 8px; cursor: pointer; color: #fff;
+  background: rgba(0, 0, 0, .45); backdrop-filter: blur(3px); font-size: 16px;
+}
+.xd-pcard-menu-btn:hover { background: rgba(0, 0, 0, .65); }
+.xd-pcard-menu-list {
+  position: absolute; top: 36px; right: 0; min-width: 184px; z-index: 5;
+  background: var(--xd-card); border: 1px solid var(--xd-line);
+  border-radius: 10px; box-shadow: 0 12px 30px rgba(0, 0, 0, .4);
+  padding: 6px; display: flex; flex-direction: column; gap: 2px;
+}
+.xd-pcard-menu-item {
+  display: flex; align-items: center; gap: 9px; width: 100%;
+  padding: 8px 10px; border-radius: 8px; font-size: 13.5px; font-weight: 600;
+  color: var(--xd-ink); background: transparent; border: none; cursor: pointer;
+  text-align: left; text-decoration: none;
+}
+.xd-pcard-menu-item:hover { background: rgba(204, 204, 220, .1); }
+.xd-pcard-menu-item.danger { color: #f2495c; }
+.xd-pcard-menu-item.danger:hover { background: rgba(242, 73, 92, .12); }
 .xd-pcard:hover {
   transform: translateY(-3px); border-color: var(--xd-emerald);
   box-shadow: 0 14px 30px rgba(0, 0, 0, .4);
@@ -1129,7 +1152,7 @@ select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink
   backdrop-filter: blur(3px);
 }
 .xd-pcard-demo {
-  position: absolute; top: 10px; right: 10px; z-index: 1;
+  position: absolute; top: 10px; right: 48px; z-index: 1;
   font-size: 11px; font-weight: 700; color: #fff;
   background: rgba(0, 0, 0, .5); border-radius: 999px; padding: 3px 10px;
 }

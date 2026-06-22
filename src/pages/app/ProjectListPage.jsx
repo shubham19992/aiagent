@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiCalendar, FiTrash2, FiPlus, FiFolder, FiBarChart2, FiSearch } from 'react-icons/fi';
+import { FiCalendar, FiTrash2, FiPlus, FiFolder, FiBarChart2, FiSearch, FiMoreVertical, FiUserPlus } from 'react-icons/fi';
 import { PageHeader } from './_parts';
 import { listProjects, myProjects, removeProject, projectMembers, isDemoProject } from '../../store/projectsStore';
 
@@ -22,6 +22,20 @@ export default function ProjectListPage() {
   const [scope, setScope] = useState('all');     // 'mine' | 'all'
   const [version, setVersion] = useState(0);     // bump to re-read after delete
   const [query, setQuery] = useState('');
+  const [openMenu, setOpenMenu] = useState(null); // project id of the open ⋯ menu
+
+  // Close the open card menu on outside click / Escape.
+  useEffect(() => {
+    if (!openMenu) return undefined;
+    const onDown = (e) => { if (!e.target.closest('[data-pcard-menu]')) setOpenMenu(null); };
+    const onKey = (e) => { if (e.key === 'Escape') setOpenMenu(null); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [openMenu]);
 
   const allProjects = useMemo(
     () => (scope === 'mine' ? myProjects(currentUser) : listProjects()),
@@ -97,6 +111,33 @@ export default function ProjectListPage() {
               const obs = p.observabilities || [];
               return (
                 <div className="xd-pcard" key={p.id}>
+                  {/* ⋯ menu — quick actions even if Assign Members was skipped */}
+                  <div className="xd-pcard-menu" data-pcard-menu>
+                    <button type="button" className="xd-pcard-menu-btn" title="More actions"
+                      aria-haspopup="menu" aria-expanded={openMenu === p.id}
+                      onClick={() => setOpenMenu((id) => (id === p.id ? null : p.id))}>
+                      <FiMoreVertical />
+                    </button>
+                    {openMenu === p.id && (
+                      <div className="xd-pcard-menu-list" role="menu">
+                        <Link to={`/dashboard/projects/${p.id}/assign`} className="xd-pcard-menu-item" role="menuitem"
+                          onClick={() => setOpenMenu(null)}>
+                          <FiUserPlus /> Assign Members
+                        </Link>
+                        <Link to={`/dashboard/projects/${p.id}`} className="xd-pcard-menu-item" role="menuitem"
+                          onClick={() => setOpenMenu(null)}>
+                          <FiBarChart2 /> Open
+                        </Link>
+                        {!isDemoProject(p) && (
+                          <button type="button" className="xd-pcard-menu-item danger" role="menuitem"
+                            onClick={() => { setOpenMenu(null); del(p.id); }}>
+                            <FiTrash2 /> Delete project
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                   {/* cover: uploaded image or a generated gradient with the initial */}
                   <Link to={`/dashboard/projects/${p.id}`} className="xd-pcard-cover"
                     style={p.image
