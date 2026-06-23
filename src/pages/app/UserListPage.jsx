@@ -1,8 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiSearch, FiUserPlus, FiUsers } from 'react-icons/fi';
+import { FiSearch, FiUserPlus, FiUsers, FiEdit2, FiTrash2, FiX } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
-import { listUsers } from '../../api/users';
+import { listUsers, updateUser, deleteUser } from '../../api/users';
+import { uiStore } from '../../store/project/uiStore';
+
+// Org-level roles (Product tier) for the orgRole select.
+const ORG_ROLES = ['SuperAdmin', 'Product_Admin', 'Product_Support'];
 
 // Defensive field accessors — the users API may use snake_case or camelCase.
 const uName = (u) => u.full_name || u.fullName || u.name || u.login || u.email || '—';
@@ -10,17 +14,16 @@ const uLogin = (u) => u.login || u.username || '—';
 const uEmail = (u) => u.email || '—';
 const uAdmin = (u) => u.is_admin === true || u.admin === true;
 // org_role can be a string, or an array of { role_name } objects.
-const uRole = (u) => {
+const roleNames = (u) => {
   const r = u.org_role ?? u.orgRole ?? u.role;
   if (Array.isArray(r)) {
-    const names = r
-      .map((x) => (typeof x === 'string' ? x : x?.role_name))
-      .filter(Boolean)
-      .map((n) => n.replace(/_/g, ' '));
-    if (names.length) return names.join(', ');
-  } else if (typeof r === 'string' && r.trim()) {
-    return r;
+    return r.map((x) => (typeof x === 'string' ? x : x?.role_name)).filter(Boolean);
   }
+  return typeof r === 'string' && r.trim() ? [r] : [];
+};
+const uRole = (u) => {
+  const names = roleNames(u).map((n) => n.replace(/_/g, ' '));
+  if (names.length) return names.join(', ');
   return uAdmin(u) ? 'Admin' : '—';
 };
 const u2fa = (u) => (u.two_factor_enabled ?? u.twoFactorEnabled) === true;
@@ -35,6 +38,12 @@ export default function UserListPage() {
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
   const [version, setVersion] = useState(0);
+
+  // Edit modal + delete confirm state.
+  const [editUser, setEditUser] = useState(null);
+  const [editForm, setEditForm] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -52,6 +61,62 @@ export default function UserListPage() {
     });
     return () => { alive = false; };
   }, [version]);
+
+  const refresh = () => setVersion((v) => v + 1);
+
+  const openEdit = (u) => {
+    setEditUser(u);
+    setEditForm({
+      email: uEmail(u) === '—' ? '' : uEmail(u),
+      fullName: u.full_name || u.fullName || '',
+      phoneNumber: u.phone_number || u.phoneNumber || '',
+      orgRole: roleNames(u)[0] || '',
+      admin: uAdmin(u),
+      twoFactorEnabled: u2fa(u),
+      status: uActive(u) ? 'active' : 'inactive',
+    });
+  };
+
+  const closeEdit = () => { setEditUser(null); setEditForm(null); };
+
+  const setF = (k, v) => setEditForm((f) => ({ ...f, [k]: v }));
+
+  const saveEdit = async (e) => {
+    e.preventDefault();
+    if (!editForm.email.trim()) { uiStore.showError('Email is required'); return; }
+    setBusy(true);
+    try {
+      await updateUser(editUser.id, {
+        email: editForm.email.trim(),
+        fullName: editForm.fullName.trim(),
+        phoneNumber: editForm.phoneNumber.trim(),
+        orgRole: editForm.orgRole,
+        admin: editForm.admin,
+        twoFactorEnabled: editForm.twoFactorEnabled,
+        status: editForm.status,
+      });
+      closeEdit();
+      refresh();
+    } catch (err) {
+      uiStore.showError(err?.message || 'Failed to update user');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setBusy(true);
+    try {
+      await deleteUser(deleteTarget.id);
+      setDeleteTarget(null);
+      refresh();
+    } catch (err) {
+      uiStore.showError(err?.message || 'Failed to delete user');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -90,7 +155,7 @@ export default function UserListPage() {
           <div className="xd-empty">
             <FiUsers />
             <p>{error}</p>
-            <button className="xd-btn xd-btn-sm" type="button" onClick={() => setVersion((v) => v + 1)}>Retry</button>
+            <button className="xd-btn xd-btn-sm" type="button" onClick={refresh}>Retry</button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="xd-empty">
@@ -111,6 +176,7 @@ export default function UserListPage() {
                   <th>Role</th>
                   <th>2FA</th>
                   <th>Status</th>
+                  <th className="xd-col-actions">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -132,6 +198,14 @@ export default function UserListPage() {
                         {uActive(u) ? 'Active' : 'Inactive'}
                       </span>
                     </td>
+                    <td>
+                      <div className="xd-row-actions">
+                        <button type="button" className="xd-icon-btn" title="Edit"
+                          onClick={() => openEdit(u)}><FiEdit2 /></button>
+                        <button type="button" className="xd-icon-btn xd-icon-btn-danger" title="Delete"
+                          onClick={() => setDeleteTarget(u)}><FiTrash2 /></button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -139,6 +213,98 @@ export default function UserListPage() {
           </div>
         )}
       </main>
+
+      {/* ── Edit user modal ── */}
+      {editForm && (
+        <div className="xd-modal-overlay" onMouseDown={closeEdit}>
+          <div className="xd-modal" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="xd-modal-head">
+              <h3>Edit User</h3>
+              <button type="button" className="xd-icon-btn" onClick={closeEdit}><FiX /></button>
+            </div>
+            <form onSubmit={saveEdit}>
+              <div className="xd-modal-body">
+                <div className="xd-field-row3">
+                  <div className="xd-conn-field">
+                    <label className="xd-conn-label">Full Name</label>
+                    <input className="xd-conn-input" value={editForm.fullName}
+                      onChange={(e) => setF('fullName', e.target.value)} />
+                  </div>
+                  <div className="xd-conn-field">
+                    <label className="xd-conn-label">Email<span className="xd-req">*</span></label>
+                    <input className="xd-conn-input" type="email" value={editForm.email}
+                      onChange={(e) => setF('email', e.target.value)} />
+                  </div>
+                  <div className="xd-conn-field">
+                    <label className="xd-conn-label">Phone Number</label>
+                    <input className="xd-conn-input" value={editForm.phoneNumber}
+                      placeholder="optional" onChange={(e) => setF('phoneNumber', e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="xd-field-row3">
+                  <div className="xd-conn-field">
+                    <label className="xd-conn-label">Org Role</label>
+                    <select className="xd-conn-input" value={editForm.orgRole}
+                      onChange={(e) => setF('orgRole', e.target.value)}>
+                      <option value="">— None —</option>
+                      {ORG_ROLES.map((r) => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
+                    </select>
+                  </div>
+                  <div className="xd-conn-field">
+                    <label className="xd-conn-label">Status</label>
+                    <select className="xd-conn-input" value={editForm.status}
+                      onChange={(e) => setF('status', e.target.value)}>
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </div>
+                  <div className="xd-conn-field">
+                    <label className="xd-conn-label">Options</label>
+                    <div className="xd-check-row">
+                      <label className="xd-check">
+                        <input type="checkbox" checked={editForm.admin}
+                          onChange={(e) => setF('admin', e.target.checked)} />
+                        <span>Admin</span>
+                      </label>
+                      <label className="xd-check">
+                        <input type="checkbox" checked={editForm.twoFactorEnabled}
+                          onChange={(e) => setF('twoFactorEnabled', e.target.checked)} />
+                        <span>2FA</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="xd-modal-foot">
+                <button type="button" className="xd-btn-ghost" onClick={closeEdit} disabled={busy}>Cancel</button>
+                <button type="submit" className="xd-btn" disabled={busy}>{busy ? 'Saving…' : 'Save Changes'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete confirm ── */}
+      {deleteTarget && (
+        <div className="xd-modal-overlay" onMouseDown={() => !busy && setDeleteTarget(null)}>
+          <div className="xd-modal xd-modal-sm" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="xd-modal-head">
+              <h3>Delete User</h3>
+              <button type="button" className="xd-icon-btn" onClick={() => setDeleteTarget(null)} disabled={busy}><FiX /></button>
+            </div>
+            <div className="xd-modal-body">
+              <p>Are you sure you want to delete <strong>{uName(deleteTarget)}</strong>? This action cannot be undone.</p>
+            </div>
+            <div className="xd-modal-foot">
+              <button type="button" className="xd-btn-ghost" onClick={() => setDeleteTarget(null)} disabled={busy}>Cancel</button>
+              <button type="button" className="xd-btn xd-btn-danger" onClick={confirmDelete} disabled={busy}>
+                {busy ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

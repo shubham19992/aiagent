@@ -23,3 +23,23 @@ export async function createUser(data) {
   const json = await api.post(ENDPOINTS.users.create, data);
   return json?.data || json || null;
 }
+
+// GET /api/v3/users/{id}
+export async function getUser(id) {
+  const json = await api.get(ENDPOINTS.users.get(id));
+  return json?.data || json || null;
+}
+
+// PATCH /api/v3/users/{id}
+// data: { email, fullName, phoneNumber, orgRole, admin,
+//         twoFactorEnabled, status, projectIds }
+export async function updateUser(id, data) {
+  const json = await api.patch(ENDPOINTS.users.update(id), data);
+  return json?.data || json || null;
+}
+
+// DELETE /api/v3/users/{id}
+export async function deleteUser(id) {
+  const json = await api.del(ENDPOINTS.users.remove(id));
+  return json?.data || json || null;
+}

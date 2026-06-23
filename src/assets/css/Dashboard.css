@@ -452,6 +452,36 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
   border: 1px solid var(--xd-line); background: var(--xd-card); color: var(--xd-ink);
 }
 .xd-icon-btn:hover { border-color: var(--xd-emerald); color: var(--xd-emerald); }
+.xd-icon-btn:disabled { opacity: .5; cursor: not-allowed; }
+.xd-icon-btn-danger:hover { border-color: #e5484d; color: #e5484d; }
+.xd-row-actions { display: inline-flex; gap: 8px; }
+.xd-col-actions { text-align: left; }
+.xd-btn-danger { background: #e5484d; border-color: #e5484d; }
+.xd-btn-danger:hover { background: #d23b40; border-color: #d23b40; }
+
+/* ── generic modal (edit user / confirm) ── */
+.xd-modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  background: rgba(15, 23, 32, .45);
+}
+.xd-modal {
+  width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto;
+  background: var(--xd-card); border: 1px solid var(--xd-line); border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .28);
+}
+.xd-modal-sm { max-width: 440px; }
+.xd-modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px; border-bottom: 1px solid var(--xd-line);
+}
+.xd-modal-head h3 { margin: 0; font-size: 16px; font-weight: 800; }
+.xd-modal-body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.xd-modal-body p { margin: 0; font-size: 14px; color: var(--xd-ink); line-height: 1.5; }
+.xd-modal-foot {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 14px 18px; border-top: 1px solid var(--xd-line);
+}
 .xd-am-opcode { color: var(--xd-soft); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: .03em; }
 .xd-ms-empty { padding: 10px 12px; font-size: 13px; }
 
