@@ -91,7 +91,7 @@ export default function EnvPage() {
                 to={`/dashboard/observability/${opCode}/${envCode}/connect`}
                 className="xd-btn xd-connect-cta-btn"
               >
-                Connect <FiArrowRight />
+                Create Connect <FiArrowRight />
               </Link>
             </div>
           </>

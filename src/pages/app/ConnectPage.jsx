@@ -68,13 +68,13 @@ export default function ConnectPage() {
           { label: 'Observability', to: '/dashboard' },
           { label: opName, to: `/dashboard/observability/${opCode}` },
           { label: envName, to: envPath },
-          { label: 'Connect' },
+          { label: 'Create Connect' },
         ]}
         source={source}
       />
       <main className="xd-main">
         <div className="xd-pagelead">
-          <h1>Connect · {opName} · {envName}</h1>
+          <h1>Create Connect · {opName} · {envName}</h1>
           <p>Provide the parameters needed to connect this environment and start collecting measures.</p>
         </div>
 
