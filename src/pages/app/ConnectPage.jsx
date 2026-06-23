@@ -103,10 +103,12 @@ export default function ConnectPage() {
           values,
           secret_keys: secretKeys,
         });
+        // After updating, return to the op page connections table.
+        navigate(`/dashboard/observability/${opCode}`);
       } else {
         const values = {};
         params.forEach((p) => { values[p.param_key] = String(form[p.param_key] ?? ''); });
-        await createCredential({
+        const created = await createCredential({
           name: connName.trim() || `${opName} · ${envName}`,
           op_code: opCode,
           env_code: envCode,
@@ -114,10 +116,9 @@ export default function ConnectPage() {
           values,
           secret_keys: secretKeys,
         });
+        // Save & Connect kicks off discovery — show the result screen.
+        navigate(`/dashboard/observability/${opCode}/${envCode}/discovery`, { state: { connection: created } });
       }
-      // Land on the op page (opened from the side menu) where the
-      // credential shows up in the Connections table.
-      navigate(`/dashboard/observability/${opCode}`);
     } catch (err) {
       setError(err?.message || (editing ? 'Failed to update connection.' : 'Failed to create connection.'));
       setSaving(false);

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useOutletContext } from 'react-router-dom';
-import { FiArrowRight, FiTrash2, FiEdit2 } from 'react-icons/fi';
+import { FiArrowRight, FiTrash2, FiEdit2, FiZap } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listEnvs } from '../../api/observability';
 import { listCredentials, deleteCredential } from '../../api/credentials';
@@ -45,6 +45,11 @@ export default function OpPage() {
   // the credential along so it can prefill and PATCH.
   const editConn = (c) => {
     navigate(`/dashboard/observability/${opCode}/${c.env_code}/connect`, { state: { credential: c } });
+  };
+
+  // Connect: run discovery for this connection and show the result screen.
+  const connectRun = (c) => {
+    navigate(`/dashboard/observability/${opCode}/${c.env_code}/discovery`, { state: { connection: c } });
   };
 
   // envCode -> display name, from the loaded environments.
@@ -141,6 +146,9 @@ export default function OpPage() {
                       <td className="xd-conn-cell-date">{fmtDateTime(c.created_at)}</td>
                       <td>
                         <div className="xd-conn-row-actions">
+                          <button type="button" className="xd-btn xd-btn-sm" title="Run discovery" onClick={() => connectRun(c)}>
+                            <FiZap /> Connect
+                          </button>
                           <button type="button" className="xd-icon-btn" title="Edit connection" onClick={() => editConn(c)}>
                             <FiEdit2 />
                           </button>
