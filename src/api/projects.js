@@ -136,3 +136,13 @@ export async function patchProject(id, partial) {
 export async function deleteProject(id) {
   await call(`/api/v3/projects/${enc(id)}`, { method: 'DELETE' });
 }
+
+// Replace a project's member assignments.
+// members: [{ user_id, user_name, role: 'member'|'admin', observabilities: [opCode] }]
+export async function setMembers(projectId, members) {
+  const json = await call(`/api/v3/projects/${enc(projectId)}/members`, {
+    method: 'PUT',
+    body: { members: members || [] },
+  });
+  return json?.data || null;
+}

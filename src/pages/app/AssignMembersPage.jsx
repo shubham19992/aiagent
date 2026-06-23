@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers, FiUserPlus, FiShield } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listUsers } from '../../api/users';
-import { getProject } from '../../api/projects';
+import { getProject, setMembers } from '../../api/projects';
 import { getMembership, setMembership } from '../../store/projectsStore';
+import { tokenStore } from '../../api/client';
 
 // Display name from whatever fields the users API returns.
 const userName = (u) =>
@@ -28,6 +29,8 @@ export default function AssignMembersPage() {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const currentUser = sessionStorage.getItem('uidai_user') || 'You';
+  const me = tokenStore.getUser() || {};
+  const myId = me.id || me.user_id || me.uuid || 'me';
 
   const [project, setProject] = useState(null);
   const [notFound, setNotFound] = useState(false);
@@ -35,6 +38,8 @@ export default function AssignMembersPage() {
   const [users, setUsers] = useState([]);
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
   const membership = getMembership(projectId);
   const [assignments, setAssignments] = useState(membership.assignments);
   const [roles, setRoles] = useState(membership.roles);
@@ -75,12 +80,12 @@ export default function AssignMembersPage() {
 
   // Members = the logged-in user first, then users fetched from the API.
   const memberOptions = useMemo(() => {
-    const me = { id: 'me', name: currentUser, you: true };
+    const meOpt = { id: myId, name: currentUser, you: true };
     const others = users
       .map((u, i) => ({ id: u.id ?? `u${i}`, name: userName(u) }))
       .filter((u) => u.name && u.name !== currentUser);
-    return [me, ...others];
-  }, [currentUser, users]);
+    return [meOpt, ...others];
+  }, [currentUser, myId, users]);
 
   const roleOf = (m) => roles[m] || 'member';
   const isOn = (code, m) => (assignments[code] || []).includes(m);
@@ -115,14 +120,37 @@ export default function AssignMembersPage() {
     return [...new Set(all)];
   }, [assignments]);
 
-  const save = () => {
+  const save = async () => {
     // Drop roles for members no longer assigned anywhere.
     const cleanRoles = assignedMembers.reduce((acc, m) => {
       acc[m] = roles[m] || 'member';
       return acc;
     }, {});
-    setMembership(projectId, { assignments, roles: cleanRoles });
-    navigate('/dashboard/projects');
+
+    // Build the API payload: one entry per member, listing the
+    // observability codes they're assigned to plus their role.
+    const idByName = Object.fromEntries(memberOptions.map((o) => [o.name, o.id]));
+    const members = assignedMembers.map((name) => ({
+      user_id: idByName[name] || name,
+      user_name: name,
+      role: cleanRoles[name] || 'member',
+      observabilities: Object.entries(assignments)
+        .filter(([, names]) => names.includes(name))
+        .map(([code]) => code),
+    }));
+
+    setSaving(true);
+    setError('');
+    try {
+      await setMembers(projectId, members);
+      // Mirror the assignments locally so the cards/avatars stay in sync
+      // (no GET members endpoint to re-read from yet).
+      setMembership(projectId, { assignments, roles: cleanRoles });
+      navigate('/dashboard/projects');
+    } catch (err) {
+      setError(err?.message || 'Failed to save assignments.');
+      setSaving(false);
+    }
   };
 
   if (notFound) {
@@ -271,12 +299,13 @@ export default function AssignMembersPage() {
             </div>
 
             <div className="xd-assign-bar">
+              {error && <div className="xd-form-error">{error}</div>}
               <div className="xd-assign-bar-actions">
-                <button type="button" className="xd-btn-ghost" onClick={() => navigate('/dashboard/projects')}>
+                <button type="button" className="xd-btn-ghost" onClick={() => navigate('/dashboard/projects')} disabled={saving}>
                   Skip for now
                 </button>
-                <button type="button" className="xd-btn" onClick={save}>
-                  <FiCheckCircle /> Save Assignments
+                <button type="button" className="xd-btn" onClick={save} disabled={saving}>
+                  <FiCheckCircle /> {saving ? 'Saving…' : 'Save Assignments'}
                 </button>
               </div>
             </div>
