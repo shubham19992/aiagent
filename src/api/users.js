@@ -15,3 +15,11 @@ export async function listUsers({ offset = 1, includeDeleted = false } = {}) {
   const els = json?.data?._embedded?.elements;
   return { items: Array.isArray(els) ? els : [], source: 'api' };
 }
+
+// POST /api/v3/users/create
+// data: { login, email, password, fullName, phoneNumber, orgRole,
+//         admin, twoFactorEnabled, projectIds }
+export async function createUser(data) {
+  const json = await api.post(ENDPOINTS.users.create, data);
+  return json?.data || json || null;
+}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FiActivity, FiChevronDown, FiLogOut, FiLoader, FiFolder, FiPlusCircle, FiList, FiMenu } from 'react-icons/fi';
+import { FiActivity, FiChevronDown, FiLogOut, FiLoader, FiFolder, FiPlusCircle, FiList, FiMenu, FiUsers, FiUserPlus } from 'react-icons/fi';
 import '../../assets/css/Dashboard.css';
 import XopsLogo from '../../components/XopsLogo';
 import * as auth from '../../api/auth';
@@ -22,7 +22,7 @@ export default function AppLayout() {
   const [ops, setOps] = useState([]);
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState({ observability: true, project: true });
+  const [open, setOpen] = useState({ observability: true, project: true, users: true });
   const toggle = (k) => setOpen((s) => ({ ...s, [k]: !s[k] }));
 
   useEffect(() => {
@@ -134,6 +134,39 @@ export default function AppLayout() {
                     className={({ isActive }) => `xd-nav-item ${isActive ? 'active' : ''}`}>
                     <span className="xd-nav-item-icon"><FiList /></span>
                     <span className="xd-nav-item-text">Project List</span>
+                  </NavLink>
+                </li>
+              </ul>
+            )}
+          </div>
+
+          {/* User Management */}
+          <div className="xd-nav-group">
+            <button
+              className="xd-nav-group-head"
+              onClick={() => toggle('users')}
+              type="button"
+              aria-expanded={open.users}
+            >
+              <span className="xd-nav-group-icon"><FiUsers /></span>
+              <span className="xd-nav-group-label">User Management</span>
+              <FiChevronDown className={`xd-nav-caret ${open.users ? 'open' : ''}`} />
+            </button>
+
+            {open.users && (
+              <ul className="xd-nav-items">
+                <li>
+                  <NavLink to="/dashboard/users/new"
+                    className={({ isActive }) => `xd-nav-item ${isActive ? 'active' : ''}`}>
+                    <span className="xd-nav-item-icon"><FiUserPlus /></span>
+                    <span className="xd-nav-item-text">Create User</span>
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/dashboard/users" end
+                    className={({ isActive }) => `xd-nav-item ${isActive ? 'active' : ''}`}>
+                    <span className="xd-nav-item-icon"><FiList /></span>
+                    <span className="xd-nav-item-text">User List</span>
                   </NavLink>
                 </li>
               </ul>

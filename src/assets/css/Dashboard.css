@@ -333,6 +333,20 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 
 .xd-conn-row-actions { display: inline-flex; gap: 8px; align-items: center; justify-content: flex-end; }
 
+/* ── user management ── */
+.xd-u-cell { display: inline-flex; align-items: center; gap: 10px; }
+.xd-u-admin { background: rgba(245,112,28,.14); color: var(--xd-emerald); }
+.xd-check-row { display: flex; flex-wrap: wrap; gap: 18px; padding-top: 4px; }
+.xd-check { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+.xd-check input { width: 16px; height: 16px; cursor: pointer; }
+.xd-chip-pick { display: flex; flex-wrap: wrap; gap: 8px; }
+.xd-chip {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  padding: 7px 12px; border-radius: 999px; font-size: 13px; font-weight: 600;
+  border: 1px solid var(--xd-line); background: var(--xd-card-2); color: var(--xd-ink);
+}
+.xd-chip.on { border-color: var(--xd-emerald); color: var(--xd-emerald); background: rgba(245,112,28,.1); }
+
 /* ── cloud discovery result ── */
 .xd-disc-hero {
   display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 20px;
