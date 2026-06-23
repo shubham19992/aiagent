@@ -200,7 +200,6 @@ export default function UserListPage() {
                   <th>Login</th>
                   <th>Email</th>
                   <th>Role</th>
-                  <th>2FA</th>
                   <th>Status</th>
                   <th className="xd-col-actions">Actions</th>
                 </tr>
@@ -218,7 +217,6 @@ export default function UserListPage() {
                     <td>{uLogin(u)}</td>
                     <td>{uEmail(u)}</td>
                     <td>{uRole(u)}</td>
-                    <td>{u2fa(u) ? 'On' : 'Off'}</td>
                     <td>
                       <span className={`xd-status ${uActive(u) ? 'xd-status-active' : 'xd-status-onhold'}`}>
                         {uActive(u) ? 'Active' : 'Inactive'}
