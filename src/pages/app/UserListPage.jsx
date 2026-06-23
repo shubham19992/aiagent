@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiSearch, FiUserPlus, FiUsers, FiEdit2, FiTrash2, FiX } from 'react-icons/fi';
+import { FiSearch, FiUserPlus, FiUsers, FiEdit2, FiTrash2, FiX, FiCheck, FiChevronDown } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listUsers, updateUser, deleteUser } from '../../api/users';
+import { listProjects } from '../../api/projects';
 import { uiStore } from '../../store/project/uiStore';
 
 // Org-level roles (Product tier) for the orgRole select.
@@ -45,6 +46,25 @@ export default function UserListPage() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [busy, setBusy] = useState(false);
 
+  // Projects multi-select (mirrors the Create User form).
+  const [projects, setProjects] = useState([]);
+  const [projectIds, setProjectIds] = useState([]);
+  const [projOpen, setProjOpen] = useState(false);
+  const projRef = useRef(null);
+
+  useEffect(() => {
+    listProjects().then((items) => setProjects(items)).catch(() => setProjects([]));
+  }, []);
+
+  useEffect(() => {
+    const onDoc = (e) => { if (projRef.current && !projRef.current.contains(e.target)) setProjOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, []);
+
+  const toggleProject = (id) =>
+    setProjectIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+
   useEffect(() => {
     let alive = true;
     setLoading(true);
@@ -67,17 +87,22 @@ export default function UserListPage() {
   const openEdit = (u) => {
     setEditUser(u);
     setEditForm({
+      login: uLogin(u) === '—' ? '' : uLogin(u),
       email: uEmail(u) === '—' ? '' : uEmail(u),
       fullName: u.full_name || u.fullName || '',
       phoneNumber: u.phone_number || u.phoneNumber || '',
       orgRole: roleNames(u)[0] || '',
+      // Carried through unchanged — no UI in edit (matches Create form).
       admin: uAdmin(u),
       twoFactorEnabled: u2fa(u),
       status: uActive(u) ? 'active' : 'inactive',
     });
+    const ids = u.project_ids ?? u.projectIds ?? (Array.isArray(u.projects) ? u.projects.map((p) => p.id) : []);
+    setProjectIds(Array.isArray(ids) ? ids : []);
+    setProjOpen(false);
   };
 
-  const closeEdit = () => { setEditUser(null); setEditForm(null); };
+  const closeEdit = () => { setEditUser(null); setEditForm(null); setProjectIds([]); setProjOpen(false); };
 
   const setF = (k, v) => setEditForm((f) => ({ ...f, [k]: v }));
 
@@ -94,6 +119,7 @@ export default function UserListPage() {
         admin: editForm.admin,
         twoFactorEnabled: editForm.twoFactorEnabled,
         status: editForm.status,
+        projectIds,
       });
       closeEdit();
       refresh();
@@ -228,17 +254,16 @@ export default function UserListPage() {
                   <div className="xd-conn-field">
                     <label className="xd-conn-label">Full Name</label>
                     <input className="xd-conn-input" value={editForm.fullName}
-                      onChange={(e) => setF('fullName', e.target.value)} />
+                      placeholder="e.g. John Doe" onChange={(e) => setF('fullName', e.target.value)} />
+                  </div>
+                  <div className="xd-conn-field">
+                    <label className="xd-conn-label">Login</label>
+                    <input className="xd-conn-input" value={editForm.login} disabled readOnly />
                   </div>
                   <div className="xd-conn-field">
                     <label className="xd-conn-label">Email<span className="xd-req">*</span></label>
                     <input className="xd-conn-input" type="email" value={editForm.email}
-                      onChange={(e) => setF('email', e.target.value)} />
-                  </div>
-                  <div className="xd-conn-field">
-                    <label className="xd-conn-label">Phone Number</label>
-                    <input className="xd-conn-input" value={editForm.phoneNumber}
-                      placeholder="optional" onChange={(e) => setF('phoneNumber', e.target.value)} />
+                      placeholder="user@example.com" onChange={(e) => setF('email', e.target.value)} />
                   </div>
                 </div>
 
@@ -252,27 +277,39 @@ export default function UserListPage() {
                     </select>
                   </div>
                   <div className="xd-conn-field">
-                    <label className="xd-conn-label">Status</label>
-                    <select className="xd-conn-input" value={editForm.status}
-                      onChange={(e) => setF('status', e.target.value)}>
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
+                    <label className="xd-conn-label">Phone Number</label>
+                    <input className="xd-conn-input" value={editForm.phoneNumber}
+                      placeholder="optional" onChange={(e) => setF('phoneNumber', e.target.value)} />
                   </div>
                   <div className="xd-conn-field">
-                    <label className="xd-conn-label">Options</label>
-                    <div className="xd-check-row">
-                      <label className="xd-check">
-                        <input type="checkbox" checked={editForm.admin}
-                          onChange={(e) => setF('admin', e.target.checked)} />
-                        <span>Admin</span>
-                      </label>
-                      <label className="xd-check">
-                        <input type="checkbox" checked={editForm.twoFactorEnabled}
-                          onChange={(e) => setF('twoFactorEnabled', e.target.checked)} />
-                        <span>2FA</span>
-                      </label>
-                    </div>
+                    <label className="xd-conn-label">Projects</label>
+                    {projects.length === 0 ? (
+                      <div className="xd-muted">No projects available.</div>
+                    ) : (
+                      <div className="xd-ms" ref={projRef}>
+                        <button type="button" className="xd-conn-input xd-ms-toggle"
+                          onClick={() => setProjOpen((o) => !o)}>
+                          <span className={projectIds.length ? '' : 'xd-ms-ph'}>
+                            {projectIds.length ? `${projectIds.length} selected` : '— Select projects —'}
+                          </span>
+                          <FiChevronDown />
+                        </button>
+                        {projOpen && (
+                          <div className="xd-ms-menu">
+                            {projects.map((p) => {
+                              const on = projectIds.includes(p.id);
+                              return (
+                                <label key={p.id} className="xd-ms-opt">
+                                  <input type="checkbox" checked={on} onChange={() => toggleProject(p.id)} />
+                                  <span>{p.name}</span>
+                                  {on && <FiCheck className="xd-ms-tick" />}
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
