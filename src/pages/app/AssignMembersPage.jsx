@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers, FiUserPlus, FiShield, FiLink } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
-import { listAssignableUsers } from '../../api/authz';
+import { listUsers } from '../../api/users';
 import { getProject } from '../../api/projects';
 import { listCredentials } from '../../api/credentials';
 import { getMembers, saveMembers } from '../../api/members';
@@ -12,9 +12,28 @@ import { tokenStore } from '../../api/client';
 // Short two-letter badge from an op name (AIOps -> "AI").
 const opBadge = (name) => name.replace(/Ops$/i, '').slice(0, 2).toUpperCase();
 
-// Project-level roles a member can hold (API role codes).
-const ROLE_OPTIONS = [
-  { value: 'project_admin', label: 'Project Admin' },
+// Display name from whatever fields the users API returns.
+const userName = (u) =>
+  u.name || u.full_name || u.fullName || u.username || u.email || String(u.id ?? '');
+
+// Project-level roles (apply to any observability in the project).
+const PROJECT_ROLES = [
+  { value: 'Project_Admin', label: 'Project Admin' },
+  { value: 'Project_Member', label: 'Project Member' },
+  { value: 'Project_Observe', label: 'Project Observe' },
+];
+
+// Human label for any role value (e.g. InfraOps_Observe_Cost -> "InfraOps Observe Cost").
+const prettyRole = (value) => String(value || '').replace(/_/g, ' ');
+const isAdminRole = (value) => /(_|^)admin$/i.test(String(value || ''));
+
+// Observability-level roles, templated per op (e.g. InfraOps_Admin).
+const opRoles = (opName) => [
+  { value: `${opName}_Admin`, label: `${opName} Admin` },
+  { value: `${opName}_Observe`, label: `${opName} Observe` },
+  { value: `${opName}_Member`, label: `${opName} Member` },
+  { value: `${opName}_Observe_Basic`, label: `${opName} Observe · Basic` },
+  { value: `${opName}_Observe_Cost`, label: `${opName} Observe · Cost` },
 ];
 
 /**
@@ -34,8 +53,7 @@ export default function AssignMembersPage() {
   const [notFound, setNotFound] = useState(false);
 
   const [creds, setCreds] = useState([]);           // all credentials
-  const [adminUsers, setAdminUsers] = useState([]); // assignable as project_admin
-  const [memberUsers, setMemberUsers] = useState([]); // assignable as project_member
+  const [users, setUsers] = useState([]);           // candidate users
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -52,6 +70,12 @@ export default function AssignMembersPage() {
   const credById = useMemo(() => Object.fromEntries(creds.map((c) => [c.id, c])), [creds]);
   const credsForOp = useMemo(() => creds.filter((c) => c.op_code === activeOp), [creds, activeOp]);
   const opName = (code) => obs.find((o) => o.code === code)?.name || code;
+
+  // Roles available for the selected observability: project-level + op-level.
+  const roleOptions = useMemo(
+    () => (activeOp ? [...PROJECT_ROLES, ...opRoles(opName(activeOp))] : PROJECT_ROLES),
+    [activeOp, obs], // eslint-disable-line react-hooks/exhaustive-deps
+  );
 
   // Close the open user dropdown on outside click / Escape.
   useEffect(() => {
@@ -72,16 +96,14 @@ export default function AssignMembersPage() {
     Promise.all([
       getProject(projectId),
       listCredentials().catch(() => []),
-      listAssignableUsers('project_admin').catch(() => ({ items: [] })),
-      listAssignableUsers('project_member').catch(() => ({ items: [] })),
+      listUsers().catch(() => ({ items: [] })),
       getMembers(projectId).catch(() => ({})),
-    ]).then(([proj, credItems, adminRes, memberRes, existing]) => {
+    ]).then(([proj, credItems, usersRes, existing]) => {
       if (!alive) return;
       setProject(proj);
       setCreds(credItems);
       setActiveOp(proj?.observabilities?.[0]?.code || '');
-      setAdminUsers(adminRes.items);
-      setMemberUsers(memberRes.items);
+      setUsers(usersRes.items);
       setAssignments(existing && typeof existing === 'object' ? existing : {});
       setSource('api');
       setLoading(false);
@@ -100,8 +122,12 @@ export default function AssignMembersPage() {
     }
   }, [activeOp, creds]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const withYou = (list) => list.map((u) => ({ ...u, you: u.id === myId }));
-  const optionsFor = (role) => withYou(role === 'project_admin' ? adminUsers : memberUsers);
+  // Candidate users (same pool for every role); flag the logged-in user.
+  const userOptions = useMemo(
+    () => users.map((u, i) => ({ id: u.id ?? `u${i}`, name: userName(u), you: (u.id ?? `u${i}`) === myId })),
+    [users, myId],
+  );
+  const optionsFor = () => userOptions;
 
   const listFor = (credId, op) => (credId && op && assignments[credId]?.[op]) || [];
   const roleOfUser = (credId, op, userId) => listFor(credId, op).find((u) => u.userId === userId)?.role;
@@ -262,7 +288,7 @@ export default function AssignMembersPage() {
                         <span>Role</span>
                         <span>Users</span>
                       </div>
-                      {ROLE_OPTIONS.map((role) => {
+                      {roleOptions.map((role) => {
                         const open = openRole === role.value;
                         const count = roleCount(activeCred, activeOp, role.value);
                         return (
@@ -279,10 +305,10 @@ export default function AssignMembersPage() {
                               </button>
                               {open && (
                                 <div className="xd-ms-menu" role="listbox" aria-multiselectable="true">
-                                  {optionsFor(role.value).length === 0 && (
-                                    <div className="xd-ms-empty xd-muted">No assignable users</div>
+                                  {optionsFor().length === 0 && (
+                                    <div className="xd-ms-empty xd-muted">No users</div>
                                   )}
-                                  {optionsFor(role.value).map((m) => {
+                                  {optionsFor().map((m) => {
                                     const on = isOn(activeCred, activeOp, m.id, role.value);
                                     const otherRole = isAssigned(activeCred, activeOp, m.id) && roleOfUser(activeCred, activeOp, m.id) !== role.value;
                                     return (
@@ -293,7 +319,7 @@ export default function AssignMembersPage() {
                                         <span className="xd-am-ava">{m.name.charAt(0).toUpperCase()}</span>
                                         <span className="xd-ms-opt-name">
                                           {m.name}{m.you ? ' (you)' : ''}
-                                          {otherRole && <span className="xd-am-othertag">already {roleOfUser(activeCred, activeOp, m.id) === 'project_admin' ? 'admin' : 'member'}</span>}
+                                          {otherRole && <span className="xd-am-othertag">already {prettyRole(roleOfUser(activeCred, activeOp, m.id))}</span>}
                                         </span>
                                         {on && <FiCheck className="xd-ms-opt-check" />}
                                       </label>
@@ -327,8 +353,8 @@ export default function AssignMembersPage() {
                         {users.map((u) => (
                           <span className="xd-member-pill" key={u.userId}>
                             <span className="xd-member-ava">{(u.userName || '?').charAt(0).toUpperCase()}</span>{u.userName}
-                            <span className={`xd-am-roletag ${u.role === 'project_admin' ? 'admin' : ''}`}>
-                              {u.role === 'project_admin' ? 'Admin' : 'Member'}
+                            <span className={`xd-am-roletag ${isAdminRole(u.role) ? 'admin' : ''}`}>
+                              {prettyRole(u.role)}
                             </span>
                             <button type="button" className="xd-am-remove" title="Remove"
                               onClick={() => removeUser(credId, op, u.userId)}><FiX /></button>
