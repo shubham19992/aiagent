@@ -9,6 +9,7 @@ import { VscAzure } from 'react-icons/vsc';
 import { SiGooglecloud } from 'react-icons/si';
 import { PageHeader, Spinner } from './_parts';
 import { runDiscovery, parseInsights } from '../../api/discovery';
+import { tokenStore } from '../../api/client';
 
 const ENV_NAME = { aws: 'AWS', azure: 'Azure', gcp: 'GCP' };
 const CLOUD = { aws: 'AWS', azure: 'AZURE', gcp: 'GCP' };
@@ -57,11 +58,18 @@ export default function DiscoveryPage() {
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    runDiscovery({ cloudProvider: CLOUD[envCode] || (envCode || '').toUpperCase() })
+    setError('');
+    const me = tokenStore.getUser() || {};
+    runDiscovery({
+      agentNames: [`${envCode}_discovery`],
+      cloudProvider: CLOUD[envCode] || (envCode || '').toUpperCase(),
+      userId: me.id || me.user_id || me.uuid || '',
+      projectId: connection?.id || '',
+    })
       .then((res) => { if (alive) { setResult(res); setLoading(false); } })
       .catch((err) => { if (alive) { setError(err?.message || 'Discovery failed.'); setLoading(false); } });
     return () => { alive = false; };
-  }, [envCode]);
+  }, [envCode, connection]);
 
   return (
     <>

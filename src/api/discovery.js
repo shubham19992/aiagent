@@ -1,22 +1,38 @@
 // ============================================================
-// discovery.js — kicks off cloud discovery after a connection is saved.
-// Currently returns canned dummy data; swap runDiscovery's body for a
-// real fetch when the discovery API is available.
+// discovery.js — runs cloud-discovery agents and returns their result.
+// POST /api/v3/agents/execute on the agents service (8086); override
+// with VITE_AGENTS_BASE_URL. Called after Save & Connect succeeds and
+// from the connections list "Connect" action.
 // ============================================================
-import { DISCOVERY_RESULT } from '../data/discoveryDummy';
+import { tokenStore } from './client';
 
-// Run discovery for a connection. Returns the discovery response.
-export async function runDiscovery({ cloudProvider, projectId } = {}) {
-  // Deep clone so callers never mutate the shared dummy.
-  const data = JSON.parse(JSON.stringify(DISCOVERY_RESULT));
-  if (cloudProvider) {
-    data.cloudProvider = cloudProvider;
-    (data.results || []).forEach((r) => {
-      if (r.data?.recommendations) r.data.recommendations.cloudProvider = cloudProvider;
-    });
+const RAW = import.meta.env.VITE_AGENTS_BASE_URL || 'http://10.1.151.228:8086';
+export const AGENTS_BASE = RAW.replace(/\/+$/, '');
+
+// body: { agentNames: [..], cloudProvider, userId, projectId }
+export async function runDiscovery({ agentNames, cloudProvider, userId, projectId } = {}) {
+  const token = tokenStore.get();
+  const res = await fetch(`${AGENTS_BASE}/api/v3/agents/execute`, {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ agentNames, cloudProvider, userId, projectId }),
+  });
+  const text = await res.text();
+  let json = null;
+  if (text) { try { json = JSON.parse(text); } catch { json = text; } }
+  if (!res.ok) {
+    const msg =
+      (json && typeof json === 'object' && json.error && json.error.message) ||
+      (json && typeof json === 'object' && json.message) ||
+      (typeof json === 'string' && json) ||
+      `HTTP ${res.status}`;
+    throw new Error(msg);
   }
-  if (projectId) data.projectId = projectId;
-  return data;
+  return json?.data || {};
 }
 
 // Insights can come back either as plain strings or as a ```json fenced
