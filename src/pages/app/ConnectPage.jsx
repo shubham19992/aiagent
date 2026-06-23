@@ -109,16 +109,16 @@ export default function ConnectPage() {
           <Spinner label="Loading parameters…" />
         ) : (
           <form className="xd-card xd-conn-form" onSubmit={onSubmit}>
-            <div className="xd-conn-field xd-conn-name">
-              <label className="xd-conn-label">Connection Name</label>
-              <input
-                className="xd-conn-input"
-                value={connName}
-                placeholder={`e.g. ${envName} production`}
-                onChange={(e) => setConnName(e.target.value)}
-              />
-            </div>
             <div className="xd-conn-grid">
+              <div className="xd-conn-field">
+                <label className="xd-conn-label">Connection Name</label>
+                <input
+                  className="xd-conn-input"
+                  value={connName}
+                  placeholder={`e.g. ${envName} production`}
+                  onChange={(e) => setConnName(e.target.value)}
+                />
+              </div>
               {params.map((p) => {
                 const isSecret = p.is_secret || p.data_type === 'secret';
                 const type = isSecret && !reveal[p.param_key] ? 'password' : 'text';
