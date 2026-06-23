@@ -25,6 +25,7 @@ import AssignMembersPage from "./pages/app/AssignMembersPage";
 import ProjectDashboardPage from "./pages/app/ProjectDashboardPage";
 import UserListPage from "./pages/app/UserListPage";
 import CreateUserPage from "./pages/app/CreateUserPage";
+import EditUserPage from "./pages/app/EditUserPage";
 import { getToken } from "./api/auth";
 
 // A valid login = a real token (the demo placeholder doesn't count).
@@ -77,6 +78,7 @@ export default function App() {
           <Route path="projects/:projectId" element={<ProjectDashboardPage />} />
           <Route path="users" element={<UserListPage />} />
           <Route path="users/new" element={<CreateUserPage />} />
+          <Route path="users/:userId/edit" element={<EditUserPage />} />
         </Route>
 
         {/* Unknown routes → login */}
