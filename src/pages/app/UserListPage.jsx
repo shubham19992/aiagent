@@ -8,10 +8,26 @@ import { listUsers } from '../../api/users';
 const uName = (u) => u.full_name || u.fullName || u.name || u.login || u.email || '—';
 const uLogin = (u) => u.login || u.username || '—';
 const uEmail = (u) => u.email || '—';
-const uRole = (u) => u.org_role || u.orgRole || u.role || (u.admin ? 'Admin' : '') || '—';
-const uAdmin = (u) => u.admin === true;
+const uAdmin = (u) => u.is_admin === true || u.admin === true;
+// org_role can be a string, or an array of { role_name } objects.
+const uRole = (u) => {
+  const r = u.org_role ?? u.orgRole ?? u.role;
+  if (Array.isArray(r)) {
+    const names = r
+      .map((x) => (typeof x === 'string' ? x : x?.role_name))
+      .filter(Boolean)
+      .map((n) => n.replace(/_/g, ' '));
+    if (names.length) return names.join(', ');
+  } else if (typeof r === 'string' && r.trim()) {
+    return r;
+  }
+  return uAdmin(u) ? 'Admin' : '—';
+};
 const u2fa = (u) => (u.two_factor_enabled ?? u.twoFactorEnabled) === true;
-const uActive = (u) => (u.active ?? u.is_active) !== false;
+const uActive = (u) => {
+  if (typeof u.status === 'string') return u.status.toLowerCase() === 'active';
+  return (u.active ?? u.is_active) !== false;
+};
 
 export default function UserListPage() {
   const [users, setUsers] = useState([]);
