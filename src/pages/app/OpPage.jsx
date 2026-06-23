@@ -1,8 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useOutletContext } from 'react-router-dom';
-import { FiArrowRight } from 'react-icons/fi';
+import { FiArrowRight, FiTrash2 } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listEnvs } from '../../api/observability';
+import { listConnectionsByOp, removeConnection } from '../../store/connectionsStore';
+
+const fmtDateTime = (d) => {
+  if (!d) return '—';
+  try { return new Date(d).toLocaleString(undefined, { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+  catch { return d; }
+};
 
 /** Op drill-down: shows the environments available for an op. */
 export default function OpPage() {
@@ -14,6 +21,25 @@ export default function OpPage() {
   const [envs, setEnvs] = useState([]);
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
+  const [conns, setConns] = useState([]);
+  const [connVersion, setConnVersion] = useState(0);
+
+  // Connections created via Create Connect, across all envs of this op.
+  useEffect(() => {
+    setConns(listConnectionsByOp(opCode));
+  }, [opCode, connVersion]);
+
+  const delConn = (envCode, id) => {
+    removeConnection(opCode, envCode, id);
+    setConnVersion((v) => v + 1);
+  };
+
+  // envCode -> display name, from the loaded environments.
+  const envLabel = useMemo(() => {
+    const map = {};
+    envs.forEach((e) => { map[e.code] = e.name; });
+    return (code) => map[code] || (code || '').toUpperCase();
+  }, [envs]);
 
   useEffect(() => {
     let alive = true;
@@ -72,6 +98,51 @@ export default function OpPage() {
               </button>
             ))}
           </div>
+        )}
+
+        {/* Connections created via Create Connect (all envs of this op) */}
+        {conns.length > 0 && (
+          <>
+            <h3 className="xd-subhead">Connections</h3>
+            <div className="xd-card xd-conn-table-card">
+              <table className="xd-conn-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Environment</th>
+                    <th>Parameters</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th aria-label="Actions" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {conns.map((c) => (
+                    <tr key={c.id}>
+                      <td className="xd-conn-cell-name">{c.name}</td>
+                      <td>{envLabel(c.envCode)}</td>
+                      <td>
+                        <div className="xd-conn-params">
+                          {(c.fields || []).map((f, i) => (
+                            <span className="xd-tag" key={i}>
+                              {f.label}: {f.secret ? '••••••' : (f.value || '—')}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td><span className="xd-status xd-status-active">{c.status || 'Connected'}</span></td>
+                      <td className="xd-conn-cell-date">{fmtDateTime(c.createdAt)}</td>
+                      <td>
+                        <button type="button" className="xd-proj-del" title="Delete connection" onClick={() => delConn(c.envCode, c.id)}>
+                          <FiTrash2 />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </main>
     </>

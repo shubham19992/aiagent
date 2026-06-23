@@ -1,17 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useOutletContext, Link } from 'react-router-dom';
 import {
-  FiDollarSign, FiWifi, FiCpu, FiDatabase, FiShield, FiActivity, FiLink, FiArrowRight, FiTrash2,
+  FiDollarSign, FiWifi, FiCpu, FiDatabase, FiShield, FiActivity, FiLink, FiArrowRight,
 } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listMeasures } from '../../api/observability';
-import { listConnections, removeConnection } from '../../store/connectionsStore';
-
-const fmtDateTime = (d) => {
-  if (!d) return '—';
-  try { return new Date(d).toLocaleString(undefined, { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
-  catch { return d; }
-};
 
 const MEASURE_ICON = {
   cost: <FiDollarSign />,
@@ -32,18 +25,6 @@ export default function EnvPage() {
   const [measures, setMeasures] = useState([]);
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
-  const [conns, setConns] = useState([]);
-  const [connVersion, setConnVersion] = useState(0);
-
-  // Connections created on the Create Connect page (re-reads after delete).
-  useEffect(() => {
-    setConns(listConnections(opCode, envCode));
-  }, [opCode, envCode, connVersion]);
-
-  const delConn = (id) => {
-    removeConnection(opCode, envCode, id);
-    setConnVersion((v) => v + 1);
-  };
 
   useEffect(() => {
     let alive = true;
@@ -113,49 +94,6 @@ export default function EnvPage() {
                 Create Connect <FiArrowRight />
               </Link>
             </div>
-
-            {/* Connections created via Create Connect */}
-            {conns.length > 0 && (
-              <>
-                <h3 className="xd-subhead">Connections</h3>
-                <div className="xd-card xd-conn-table-card">
-                  <table className="xd-conn-table">
-                    <thead>
-                      <tr>
-                        <th>Name</th>
-                        <th>Parameters</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                        <th aria-label="Actions" />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {conns.map((c) => (
-                        <tr key={c.id}>
-                          <td className="xd-conn-cell-name">{c.name}</td>
-                          <td>
-                            <div className="xd-conn-params">
-                              {(c.fields || []).map((f, i) => (
-                                <span className="xd-tag" key={i}>
-                                  {f.label}: {f.secret ? '••••••' : (f.value || '—')}
-                                </span>
-                              ))}
-                            </div>
-                          </td>
-                          <td><span className="xd-status xd-status-active">{c.status || 'Connected'}</span></td>
-                          <td className="xd-conn-cell-date">{fmtDateTime(c.createdAt)}</td>
-                          <td>
-                            <button type="button" className="xd-proj-del" title="Delete connection" onClick={() => delConn(c.id)}>
-                              <FiTrash2 />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            )}
           </>
         )}
       </main>

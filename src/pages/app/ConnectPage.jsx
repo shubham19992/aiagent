@@ -69,7 +69,9 @@ export default function ConnectPage() {
       name: connName.trim() || `${opName} · ${envName}`,
       fields,
     });
-    navigate(envPath);
+    // Land on the op page (opened from the side menu) where the new
+    // connection shows up in the Connections table.
+    navigate(`/dashboard/observability/${opCode}`);
   };
 
   return (

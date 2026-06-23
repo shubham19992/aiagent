@@ -33,6 +33,20 @@ export function listConnections(opCode, envCode) {
   return Array.isArray(list) ? list : [];
 }
 
+/** All connections across every env of an op, each tagged with its envCode. */
+export function listConnectionsByOp(opCode) {
+  const all = readAll();
+  const prefix = `${opCode}/`;
+  const out = [];
+  Object.keys(all).forEach((k) => {
+    if (k.startsWith(prefix)) {
+      const envCode = k.slice(prefix.length);
+      (all[k] || []).forEach((c) => out.push({ ...c, envCode }));
+    }
+  });
+  return out;
+}
+
 /** Append a connection. `record` carries { name, fields: [{label,value,secret}] }. */
 export function addConnection(opCode, envCode, record) {
   const all = readAll();
