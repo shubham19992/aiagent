@@ -1090,8 +1090,8 @@ select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink
   background: var(--xd-card); border-top: 1px solid var(--xd-line);
 }
 
-/* one card holding both panels */
-.xd-am-card { padding: 0; display: flex; }
+/* stacked scope cards (Project / Observability / Connection) */
+.xd-am-card { padding: 18px; display: flex; flex-direction: column; }
 .xd-am-2col {
   flex: 1;
   display: grid; grid-template-columns: 1fr 1fr; align-items: stretch;
@@ -1105,8 +1105,10 @@ select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink
 .xd-am-head { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
 .xd-am-head svg { color: var(--xd-emerald); font-size: 17px; }
 .xd-am-head h3 { margin: 0; font-size: 15px; font-weight: 800; }
-.xd-am-panel .xd-conn-label { margin-top: 14px; }
-.xd-am-panel .xd-conn-label:first-of-type { margin-top: 0; }
+.xd-am-scope-hint { margin-left: auto; font-size: 12px; color: var(--xd-soft); font-weight: 600; }
+.xd-am-card .xd-conn-label { margin-top: 14px; }
+.xd-am-card .xd-conn-label:first-of-type { margin-top: 0; }
+.xd-am-card .xd-am-summary { margin-top: 14px; }
 
 /* observability pills */
 .xd-am-ops { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }

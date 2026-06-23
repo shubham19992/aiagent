@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers, FiUserPlus, FiShield, FiLink } from 'react-icons/fi';
+import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers, FiShield, FiLink, FiFolder, FiEye } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listUsers } from '../../api/users';
 import { getProject } from '../../api/projects';
@@ -16,7 +16,7 @@ const opBadge = (name) => name.replace(/Ops$/i, '').slice(0, 2).toUpperCase();
 const userName = (u) =>
   u.name || u.full_name || u.fullName || u.username || u.email || String(u.id ?? '');
 
-// Project-level roles (apply to any observability in the project).
+// Project-level roles (apply across the whole project).
 const PROJECT_ROLES = [
   { value: 'Project_Admin', label: 'Project Admin' },
   { value: 'Project_Member', label: 'Project Member' },
@@ -36,12 +36,121 @@ const opRoles = (opName) => [
   { value: `${opName}_Observe_Cost`, label: `${opName} Observe · Cost` },
 ];
 
+// Toggle a user under a role within a flat [{userId,userName,role}] list.
+// Same role again removes; a different role switches the user over.
+const togglePick = (list, user, role) => {
+  const next = [...list];
+  const idx = next.findIndex((u) => u.userId === user.id);
+  if (idx >= 0) {
+    if (next[idx].role === role) next.splice(idx, 1);
+    else next[idx] = { ...next[idx], role };
+  } else {
+    next.push({ userId: user.id, userName: user.name, role });
+  }
+  return next;
+};
+
+/** Self-contained user multi-select dropdown (closes on outside click / Esc). */
+function UserMultiSelect({ placeholder = 'Select users…', userOptions, isSelected, onToggle, count, tagFor }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className="xd-ms" ref={ref}>
+      <button type="button" className="xd-ms-btn" onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox" aria-expanded={open}>
+        <span className="xd-ms-btn-label">{count ? `${count} selected` : placeholder}</span>
+        <FiChevronDown className={`xd-ms-caret ${open ? 'open' : ''}`} />
+      </button>
+      {open && (
+        <div className="xd-ms-menu" role="listbox" aria-multiselectable="true">
+          {userOptions.length === 0 && <div className="xd-ms-empty xd-muted">No users</div>}
+          {userOptions.map((m) => {
+            const on = isSelected(m.id);
+            return (
+              <label key={m.id} className={`xd-ms-opt ${on ? 'on' : ''}`} role="option" aria-selected={on}>
+                <input type="checkbox" checked={on} onChange={() => onToggle(m)} />
+                <span className="xd-am-ava">{m.name.charAt(0).toUpperCase()}</span>
+                <span className="xd-ms-opt-name">
+                  {m.name}{m.you ? ' (you)' : ''}
+                  {tagFor && tagFor(m)}
+                </span>
+                {on && <FiCheck className="xd-ms-opt-check" />}
+              </label>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Pills of assigned members with a remove button. */
+function MemberPills({ list, onRemove, empty = 'No members assigned yet' }) {
+  if (!list || list.length === 0) {
+    return <span className="xd-muted xd-am-none"><FiUsers /> {empty}</span>;
+  }
+  return (
+    <div className="xd-am-pills">
+      {list.map((u) => (
+        <span className="xd-member-pill" key={u.userId}>
+          <span className="xd-member-ava">{(u.userName || '?').charAt(0).toUpperCase()}</span>{u.userName}
+          <span className={`xd-am-roletag ${isAdminRole(u.role) ? 'admin' : ''}`}>{prettyRole(u.role)}</span>
+          <button type="button" className="xd-am-remove" title="Remove" onClick={() => onRemove(u.userId)}><FiX /></button>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** A role → users table (one multi-select per role). Used by Project + Observability. */
+function RoleAssigner({ roles, list, setList, userOptions }) {
+  const isOn = (userId, role) => list.some((u) => u.userId === userId && u.role === role);
+  const roleOf = (userId) => list.find((u) => u.userId === userId)?.role;
+  const count = (role) => list.filter((u) => u.role === role).length;
+
+  return (
+    <div className="xd-am-table">
+      <div className="xd-am-trow xd-am-thead"><span>Role</span><span>Users</span></div>
+      {roles.map((role) => (
+        <div className="xd-am-trow" key={role.value}>
+          <span className="xd-am-trole-label"><FiShield /> {role.label}</span>
+          <UserMultiSelect
+            userOptions={userOptions}
+            count={count(role.value)}
+            isSelected={(id) => isOn(id, role.value)}
+            onToggle={(user) => setList((prev) => togglePick(prev, user, role.value))}
+            tagFor={(m) => {
+              const r = roleOf(m.id);
+              return r && r !== role.value
+                ? <span className="xd-am-othertag">already {prettyRole(r)}</span>
+                : null;
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /**
- * Assign members to a project. Flow: pick an observability the project
- * watches, then pick a connection (Create Connect credential) for that op,
- * then assign Project Admins / Members. Stored / sent as:
- *   { [credentialId]: { [opCode]: [{ userId, userName, role }] } }
- * Existing assignments are prefilled from the members GET API.
+ * Assign members to a project at three scopes (stacked sections):
+ *   1. Project   — users across the whole project (project roles)
+ *   2. Observability — users per observability (op roles)
+ *   3. Connection — simple user list per connection (saved to backend)
+ * NOTE: only the Connection scope is persisted right now; Project and
+ * Observability assignments are local UI state (save wiring TBD).
  */
 export default function AssignMembersPage() {
   const { projectId } = useParams();
@@ -52,43 +161,28 @@ export default function AssignMembersPage() {
   const [project, setProject] = useState(null);
   const [notFound, setNotFound] = useState(false);
 
-  const [creds, setCreds] = useState([]);           // all credentials
-  const [users, setUsers] = useState([]);           // candidate users
+  const [creds, setCreds] = useState([]);
+  const [users, setUsers] = useState([]);
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  // { [credId]: { [opCode]: [{ userId, userName, role }] } }
+  // Scope 1 — project-level (local only): [{ userId, userName, role }]
+  const [projectMembers, setProjectMembers] = useState([]);
+  // Scope 2 — observability-level (local only): { [opCode]: [{ userId, userName, role }] }
+  const [obsMembers, setObsMembers] = useState({});
+  // Scope 3 — connection-level (saved): { [credId]: { [opCode]: [{ userId, userName, role }] } }
   const [assignments, setAssignments] = useState({});
-  const [activeOp, setActiveOp] = useState('');     // selected observability code
+
+  const [obsOp, setObsOp] = useState('');           // selected op for the Observability section
+  const [activeOp, setActiveOp] = useState('');     // selected op for the Connection section
   const [activeCred, setActiveCred] = useState(''); // selected connection id
-  const [openRole, setOpenRole] = useState(null);    // null | role value
-  const msRef = useRef(null);
 
   const obs = project?.observabilities || [];
   const credById = useMemo(() => Object.fromEntries(creds.map((c) => [c.id, c])), [creds]);
   const credsForOp = useMemo(() => creds.filter((c) => c.op_code === activeOp), [creds, activeOp]);
   const opName = (code) => obs.find((o) => o.code === code)?.name || code;
-
-  // Roles available for the selected observability: project-level + op-level.
-  const roleOptions = useMemo(
-    () => (activeOp ? [...PROJECT_ROLES, ...opRoles(opName(activeOp))] : PROJECT_ROLES),
-    [activeOp, obs], // eslint-disable-line react-hooks/exhaustive-deps
-  );
-
-  // Close the open user dropdown on outside click / Escape.
-  useEffect(() => {
-    if (!openRole) return undefined;
-    const onDown = (e) => { if (msRef.current && !msRef.current.contains(e.target)) setOpenRole(null); };
-    const onKey = (e) => { if (e.key === 'Escape') setOpenRole(null); };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDown);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [openRole]);
 
   useEffect(() => {
     let alive = true;
@@ -102,7 +196,9 @@ export default function AssignMembersPage() {
       if (!alive) return;
       setProject(proj);
       setCreds(credItems);
-      setActiveOp(proj?.observabilities?.[0]?.code || '');
+      const firstOp = proj?.observabilities?.[0]?.code || '';
+      setObsOp(firstOp);
+      setActiveOp(firstOp);
       setUsers(usersRes.items);
       setAssignments(existing && typeof existing === 'object' ? existing : {});
       setSource('api');
@@ -122,69 +218,51 @@ export default function AssignMembersPage() {
     }
   }, [activeOp, creds]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Candidate users (same pool for every role); flag the logged-in user.
   const userOptions = useMemo(
     () => users.map((u, i) => ({ id: u.id ?? `u${i}`, name: userName(u), you: (u.id ?? `u${i}`) === myId })),
     [users, myId],
   );
-  const optionsFor = () => userOptions;
 
-  const listFor = (credId, op) => (credId && op && assignments[credId]?.[op]) || [];
-  const roleOfUser = (credId, op, userId) => listFor(credId, op).find((u) => u.userId === userId)?.role;
-  const isOn = (credId, op, userId, role) => listFor(credId, op).some((u) => u.userId === userId && u.role === role);
-  const isAssigned = (credId, op, userId) => listFor(credId, op).some((u) => u.userId === userId);
-  const roleCount = (credId, op, role) => listFor(credId, op).filter((u) => u.role === role).length;
+  // ── Observability scope helpers (operate on the selected op's list) ──
+  const obsList = obsMembers[obsOp] || [];
+  const setObsList = (updater) => setObsMembers((prev) => {
+    const cur = prev[obsOp] || [];
+    const next = typeof updater === 'function' ? updater(cur) : updater;
+    return { ...prev, [obsOp]: next };
+  });
 
-  // Toggle a user under a role for the active connection + op. Picking the
-  // same role again removes them; the other role switches them over.
-  const pickRole = (credId, op, user, role) => {
-    if (!credId || !op) return;
+  // ── Connection scope (simple list per connection + op) ──
+  const credList = (activeCred && activeOp && assignments[activeCred]?.[activeOp]) || [];
+  const isCredUserOn = (userId) => credList.some((u) => u.userId === userId);
+  const toggleCredUser = (user) => {
+    if (!activeCred || !activeOp) return;
     setAssignments((prev) => {
-      const credMap = { ...(prev[credId] || {}) };
-      const list = [...(credMap[op] || [])];
+      const credMap = { ...(prev[activeCred] || {}) };
+      const list = [...(credMap[activeOp] || [])];
       const idx = list.findIndex((u) => u.userId === user.id);
-      if (idx >= 0) {
-        if (list[idx].role === role) list.splice(idx, 1);
-        else list[idx] = { ...list[idx], role };
-      } else {
-        list.push({ userId: user.id, userName: user.name, role });
-      }
-      credMap[op] = list;
-      return { ...prev, [credId]: credMap };
+      if (idx >= 0) list.splice(idx, 1);
+      else list.push({ userId: user.id, userName: user.name, role: 'Project_Member' });
+      credMap[activeOp] = list;
+      return { ...prev, [activeCred]: credMap };
     });
     setError('');
   };
-
-  const removeUser = (credId, op, userId) => {
-    setAssignments((prev) => {
-      const credMap = { ...(prev[credId] || {}) };
-      credMap[op] = (credMap[op] || []).filter((u) => u.userId !== userId);
-      return { ...prev, [credId]: credMap };
-    });
-  };
-
-  // Flatten assignments for the summary panel (only non-empty groups).
-  const summaryRows = useMemo(() => {
-    const rows = [];
-    Object.entries(assignments).forEach(([credId, opMap]) => {
-      Object.entries(opMap || {}).forEach(([op, users]) => {
-        if (users && users.length) rows.push({ credId, op, users });
-      });
-    });
-    return rows;
-  }, [assignments]);
+  const removeCredUser = (userId) => setAssignments((prev) => {
+    const credMap = { ...(prev[activeCred] || {}) };
+    credMap[activeOp] = (credMap[activeOp] || []).filter((u) => u.userId !== userId);
+    return { ...prev, [activeCred]: credMap };
+  });
 
   const save = async () => {
     setSaving(true);
     setError('');
     try {
       await saveMembers(projectId, assignments);
-      // Mirror to the local overlay so list/overview avatars stay in sync.
       const ovA = {}; const ovR = {};
       Object.values(assignments).forEach((opMap) => {
-        Object.entries(opMap || {}).forEach(([op, users]) => {
+        Object.entries(opMap || {}).forEach(([op, list]) => {
           ovA[op] = ovA[op] || [];
-          users.forEach((u) => {
+          list.forEach((u) => {
             if (!ovA[op].includes(u.userName)) ovA[op].push(u.userName);
             ovR[u.userName] = u.role;
           });
@@ -227,7 +305,7 @@ export default function AssignMembersPage() {
       <main className="xd-main xd-am-main">
         <div className="xd-pagelead">
           <h1>Assign Members</h1>
-          <p>Pick an observability, then a connection for it, and assign Project Admins / Members.</p>
+          <p>Assign users at three scopes: the whole project, a single observability, or a specific connection.</p>
         </div>
 
         {loading ? (
@@ -239,133 +317,95 @@ export default function AssignMembersPage() {
           </div>
         ) : (
           <>
+            {/* ── Scope 1: Project-level members ── */}
             <div className="xd-card xd-am-card">
-            <div className="xd-am-2col">
-              {/* ── Left: select members (form) ── */}
-              <div className="xd-am-panel">
-                <div className="xd-am-head"><FiUserPlus /><h3>Select members</h3></div>
-
-                <label className="xd-conn-label">Observability</label>
-                <div className="xd-am-ops">
-                  {obs.map((o) => (
-                    <button key={o.code} type="button"
-                      className={`xd-am-op ${activeOp === o.code ? 'on' : ''}`}
-                      onClick={() => setActiveOp(o.code)}>
-                      {o.name}
-                    </button>
-                  ))}
-                </div>
-
-                <label className="xd-conn-label">Connection</label>
-                {credsForOp.length === 0 ? (
-                  <div className="xd-muted xd-am-none">
-                    <FiLink /> No connection for {opName(activeOp)}. Create one via Create Connect first.
-                  </div>
-                ) : (
-                  <div className="xd-am-ops">
-                    {credsForOp.map((c) => {
-                      const count = listFor(c.id, activeOp).length;
-                      return (
-                        <button key={c.id} type="button"
-                          className={`xd-am-op ${activeCred === c.id ? 'on' : ''}`}
-                          onClick={() => setActiveCred(c.id)}>
-                          {c.name}
-                          {count > 0 && <span className="xd-am-op-count">{count}</span>}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {activeCredObj && (
-                  <>
-                    <label className="xd-conn-label">
-                      Members for {activeCredObj.name}
-                      <span className="xd-am-opcode"> · {opName(activeOp)}</span>
-                    </label>
-                    <div className="xd-am-table" ref={msRef}>
-                      <div className="xd-am-trow xd-am-thead">
-                        <span>Role</span>
-                        <span>Users</span>
-                      </div>
-                      {roleOptions.map((role) => {
-                        const open = openRole === role.value;
-                        const count = roleCount(activeCred, activeOp, role.value);
-                        return (
-                          <div className="xd-am-trow" key={role.value}>
-                            <span className="xd-am-trole-label"><FiShield /> {role.label}</span>
-                            <div className="xd-ms">
-                              <button type="button" className="xd-ms-btn"
-                                onClick={() => setOpenRole(open ? null : role.value)}
-                                aria-haspopup="listbox" aria-expanded={open}>
-                                <span className="xd-ms-btn-label">
-                                  {count ? `${count} selected` : 'Select users…'}
-                                </span>
-                                <FiChevronDown className={`xd-ms-caret ${open ? 'open' : ''}`} />
-                              </button>
-                              {open && (
-                                <div className="xd-ms-menu" role="listbox" aria-multiselectable="true">
-                                  {optionsFor().length === 0 && (
-                                    <div className="xd-ms-empty xd-muted">No users</div>
-                                  )}
-                                  {optionsFor().map((m) => {
-                                    const on = isOn(activeCred, activeOp, m.id, role.value);
-                                    const otherRole = isAssigned(activeCred, activeOp, m.id) && roleOfUser(activeCred, activeOp, m.id) !== role.value;
-                                    return (
-                                      <label key={m.id} className={`xd-ms-opt ${on ? 'on' : ''}`}
-                                        role="option" aria-selected={on}>
-                                        <input type="checkbox" checked={on}
-                                          onChange={() => pickRole(activeCred, activeOp, m, role.value)} />
-                                        <span className="xd-am-ava">{m.name.charAt(0).toUpperCase()}</span>
-                                        <span className="xd-ms-opt-name">
-                                          {m.name}{m.you ? ' (you)' : ''}
-                                          {otherRole && <span className="xd-am-othertag">already {prettyRole(roleOfUser(activeCred, activeOp, m.id))}</span>}
-                                        </span>
-                                        {on && <FiCheck className="xd-ms-opt-check" />}
-                                      </label>
-                                    );
-                                  })}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
+              <div className="xd-am-head"><FiFolder /><h3>Project members</h3>
+                <span className="xd-am-scope-hint">Assigned across the whole project</span>
               </div>
-
-              {/* ── Right: selected / assigned ── */}
-              <div className="xd-am-panel">
-                <div className="xd-am-head"><FiUsers /><h3>Assigned members</h3></div>
-
-                <div className="xd-am-summary">
-                  {summaryRows.length === 0 ? (
-                    <span className="xd-muted xd-am-none"><FiUsers /> No members assigned yet</span>
-                  ) : summaryRows.map(({ credId, op, users }) => (
-                    <div className="xd-am-srow" key={`${credId}/${op}`}>
-                      <div className="xd-am-shead">
-                        <span className="xd-am-badge">{opBadge(opName(op))}</span>
-                        <span className="xd-am-sname">{credById[credId]?.name || credId} · {opName(op)}</span>
-                      </div>
-                      <div className="xd-am-pills">
-                        {users.map((u) => (
-                          <span className="xd-member-pill" key={u.userId}>
-                            <span className="xd-member-ava">{(u.userName || '?').charAt(0).toUpperCase()}</span>{u.userName}
-                            <span className={`xd-am-roletag ${isAdminRole(u.role) ? 'admin' : ''}`}>
-                              {prettyRole(u.role)}
-                            </span>
-                            <button type="button" className="xd-am-remove" title="Remove"
-                              onClick={() => removeUser(credId, op, u.userId)}><FiX /></button>
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <RoleAssigner roles={PROJECT_ROLES} list={projectMembers} setList={setProjectMembers} userOptions={userOptions} />
+              <div className="xd-am-summary">
+                <MemberPills list={projectMembers} onRemove={(id) => setProjectMembers((p) => p.filter((u) => u.userId !== id))} />
               </div>
             </div>
+
+            {/* ── Scope 2: Observability-level members ── */}
+            <div className="xd-card xd-am-card">
+              <div className="xd-am-head"><FiEye /><h3>Observability members</h3>
+                <span className="xd-am-scope-hint">Assigned per observability</span>
+              </div>
+              <label className="xd-conn-label">Observability</label>
+              <div className="xd-am-ops">
+                {obs.map((o) => {
+                  const c = (obsMembers[o.code] || []).length;
+                  return (
+                    <button key={o.code} type="button"
+                      className={`xd-am-op ${obsOp === o.code ? 'on' : ''}`}
+                      onClick={() => setObsOp(o.code)}>
+                      {o.name}{c > 0 && <span className="xd-am-op-count">{c}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+              <label className="xd-conn-label">Members for {opName(obsOp)}</label>
+              <RoleAssigner roles={opRoles(opName(obsOp))} list={obsList} setList={setObsList} userOptions={userOptions} />
+              <div className="xd-am-summary">
+                <MemberPills list={obsList} onRemove={(id) => setObsList((p) => p.filter((u) => u.userId !== id))} />
+              </div>
+            </div>
+
+            {/* ── Scope 3: Connection-level members (saved) ── */}
+            <div className="xd-card xd-am-card">
+              <div className="xd-am-head"><FiLink /><h3>Connection members</h3>
+                <span className="xd-am-scope-hint">Simple user list per connection · saved</span>
+              </div>
+              <label className="xd-conn-label">Observability</label>
+              <div className="xd-am-ops">
+                {obs.map((o) => (
+                  <button key={o.code} type="button"
+                    className={`xd-am-op ${activeOp === o.code ? 'on' : ''}`}
+                    onClick={() => setActiveOp(o.code)}>
+                    {o.name}
+                  </button>
+                ))}
+              </div>
+
+              <label className="xd-conn-label">Connection</label>
+              {credsForOp.length === 0 ? (
+                <div className="xd-muted xd-am-none">
+                  <FiLink /> No connection for {opName(activeOp)}. Create one via Create Connect first.
+                </div>
+              ) : (
+                <div className="xd-am-ops">
+                  {credsForOp.map((c) => {
+                    const count = ((assignments[c.id]?.[activeOp]) || []).length;
+                    return (
+                      <button key={c.id} type="button"
+                        className={`xd-am-op ${activeCred === c.id ? 'on' : ''}`}
+                        onClick={() => setActiveCred(c.id)}>
+                        {c.name}{count > 0 && <span className="xd-am-op-count">{count}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {activeCredObj && (
+                <>
+                  <label className="xd-conn-label">
+                    Users for {activeCredObj.name}
+                    <span className="xd-am-opcode"> · {opName(activeOp)}</span>
+                  </label>
+                  <UserMultiSelect
+                    userOptions={userOptions}
+                    count={credList.length}
+                    isSelected={isCredUserOn}
+                    onToggle={toggleCredUser}
+                  />
+                  <div className="xd-am-summary">
+                    <MemberPills list={credList} onRemove={removeCredUser} empty="No users on this connection yet" />
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="xd-assign-bar">
