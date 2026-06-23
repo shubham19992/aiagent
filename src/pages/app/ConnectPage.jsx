@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useParams, useOutletContext, Link } from 'react-router-dom';
-import { FiCheckCircle, FiArrowLeft } from 'react-icons/fi';
+import { useParams, useOutletContext, useNavigate, Link } from 'react-router-dom';
+import { FiArrowLeft } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listConnectionParams } from '../../api/observability';
+import { addConnection } from '../../store/connectionsStore';
 
 const ENV_NAME = { aws: 'AWS', azure: 'Azure', gcp: 'GCP' };
 
@@ -20,14 +21,14 @@ export default function ConnectPage() {
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
 
+  const navigate = useNavigate();
   const [form, setForm] = useState({});
   const [reveal, setReveal] = useState({});
-  const [saved, setSaved] = useState(false);
+  const [connName, setConnName] = useState('');
 
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    setSaved(false);
     listConnectionParams(opCode, envCode).then((p) => {
       if (!alive) return;
       setParams(p.items);
@@ -52,13 +53,23 @@ export default function ConnectPage() {
     [params, form],
   );
 
-  const setField = (k, v) => { setForm((f) => ({ ...f, [k]: v })); setSaved(false); };
+  const setField = (k, v) => { setForm((f) => ({ ...f, [k]: v })); };
 
   const onSubmit = (e) => {
     e.preventDefault();
     if (missingRequired) return;
-    // No write endpoint provided — demo: acknowledge locally.
-    setSaved(true);
+    // No write endpoint yet — create the connection locally and show it in
+    // the table on the env page.
+    const fields = params.map((p) => ({
+      label: p.label,
+      value: String(form[p.param_key] ?? ''),
+      secret: p.is_secret || p.data_type === 'secret',
+    }));
+    addConnection(opCode, envCode, {
+      name: connName.trim() || `${opName} · ${envName}`,
+      fields,
+    });
+    navigate(envPath);
   };
 
   return (
@@ -82,6 +93,15 @@ export default function ConnectPage() {
           <Spinner label="Loading parameters…" />
         ) : (
           <form className="xd-card xd-conn-form" onSubmit={onSubmit}>
+            <div className="xd-conn-field xd-conn-name">
+              <label className="xd-conn-label">Connection Name</label>
+              <input
+                className="xd-conn-input"
+                value={connName}
+                placeholder={`e.g. ${envName} production`}
+                onChange={(e) => setConnName(e.target.value)}
+              />
+            </div>
             <div className="xd-conn-grid">
               {params.map((p) => {
                 const isSecret = p.is_secret || p.data_type === 'secret';
@@ -121,9 +141,6 @@ export default function ConnectPage() {
               <Link to={envPath} className="xd-btn-ghost xd-btn-sm xd-conn-back">
                 <FiArrowLeft /> Back
               </Link>
-              {saved && (
-                <span className="xd-conn-saved"><FiCheckCircle /> Connection saved (demo)</span>
-              )}
               <button type="submit" className="xd-btn" disabled={missingRequired}>
                 Save &amp; Connect
               </button>

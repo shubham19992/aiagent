@@ -316,6 +316,21 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 .xd-env-cta { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--xd-emerald); margin-top: 6px; }
 .xd-env-card:hover .xd-env-cta { gap: 10px; }
 
+/* ── connections table (created via Create Connect) ── */
+.xd-conn-table-card { padding: 0; overflow: hidden; }
+.xd-conn-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.xd-conn-table thead th {
+  text-align: left; font-size: 12px; font-weight: 700; color: var(--xd-soft);
+  text-transform: uppercase; letter-spacing: .04em; padding: 12px 16px;
+  border-bottom: 1px solid var(--xd-line); background: var(--xd-card);
+}
+.xd-conn-table tbody td { padding: 12px 16px; border-bottom: 1px solid var(--xd-line); vertical-align: top; }
+.xd-conn-table tbody tr:last-child td { border-bottom: 0; }
+.xd-conn-cell-name { font-weight: 700; }
+.xd-conn-cell-date { color: var(--xd-soft); white-space: nowrap; }
+.xd-conn-params { display: flex; flex-wrap: wrap; gap: 6px; max-width: 460px; }
+.xd-conn-name { margin-bottom: 14px; }
+
 /* ── measures ── */
 .xd-measure-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
 .xd-measure-card {
