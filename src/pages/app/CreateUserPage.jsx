@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FiCheck } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { createUser } from '../../api/users';
 import { listProjects } from '../../api/projects';
@@ -22,6 +23,9 @@ export default function CreateUserPage() {
   const [saving, setSaving] = useState(false);
 
   const set = (k, v) => { setForm((f) => ({ ...f, [k]: v })); setError(''); };
+
+  const toggleProject = (id) =>
+    setProjectIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
 
   useEffect(() => {
     let alive = true;
@@ -75,68 +79,65 @@ export default function CreateUserPage() {
         ) : (
           <form className="xd-proj-form xd-card" onSubmit={onSubmit}>
             <div className="xd-form-body">
-              <div className="xd-create-cols xd-create-cols-2">
-                {/* ── Account ── */}
-                <section className="xd-create-col">
-                  <div className="xd-conn-field">
-                    <label className="xd-conn-label">Full Name</label>
-                    <input className="xd-conn-input" value={form.fullName}
-                      placeholder="e.g. Pankaj Chaudhary" onChange={(e) => set('fullName', e.target.value)} />
-                  </div>
+              <section className="xd-create-col">
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Full Name</label>
+                  <input className="xd-conn-input" value={form.fullName}
+                    placeholder="e.g. John Doe" onChange={(e) => set('fullName', e.target.value)} />
+                </div>
 
-                  <div className="xd-conn-field">
-                    <label className="xd-conn-label">Login<span className="xd-req">*</span></label>
-                    <input className="xd-conn-input" value={form.login}
-                      placeholder="unique login id" onChange={(e) => set('login', e.target.value)} />
-                  </div>
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Login<span className="xd-req">*</span></label>
+                  <input className="xd-conn-input" value={form.login}
+                    placeholder="unique login id" onChange={(e) => set('login', e.target.value)} />
+                </div>
 
-                  <div className="xd-conn-field">
-                    <label className="xd-conn-label">Email<span className="xd-req">*</span></label>
-                    <input className="xd-conn-input" type="email" value={form.email}
-                      placeholder="user@example.com" onChange={(e) => set('email', e.target.value)} />
-                  </div>
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Email<span className="xd-req">*</span></label>
+                  <input className="xd-conn-input" type="email" value={form.email}
+                    placeholder="user@example.com" onChange={(e) => set('email', e.target.value)} />
+                </div>
 
-                  <div className="xd-conn-field">
-                    <label className="xd-conn-label">Password<span className="xd-req">*</span></label>
-                    <input className="xd-conn-input" type="password" value={form.password}
-                      placeholder="at least 8 characters" onChange={(e) => set('password', e.target.value)} />
-                  </div>
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Password<span className="xd-req">*</span></label>
+                  <input className="xd-conn-input" type="password" value={form.password}
+                    placeholder="at least 8 characters" onChange={(e) => set('password', e.target.value)} />
+                </div>
 
-                  <div className="xd-field-row2">
-                    <div className="xd-conn-field">
-                      <label className="xd-conn-label">Org Role</label>
-                      <select className="xd-conn-input" value={form.orgRole} onChange={(e) => set('orgRole', e.target.value)}>
-                        <option value="">— None —</option>
-                        {ORG_ROLES.map((r) => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
-                      </select>
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Org Role</label>
+                  <select className="xd-conn-input" value={form.orgRole} onChange={(e) => set('orgRole', e.target.value)}>
+                    <option value="">— None —</option>
+                    {ORG_ROLES.map((r) => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
+                  </select>
+                </div>
+
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Phone Number</label>
+                  <input className="xd-conn-input" value={form.phoneNumber}
+                    placeholder="optional" onChange={(e) => set('phoneNumber', e.target.value)} />
+                </div>
+
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Projects</label>
+                  {projects.length === 0 ? (
+                    <div className="xd-muted">No projects available.</div>
+                  ) : (
+                    <div className="xd-chip-pick">
+                      {projects.map((p) => {
+                        const on = projectIds.includes(p.id);
+                        return (
+                          <button type="button" key={p.id}
+                            className={`xd-chip ${on ? 'on' : ''}`}
+                            onClick={() => toggleProject(p.id)}>
+                            {on && <FiCheck />} {p.name}
+                          </button>
+                        );
+                      })}
                     </div>
-                    <div className="xd-conn-field">
-                      <label className="xd-conn-label">Phone Number</label>
-                      <input className="xd-conn-input" value={form.phoneNumber}
-                        placeholder="optional" onChange={(e) => set('phoneNumber', e.target.value)} />
-                    </div>
-                  </div>
-                </section>
-
-                {/* ── Profile & access ── */}
-                <section className="xd-create-col">
-                  <div className="xd-conn-field">
-                    <label className="xd-conn-label">Projects</label>
-                    {projects.length === 0 ? (
-                      <div className="xd-muted">No projects available.</div>
-                    ) : (
-                      <select className="xd-conn-input"
-                        value={projectIds[0] || ''}
-                        onChange={(e) => setProjectIds(e.target.value ? [e.target.value] : [])}>
-                        <option value="">— Select a project —</option>
-                        {projects.map((p) => (
-                          <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-                </section>
-              </div>
+                  )}
+                </div>
+              </section>
             </div>
 
             <div className="xd-form-footer">
