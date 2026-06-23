@@ -140,7 +140,7 @@ export default function OpPage() {
                       </td>
                       <td className="xd-conn-cell-date">{fmtDateTime(c.created_at)}</td>
                       <td>
-                        <div className="xd-conn-actions">
+                        <div className="xd-conn-row-actions">
                           <button type="button" className="xd-icon-btn" title="Edit connection" onClick={() => editConn(c)}>
                             <FiEdit2 />
                           </button>

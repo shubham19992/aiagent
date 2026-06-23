@@ -137,7 +137,7 @@ export default function EditProjectPage() {
         Object.entries(assignments).filter(([code]) => keep.has(code)),
       );
       setMembership(projectId, { assignments: kept, roles });
-      navigate(`/dashboard/projects/${projectId}`);
+      navigate('/dashboard/projects');
     } catch (err) {
       setError(err?.message || 'Failed to save changes.');
       setSaving(false);
