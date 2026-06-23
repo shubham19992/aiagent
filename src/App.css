@@ -925,3 +925,24 @@ textarea:focus {
   flex-direction: column;
   gap: 12px;
 }
+
+/* Full-screen loader shown while any API request is in flight. */
+.xd-global-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, .35);
+  backdrop-filter: blur(2px);
+}
+
+.xd-global-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, .45);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}

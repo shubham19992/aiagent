@@ -6,6 +6,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import "./App.css";
+import "./lib/loading";
+import GlobalLoader from "./components/GlobalLoader";
 
 import UIDAILogin from "./pages/Uidailogin";
 import ResetPassword from "./pages/ResetPassword";
@@ -41,6 +43,7 @@ function GuestOnly({ children }) {
 export default function App() {
   return (
     <BrowserRouter>
+      <GlobalLoader />
       <Routes>
         {/* Landing → dashboard if logged in, else login */}
         <Route path="/" element={<Navigate to={isAuthed() ? "/dashboard" : "/login"} replace />} />
