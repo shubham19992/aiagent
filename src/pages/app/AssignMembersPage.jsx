@@ -2,14 +2,10 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers, FiUserPlus, FiShield } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
-import { listUsers } from '../../api/users';
+import { listAssignableUsers } from '../../api/authz';
 import { getProject, setMembers } from '../../api/projects';
 import { getMembership, setMembership } from '../../store/projectsStore';
 import { tokenStore } from '../../api/client';
-
-// Display name from whatever fields the users API returns.
-const userName = (u) =>
-  u.name || u.full_name || u.fullName || u.username || u.email || String(u.id ?? '');
 
 // Short two-letter badge from an op name (AIOps -> "AI").
 const opBadge = (name) => name.replace(/Ops$/i, '').slice(0, 2).toUpperCase();
@@ -35,7 +31,8 @@ export default function AssignMembersPage() {
   const [project, setProject] = useState(null);
   const [notFound, setNotFound] = useState(false);
 
-  const [users, setUsers] = useState([]);
+  const [memberUsers, setMemberUsers] = useState([]); // assignable as project_member
+  const [adminUsers, setAdminUsers] = useState([]);   // assignable as project_admin
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -63,12 +60,17 @@ export default function AssignMembersPage() {
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    Promise.all([getProject(projectId), listUsers()]).then(([proj, res]) => {
+    Promise.all([
+      getProject(projectId),
+      listAssignableUsers('project_member'),
+      listAssignableUsers('project_admin'),
+    ]).then(([proj, memberRes, adminRes]) => {
       if (!alive) return;
       setProject(proj);
       setActiveOp(proj?.observabilities?.[0]?.code || '');
-      setUsers(res.items);
-      setSource(res.source);
+      setMemberUsers(memberRes.items);
+      setAdminUsers(adminRes.items);
+      setSource(memberRes.source);
       setLoading(false);
     }).catch(() => {
       if (!alive) return;
@@ -78,14 +80,16 @@ export default function AssignMembersPage() {
     return () => { alive = false; };
   }, [projectId]);
 
-  // Members = the logged-in user first, then users fetched from the API.
-  const memberOptions = useMemo(() => {
-    const meOpt = { id: myId, name: currentUser, you: true };
-    const others = users
-      .map((u, i) => ({ id: u.id ?? `u${i}`, name: userName(u) }))
-      .filter((u) => u.name && u.name !== currentUser);
-    return [meOpt, ...others];
-  }, [currentUser, myId, users]);
+  // Each role row lists only the users assignable to that role (authz API).
+  const withYou = (list) => list.map((u) => ({ ...u, you: u.id === myId }));
+  const optionsFor = (role) => withYou(role === 'admin' ? adminUsers : memberUsers);
+
+  // id lookup spanning both role lists, for building the save payload.
+  const idByName = useMemo(() => {
+    const map = {};
+    [...memberUsers, ...adminUsers].forEach((u) => { map[u.name] = u.id; });
+    return map;
+  }, [memberUsers, adminUsers]);
 
   const roleOf = (m) => roles[m] || 'member';
   const isOn = (code, m) => (assignments[code] || []).includes(m);
@@ -129,7 +133,6 @@ export default function AssignMembersPage() {
 
     // Build the API payload: one entry per member, listing the
     // observability codes they're assigned to plus their role.
-    const idByName = Object.fromEntries(memberOptions.map((o) => [o.name, o.id]));
     const members = assignedMembers.map((name) => ({
       user_id: idByName[name] || name,
       user_name: name,
@@ -235,7 +238,7 @@ export default function AssignMembersPage() {
                           </button>
                           {open && (
                             <div className="xd-ms-menu" role="listbox" aria-multiselectable="true">
-                              {memberOptions.map((m) => {
+                              {optionsFor(role.value).map((m) => {
                                 const on = isOn(activeOp, m.name) && roleOf(m.name) === role.value;
                                 const otherRole = isOn(activeOp, m.name) && roleOf(m.name) !== role.value;
                                 return (

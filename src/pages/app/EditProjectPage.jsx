@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { FiCheck, FiX, FiImage } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listMenu } from '../../api/observability';
-import { listUsers } from '../../api/users';
+import { listAssignableUsers } from '../../api/authz';
 import { getProject, updateProject } from '../../api/projects';
 import { getMembership, setMembership } from '../../store/projectsStore';
 import { tokenStore } from '../../api/client';
@@ -20,10 +20,6 @@ const coverGradient = (seed = '') => {
   return `linear-gradient(135deg, hsl(${h} 52% 42%), hsl(${(h + 38) % 360} 54% 28%))`;
 };
 
-// Display name from whatever fields the users API returns.
-const userName = (u) =>
-  u.name || u.full_name || u.fullName || u.username || u.email || String(u.id ?? '');
-
 export default function EditProjectPage() {
   const navigate = useNavigate();
   const { projectId } = useParams();
@@ -35,18 +31,15 @@ export default function EditProjectPage() {
   const [notFound, setNotFound] = useState(false);
 
   const [ops, setOps] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [owners, setOwners] = useState([]);
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
 
-  // Owner options = the logged-in user first, then users from the API.
-  const ownerOptions = useMemo(() => {
-    const meOpt = { id: myId, name: currentUser, you: true };
-    const others = users
-      .map((u, i) => ({ id: u.id ?? `u${i}`, name: userName(u) }))
-      .filter((u) => u.name && u.name !== currentUser);
-    return [meOpt, ...others];
-  }, [currentUser, myId, users]);
+  // Owner options = the users assignable as project owner (authz API).
+  const ownerOptions = useMemo(
+    () => owners.map((o) => ({ ...o, you: o.id === myId })),
+    [owners, myId],
+  );
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -76,7 +69,7 @@ export default function EditProjectPage() {
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    Promise.all([getProject(projectId), listMenu(), listUsers()]).then(([proj, opsRes, usersRes]) => {
+    Promise.all([getProject(projectId), listMenu(), listAssignableUsers('project_owner')]).then(([proj, opsRes, ownersRes]) => {
       if (!alive) return;
       setProject(proj);
       // Seed the form from the loaded project.
@@ -89,7 +82,13 @@ export default function EditProjectPage() {
       setEndDate(proj.endDate || '');
       setSelected((proj.observabilities || []).map((o) => o.code));
       setOps(opsRes.items); setSource(opsRes.source);
-      setUsers(usersRes.items);
+      // Keep the project's current owner selectable even if they're no
+      // longer in the assignable list.
+      let list = ownersRes.items;
+      if (proj.ownerUserId && !list.some((o) => o.id === proj.ownerUserId)) {
+        list = [{ id: proj.ownerUserId, name: proj.owner || proj.ownerUserId }, ...list];
+      }
+      setOwners(list);
       setLoading(false);
     }).catch(() => {
       if (!alive) return;
