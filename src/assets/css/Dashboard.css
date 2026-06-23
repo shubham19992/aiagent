@@ -387,21 +387,26 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 .xd-disc-sub-icon svg { width: 22px; height: 22px; }
 .xd-disc-sub-name { font-size: 16px; font-weight: 800; }
 .xd-disc-sub-id { font-size: 12px; color: var(--xd-soft); margin-top: 2px; word-break: break-all; }
-.xd-disc-group { margin-top: 14px; }
-.xd-disc-group-head { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--xd-soft); margin-bottom: 8px; }
-.xd-disc-group-head svg { color: var(--xd-emerald); }
-.xd-stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px; }
-.xd-stat {
-  background: var(--xd-bg); border: 1px solid var(--xd-line); border-radius: 12px; padding: 12px 14px;
-  border-left: 3px solid var(--xd-line);
+.xd-disc-group {
+  margin-top: 14px; background: var(--xd-card-2); border: 1px solid var(--xd-line);
+  border-radius: 14px; padding: 14px 16px;
 }
+.xd-disc-cols .xd-disc-group { margin-top: 0; height: 100%; }
+.xd-disc-group-head {
+  display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em; color: var(--xd-soft);
+  margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--xd-line);
+}
+.xd-disc-group-head svg { color: var(--xd-emerald); font-size: 15px; }
+.xd-stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 12px 16px; }
+.xd-stat { background: transparent; border: 0; border-left: 3px solid var(--xd-line); border-radius: 0; padding: 0 0 0 10px; }
 .xd-stat-val { font-size: 22px; font-weight: 800; line-height: 1; }
-.xd-stat-label { font-size: 11px; color: var(--xd-soft); margin-top: 6px; }
+.xd-stat-label { font-size: 11px; color: var(--xd-soft); margin-top: 5px; }
 .xd-stat-ok { border-left-color: #2bb673; }
 .xd-stat-ok .xd-stat-val { color: #2bb673; }
 .xd-stat-bad { border-left-color: #f2495c; }
 .xd-stat-bad .xd-stat-val { color: #f2495c; }
-.xd-disc-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 6px 24px; }
+.xd-disc-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 12px; align-items: stretch; }
 .xd-disc-insights-wrap { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--xd-line); }
 .xd-disc-insights { display: flex; flex-direction: column; gap: 10px; }
 .xd-disc-insight {
