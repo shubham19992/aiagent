@@ -15,7 +15,6 @@ const opBadge = (name) => name.replace(/Ops$/i, '').slice(0, 2).toUpperCase();
 // Project-level roles a member can hold (API role codes).
 const ROLE_OPTIONS = [
   { value: 'project_admin', label: 'Project Admin' },
-  { value: 'project_member', label: 'Project Member' },
 ];
 
 /**

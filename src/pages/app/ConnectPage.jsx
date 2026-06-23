@@ -90,8 +90,10 @@ export default function ConnectPage() {
         params.forEach((p) => {
           const val = String(form[p.param_key] ?? '');
           if (isSecretParam(p)) {
+            // Only send a secret when the user typed a new non-empty value
+            // (not the prefilled mask, not a cleared-but-untouched field).
             const orig = String(editCred.values?.[p.param_key] ?? '');
-            if (val !== orig) values[p.param_key] = val;
+            if (val.trim() && val !== orig) values[p.param_key] = val;
           } else {
             values[p.param_key] = val;
           }
@@ -167,8 +169,15 @@ export default function ConnectPage() {
                         className="xd-conn-input"
                         type={type}
                         value={form[p.param_key] ?? ''}
-                        placeholder={p.help_text || p.param_key}
+                        placeholder={editing && isSecret ? 'Enter new secret to change' : (p.help_text || p.param_key)}
                         pattern={p.validation_regex || undefined}
+                        onFocus={() => {
+                          // Clear the prefilled masked secret on first focus so the
+                          // user can type a fresh value and Show/Hide works on it.
+                          if (editing && isSecret && (form[p.param_key] ?? '') === (editCred.values?.[p.param_key] ?? '')) {
+                            setField(p.param_key, '');
+                          }
+                        }}
                         onChange={(e) => setField(p.param_key, e.target.value)}
                       />
                       {isSecret && (
