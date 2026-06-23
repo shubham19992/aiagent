@@ -82,8 +82,6 @@ export default function CreateUserPage() {
               <div className="xd-create-cols xd-create-cols-2">
                 {/* ── Account ── */}
                 <section className="xd-create-col">
-                  <h3 className="xd-col-title">Account</h3>
-
                   <div className="xd-conn-field">
                     <label className="xd-conn-label">Login<span className="xd-req">*</span></label>
                     <input className="xd-conn-input" value={form.login}
@@ -120,26 +118,10 @@ export default function CreateUserPage() {
 
                 {/* ── Profile & access ── */}
                 <section className="xd-create-col">
-                  <h3 className="xd-col-title">Profile &amp; Access</h3>
-
                   <div className="xd-conn-field">
                     <label className="xd-conn-label">Full Name</label>
                     <input className="xd-conn-input" value={form.fullName}
                       placeholder="e.g. Pankaj Chaudhary" onChange={(e) => set('fullName', e.target.value)} />
-                  </div>
-
-                  <div className="xd-conn-field">
-                    <label className="xd-conn-label">Options</label>
-                    <div className="xd-check-row">
-                      <label className="xd-check">
-                        <input type="checkbox" checked={form.admin} onChange={(e) => set('admin', e.target.checked)} />
-                        <span>Admin</span>
-                      </label>
-                      <label className="xd-check">
-                        <input type="checkbox" checked={form.twoFactorEnabled} onChange={(e) => set('twoFactorEnabled', e.target.checked)} />
-                        <span>Two-factor enabled</span>
-                      </label>
-                    </div>
                   </div>
 
                   <div className="xd-conn-field">
