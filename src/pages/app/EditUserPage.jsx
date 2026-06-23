@@ -43,6 +43,12 @@ export default function EditUserPage() {
 
   const set = (k, v) => { setForm((f) => ({ ...f, [k]: v })); setError(''); };
 
+  // Include the user's current role even if it's outside the standard catalog
+  // (e.g. "super_admin"), so the prefilled value shows in the dropdown.
+  const roleOptions = form.orgRole && !ORG_ROLES.includes(form.orgRole)
+    ? [form.orgRole, ...ORG_ROLES]
+    : ORG_ROLES;
+
   const toggleProject = (id) =>
     setProjectIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
 
@@ -144,7 +150,7 @@ export default function EditUserPage() {
                     <label className="xd-conn-label">Org Role</label>
                     <select className="xd-conn-input" value={form.orgRole} onChange={(e) => set('orgRole', e.target.value)}>
                       <option value="">— None —</option>
-                      {ORG_ROLES.map((r) => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
+                      {roleOptions.map((r) => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
                     </select>
                   </div>
 
