@@ -40,10 +40,11 @@ export default function ConnectPage() {
       if (!alive) return;
       setParams(p.items);
       setSource('api');
-      // In edit mode, prefill non-secret values from the credential and
-      // leave secret fields blank (their stored value is masked).
+      // In edit mode, prefill all fields from the credential. Secrets come
+      // back masked ("••••••"); we keep that masked value as-is and only
+      // resend a secret if the user actually changes it (see onSubmit).
       setForm(Object.fromEntries(p.items.map((x) => {
-        if (editCred) return [x.param_key, isSecretParam(x) ? '' : (editCred.values?.[x.param_key] ?? '')];
+        if (editCred) return [x.param_key, editCred.values?.[x.param_key] ?? ''];
         return [x.param_key, x.default_value || ''];
       })));
       setLoading(false);
@@ -82,13 +83,18 @@ export default function ConnectPage() {
     setError('');
     try {
       if (editing) {
-        // Send non-secret values always; secret values only when changed
-        // (non-empty) so we never overwrite a stored secret with a blank.
+        // Send non-secret values always; secret values only when the user
+        // changed them from the prefilled masked value, so we never
+        // overwrite a stored secret with its own mask.
         const values = {};
         params.forEach((p) => {
           const val = String(form[p.param_key] ?? '');
-          if (isSecretParam(p)) { if (val.trim()) values[p.param_key] = val; }
-          else values[p.param_key] = val;
+          if (isSecretParam(p)) {
+            const orig = String(editCred.values?.[p.param_key] ?? '');
+            if (val !== orig) values[p.param_key] = val;
+          } else {
+            values[p.param_key] = val;
+          }
         });
         await patchCredential(editCred.id, {
           name: connName.trim() || editCred.name,
@@ -161,7 +167,7 @@ export default function ConnectPage() {
                         className="xd-conn-input"
                         type={type}
                         value={form[p.param_key] ?? ''}
-                        placeholder={editing && isSecret ? 'Leave blank to keep current' : (p.help_text || p.param_key)}
+                        placeholder={p.help_text || p.param_key}
                         pattern={p.validation_regex || undefined}
                         onChange={(e) => setField(p.param_key, e.target.value)}
                       />
