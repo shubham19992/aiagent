@@ -3,7 +3,7 @@ import { useNavigate, useParams, useOutletContext } from 'react-router-dom';
 import { FiArrowRight, FiTrash2 } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listEnvs } from '../../api/observability';
-import { listConnectionsByOp, removeConnection } from '../../store/connectionsStore';
+import { listCredentials, deleteCredential } from '../../api/credentials';
 
 const fmtDateTime = (d) => {
   if (!d) return '—';
@@ -24,14 +24,21 @@ export default function OpPage() {
   const [conns, setConns] = useState([]);
   const [connVersion, setConnVersion] = useState(0);
 
-  // Connections created via Create Connect, across all envs of this op.
+  // Credentials created via Create Connect, for this op (all its envs).
   useEffect(() => {
-    setConns(listConnectionsByOp(opCode));
+    let alive = true;
+    listCredentials().then((items) => {
+      if (!alive) return;
+      setConns(items.filter((c) => c.op_code === opCode));
+    }).catch(() => { if (alive) setConns([]); });
+    return () => { alive = false; };
   }, [opCode, connVersion]);
 
-  const delConn = (envCode, id) => {
-    removeConnection(opCode, envCode, id);
-    setConnVersion((v) => v + 1);
+  const delConn = async (id) => {
+    try {
+      await deleteCredential(id);
+      setConnVersion((v) => v + 1);
+    } catch { /* ignore — row stays */ }
   };
 
   // envCode -> display name, from the loaded environments.
@@ -120,20 +127,22 @@ export default function OpPage() {
                   {conns.map((c) => (
                     <tr key={c.id}>
                       <td className="xd-conn-cell-name">{c.name}</td>
-                      <td>{envLabel(c.envCode)}</td>
+                      <td>{envLabel(c.env_code)}</td>
                       <td>
                         <div className="xd-conn-params">
-                          {(c.fields || []).map((f, i) => (
-                            <span className="xd-tag" key={i}>
-                              {f.label}: {f.secret ? '••••••' : (f.value || '—')}
-                            </span>
+                          {Object.entries(c.values || {}).map(([k, v]) => (
+                            <span className="xd-tag" key={k}>{k}: {v || '—'}</span>
                           ))}
                         </div>
                       </td>
-                      <td><span className="xd-status xd-status-active">{c.status || 'Connected'}</span></td>
-                      <td className="xd-conn-cell-date">{fmtDateTime(c.createdAt)}</td>
                       <td>
-                        <button type="button" className="xd-proj-del" title="Delete connection" onClick={() => delConn(c.envCode, c.id)}>
+                        <span className={`xd-status ${c.is_active ? 'xd-status-active' : 'xd-status-onhold'}`}>
+                          {c.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td className="xd-conn-cell-date">{fmtDateTime(c.created_at)}</td>
+                      <td>
+                        <button type="button" className="xd-proj-del" title="Delete connection" onClick={() => delConn(c.id)}>
                           <FiTrash2 />
                         </button>
                       </td>

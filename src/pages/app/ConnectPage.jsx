@@ -3,7 +3,7 @@ import { useParams, useOutletContext, useNavigate, Link } from 'react-router-dom
 import { FiArrowLeft } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listConnectionParams } from '../../api/observability';
-import { addConnection } from '../../store/connectionsStore';
+import { createCredential } from '../../api/credentials';
 
 const ENV_NAME = { aws: 'AWS', azure: 'Azure', gcp: 'GCP' };
 
@@ -25,6 +25,8 @@ export default function ConnectPage() {
   const [form, setForm] = useState({});
   const [reveal, setReveal] = useState({});
   const [connName, setConnName] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     let alive = true;
@@ -53,25 +55,37 @@ export default function ConnectPage() {
     [params, form],
   );
 
-  const setField = (k, v) => { setForm((f) => ({ ...f, [k]: v })); };
+  const setField = (k, v) => { setForm((f) => ({ ...f, [k]: v })); setError(''); };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     if (missingRequired) return;
-    // No write endpoint yet — create the connection locally and show it in
-    // the table on the env page.
-    const fields = params.map((p) => ({
-      label: p.label,
-      value: String(form[p.param_key] ?? ''),
-      secret: p.is_secret || p.data_type === 'secret',
-    }));
-    addConnection(opCode, envCode, {
-      name: connName.trim() || `${opName} · ${envName}`,
-      fields,
+
+    const values = {};
+    const secretKeys = [];
+    params.forEach((p) => {
+      values[p.param_key] = String(form[p.param_key] ?? '');
+      if (p.is_secret || p.data_type === 'secret') secretKeys.push(p.param_key);
     });
-    // Land on the op page (opened from the side menu) where the new
-    // connection shows up in the Connections table.
-    navigate(`/dashboard/observability/${opCode}`);
+
+    setSaving(true);
+    setError('');
+    try {
+      await createCredential({
+        name: connName.trim() || `${opName} · ${envName}`,
+        op_code: opCode,
+        env_code: envCode,
+        env_id: params[0]?.env_id ?? null,
+        values,
+        secret_keys: secretKeys,
+      });
+      // Land on the op page (opened from the side menu) where the new
+      // credential shows up in the Connections table.
+      navigate(`/dashboard/observability/${opCode}`);
+    } catch (err) {
+      setError(err?.message || 'Failed to create connection.');
+      setSaving(false);
+    }
   };
 
   return (
@@ -143,8 +157,9 @@ export default function ConnectPage() {
               <Link to={envPath} className="xd-btn-ghost xd-btn-sm xd-conn-back">
                 <FiArrowLeft /> Back
               </Link>
-              <button type="submit" className="xd-btn" disabled={missingRequired}>
-                Save &amp; Connect
+              {error && <span className="xd-form-error">{error}</span>}
+              <button type="submit" className="xd-btn" disabled={missingRequired || saving}>
+                {saving ? 'Saving…' : 'Save & Connect'}
               </button>
             </div>
           </form>
