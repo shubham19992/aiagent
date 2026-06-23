@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useOutletContext } from 'react-router-dom';
-import { FiArrowRight, FiTrash2 } from 'react-icons/fi';
+import { FiArrowRight, FiTrash2, FiEdit2 } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listEnvs } from '../../api/observability';
 import { listCredentials, deleteCredential } from '../../api/credentials';
@@ -39,6 +39,12 @@ export default function OpPage() {
       await deleteCredential(id);
       setConnVersion((v) => v + 1);
     } catch { /* ignore — row stays */ }
+  };
+
+  // Edit a connection: reuse the Create Connect page in edit mode, passing
+  // the credential along so it can prefill and PATCH.
+  const editConn = (c) => {
+    navigate(`/dashboard/observability/${opCode}/${c.env_code}/connect`, { state: { credential: c } });
   };
 
   // envCode -> display name, from the loaded environments.
@@ -117,7 +123,6 @@ export default function OpPage() {
                   <tr>
                     <th>Name</th>
                     <th>Environment</th>
-                    <th>Parameters</th>
                     <th>Status</th>
                     <th>Created</th>
                     <th aria-label="Actions" />
@@ -129,22 +134,20 @@ export default function OpPage() {
                       <td className="xd-conn-cell-name">{c.name}</td>
                       <td>{envLabel(c.env_code)}</td>
                       <td>
-                        <div className="xd-conn-params">
-                          {Object.entries(c.values || {}).map(([k, v]) => (
-                            <span className="xd-tag" key={k}>{k}: {v || '—'}</span>
-                          ))}
-                        </div>
-                      </td>
-                      <td>
                         <span className={`xd-status ${c.is_active ? 'xd-status-active' : 'xd-status-onhold'}`}>
                           {c.is_active ? 'Active' : 'Inactive'}
                         </span>
                       </td>
                       <td className="xd-conn-cell-date">{fmtDateTime(c.created_at)}</td>
                       <td>
-                        <button type="button" className="xd-proj-del" title="Delete connection" onClick={() => delConn(c.id)}>
-                          <FiTrash2 />
-                        </button>
+                        <div className="xd-conn-actions">
+                          <button type="button" className="xd-icon-btn" title="Edit connection" onClick={() => editConn(c)}>
+                            <FiEdit2 />
+                          </button>
+                          <button type="button" className="xd-proj-del" title="Delete connection" onClick={() => delConn(c.id)}>
+                            <FiTrash2 />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

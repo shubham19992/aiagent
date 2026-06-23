@@ -1,21 +1,26 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useParams, useOutletContext, useNavigate, Link } from 'react-router-dom';
+import { useParams, useOutletContext, useNavigate, useLocation, Link } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listConnectionParams } from '../../api/observability';
-import { createCredential } from '../../api/credentials';
+import { createCredential, patchCredential } from '../../api/credentials';
 
 const ENV_NAME = { aws: 'AWS', azure: 'Azure', gcp: 'GCP' };
+const isSecretParam = (p) => p.is_secret || p.data_type === 'secret';
 
 /**
  * Connection-parameters page for an op + env. Reached from the env page's
- * "Connect" button. Renders the credential form needed to link the
- * environment; on submit it acknowledges locally (no write endpoint yet).
+ * "Create Connect" button (create) or the connections table edit icon
+ * (edit). On submit it creates / updates a credential.
  */
 export default function ConnectPage() {
   const { opCode, envCode } = useParams();
   const { ops } = useOutletContext();
   const op = ops.find((o) => o.code === opCode);
+
+  const location = useLocation();
+  const editCred = location.state?.credential || null;
+  const editing = !!editCred;
 
   const [params, setParams] = useState([]);
   const [source, setSource] = useState('api');
@@ -24,7 +29,7 @@ export default function ConnectPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({});
   const [reveal, setReveal] = useState({});
-  const [connName, setConnName] = useState('');
+  const [connName, setConnName] = useState(editCred?.name || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -35,7 +40,12 @@ export default function ConnectPage() {
       if (!alive) return;
       setParams(p.items);
       setSource('api');
-      setForm(Object.fromEntries(p.items.map((x) => [x.param_key, x.default_value || ''])));
+      // In edit mode, prefill non-secret values from the credential and
+      // leave secret fields blank (their stored value is masked).
+      setForm(Object.fromEntries(p.items.map((x) => {
+        if (editCred) return [x.param_key, isSecretParam(x) ? '' : (editCred.values?.[x.param_key] ?? '')];
+        return [x.param_key, x.default_value || ''];
+      })));
       setLoading(false);
     }).catch(() => {
       if (!alive) return;
@@ -44,15 +54,20 @@ export default function ConnectPage() {
       setLoading(false);
     });
     return () => { alive = false; };
-  }, [opCode, envCode]);
+  }, [opCode, envCode, editCred]);
 
   const envName = ENV_NAME[envCode] || envCode.toUpperCase();
   const opName = op?.name || opCode;
   const envPath = `/dashboard/observability/${opCode}/${envCode}`;
 
+  // Secrets are optional in edit mode (blank keeps the stored value).
   const missingRequired = useMemo(
-    () => params.some((p) => p.is_mandatory && !String(form[p.param_key] || '').trim()),
-    [params, form],
+    () => params.some((p) => {
+      if (!p.is_mandatory) return false;
+      if (editing && isSecretParam(p)) return false;
+      return !String(form[p.param_key] || '').trim();
+    }),
+    [params, form, editing],
   );
 
   const setField = (k, v) => { setForm((f) => ({ ...f, [k]: v })); setError(''); };
@@ -61,29 +76,42 @@ export default function ConnectPage() {
     e.preventDefault();
     if (missingRequired) return;
 
-    const values = {};
-    const secretKeys = [];
-    params.forEach((p) => {
-      values[p.param_key] = String(form[p.param_key] ?? '');
-      if (p.is_secret || p.data_type === 'secret') secretKeys.push(p.param_key);
-    });
+    const secretKeys = params.filter(isSecretParam).map((p) => p.param_key);
 
     setSaving(true);
     setError('');
     try {
-      await createCredential({
-        name: connName.trim() || `${opName} · ${envName}`,
-        op_code: opCode,
-        env_code: envCode,
-        env_id: params[0]?.env_id ?? null,
-        values,
-        secret_keys: secretKeys,
-      });
-      // Land on the op page (opened from the side menu) where the new
+      if (editing) {
+        // Send non-secret values always; secret values only when changed
+        // (non-empty) so we never overwrite a stored secret with a blank.
+        const values = {};
+        params.forEach((p) => {
+          const val = String(form[p.param_key] ?? '');
+          if (isSecretParam(p)) { if (val.trim()) values[p.param_key] = val; }
+          else values[p.param_key] = val;
+        });
+        await patchCredential(editCred.id, {
+          name: connName.trim() || editCred.name,
+          values,
+          secret_keys: secretKeys,
+        });
+      } else {
+        const values = {};
+        params.forEach((p) => { values[p.param_key] = String(form[p.param_key] ?? ''); });
+        await createCredential({
+          name: connName.trim() || `${opName} · ${envName}`,
+          op_code: opCode,
+          env_code: envCode,
+          env_id: params[0]?.env_id ?? null,
+          values,
+          secret_keys: secretKeys,
+        });
+      }
+      // Land on the op page (opened from the side menu) where the
       // credential shows up in the Connections table.
       navigate(`/dashboard/observability/${opCode}`);
     } catch (err) {
-      setError(err?.message || 'Failed to create connection.');
+      setError(err?.message || (editing ? 'Failed to update connection.' : 'Failed to create connection.'));
       setSaving(false);
     }
   };
@@ -95,13 +123,13 @@ export default function ConnectPage() {
           { label: 'Observability', to: '/dashboard' },
           { label: opName, to: `/dashboard/observability/${opCode}` },
           { label: envName, to: envPath },
-          { label: 'Create Connect' },
+          { label: editing ? 'Edit Connection' : 'Create Connect' },
         ]}
         source={source}
       />
       <main className="xd-main">
         <div className="xd-pagelead">
-          <h1>Create Connect · {opName} · {envName}</h1>
+          <h1>{editing ? 'Edit Connection' : 'Create Connect'} · {opName} · {envName}</h1>
           <p>Provide the parameters needed to connect this environment and start collecting measures.</p>
         </div>
 
@@ -133,7 +161,7 @@ export default function ConnectPage() {
                         className="xd-conn-input"
                         type={type}
                         value={form[p.param_key] ?? ''}
-                        placeholder={p.help_text || p.param_key}
+                        placeholder={editing && isSecret ? 'Leave blank to keep current' : (p.help_text || p.param_key)}
                         pattern={p.validation_regex || undefined}
                         onChange={(e) => setField(p.param_key, e.target.value)}
                       />
@@ -159,7 +187,7 @@ export default function ConnectPage() {
               </Link>
               {error && <span className="xd-form-error">{error}</span>}
               <button type="submit" className="xd-btn" disabled={missingRequired || saving}>
-                {saving ? 'Saving…' : 'Save & Connect'}
+                {saving ? 'Saving…' : (editing ? 'Save Changes' : 'Save & Connect')}
               </button>
             </div>
           </form>

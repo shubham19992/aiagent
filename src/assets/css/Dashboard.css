@@ -331,6 +331,13 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 .xd-conn-params { display: flex; flex-wrap: wrap; gap: 6px; max-width: 460px; }
 .xd-conn-name { margin-bottom: 14px; }
 
+.xd-conn-actions { display: inline-flex; gap: 6px; align-items: center; }
+.xd-icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--xd-line); background: var(--xd-card); color: var(--xd-ink);
+}
+.xd-icon-btn:hover { border-color: var(--xd-emerald); color: var(--xd-emerald); }
 .xd-am-opcode { color: var(--xd-soft); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: .03em; }
 .xd-ms-empty { padding: 10px 12px; font-size: 13px; }
 
