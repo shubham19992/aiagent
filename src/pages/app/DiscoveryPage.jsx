@@ -2,13 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useOutletContext, Link } from 'react-router-dom';
 import {
   FiCheckCircle, FiAlertTriangle, FiArrowLeft, FiCpu, FiDatabase, FiHardDrive,
-  FiShare2, FiBox, FiActivity, FiZap,
+  FiShare2, FiBox, FiActivity, FiZap, FiLayers, FiCheck, FiX, FiCloud,
 } from 'react-icons/fi';
+import { FaAws } from 'react-icons/fa';
+import { VscAzure } from 'react-icons/vsc';
+import { SiGooglecloud } from 'react-icons/si';
 import { PageHeader, Spinner } from './_parts';
 import { runDiscovery, parseInsights } from '../../api/discovery';
 
 const ENV_NAME = { aws: 'AWS', azure: 'Azure', gcp: 'GCP' };
 const CLOUD = { aws: 'AWS', azure: 'AZURE', gcp: 'GCP' };
+const CLOUD_ICON = { aws: <FaAws />, azure: <VscAzure />, gcp: <SiGooglecloud /> };
 
 const fmtDateTime = (d) => {
   if (!d) return '—';
@@ -22,12 +26,24 @@ function StatGroup({ icon, title, stats }) {
       <div className="xd-disc-group-head">{icon}<span>{title}</span></div>
       <div className="xd-stat-grid">
         {stats.map((s) => (
-          <div className="xd-stat" key={s.label}>
+          <div className={`xd-stat ${s.tone ? `xd-stat-${s.tone}` : ''}`} key={s.label}>
             <div className="xd-stat-val">{s.value}</div>
             <div className="xd-stat-label">{s.label}</div>
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function Kpi({ icon, label, value, tone }) {
+  return (
+    <div className={`xd-disc-kpi ${tone ? `xd-disc-kpi-${tone}` : ''}`}>
+      <span className="xd-disc-kpi-icon">{icon}</span>
+      <span className="xd-disc-kpi-body">
+        <span className="xd-disc-kpi-val">{value}</span>
+        <span className="xd-disc-kpi-label">{label}</span>
+      </span>
     </div>
   );
 }
@@ -60,6 +76,7 @@ export default function DiscoveryPage() {
   }, [envCode]);
 
   const ok = result?.status === 'COMPLETED';
+  const s = result?.summary || {};
 
   return (
     <>
@@ -86,25 +103,28 @@ export default function DiscoveryPage() {
           <div className="xd-empty"><FiAlertTriangle /><p>{error}</p></div>
         ) : result ? (
           <>
-            {/* run meta */}
-            <div className="xd-card xd-disc-head">
-              <span className={`xd-status ${ok ? 'xd-status-active' : 'xd-status-onhold'} xd-disc-status`}>
-                {ok ? <FiCheckCircle /> : <FiAlertTriangle />} {result.status}
-              </span>
-              <div className="xd-disc-meta">
-                <span className="xd-disc-meta-item">Cloud <b>{result.cloudProvider}</b></span>
-                <span className="xd-disc-meta-item">Executed <b>{fmtDateTime(result.executionTime)}</b></span>
-                <span className="xd-disc-meta-item">Request <b>{result.requestId}</b></span>
+            {/* hero */}
+            <div className="xd-card xd-disc-hero">
+              <span className="xd-disc-hero-cloud">{CLOUD_ICON[envCode] || <FiCloud />}</span>
+              <div className="xd-disc-hero-main">
+                <div className="xd-disc-hero-top">
+                  <span className="xd-disc-hero-cloudname">{result.cloudProvider}</span>
+                  <span className={`xd-disc-pill ${ok ? 'ok' : 'bad'}`}>
+                    {ok ? <FiCheckCircle /> : <FiAlertTriangle />} {result.status}
+                  </span>
+                </div>
+                <div className="xd-disc-meta">
+                  <span className="xd-disc-meta-item">Executed<b>{fmtDateTime(result.executionTime)}</b></span>
+                  <span className="xd-disc-meta-item">Request<b>{result.requestId}</b></span>
+                  {result.projectId && <span className="xd-disc-meta-item">Project<b>{result.projectId}</b></span>}
+                </div>
               </div>
-            </div>
-
-            {/* agent summary */}
-            <h3 className="xd-subhead">Agents</h3>
-            <div className="xd-stat-grid xd-disc-summary">
-              <div className="xd-stat"><div className="xd-stat-val">{result.summary?.totalAgentsRequested ?? 0}</div><div className="xd-stat-label">Requested</div></div>
-              <div className="xd-stat"><div className="xd-stat-val">{result.summary?.totalAgentsExecuted ?? 0}</div><div className="xd-stat-label">Executed</div></div>
-              <div className="xd-stat xd-stat-ok"><div className="xd-stat-val">{result.summary?.successfulAgents ?? 0}</div><div className="xd-stat-label">Successful</div></div>
-              <div className="xd-stat xd-stat-bad"><div className="xd-stat-val">{result.summary?.failedAgents ?? 0}</div><div className="xd-stat-label">Failed</div></div>
+              <div className="xd-disc-kpis">
+                <Kpi icon={<FiLayers />} label="Requested" value={s.totalAgentsRequested ?? 0} />
+                <Kpi icon={<FiZap />} label="Executed" value={s.totalAgentsExecuted ?? 0} />
+                <Kpi icon={<FiCheck />} label="Successful" value={s.successfulAgents ?? 0} tone="ok" />
+                <Kpi icon={<FiX />} label="Failed" value={s.failedAgents ?? 0} tone={s.failedAgents ? 'bad' : undefined} />
+              </div>
             </div>
 
             {/* per-agent → per-subscription */}
@@ -112,19 +132,23 @@ export default function DiscoveryPage() {
               const subs = agent.data?.recommendations?.subscriptions || [];
               return (
                 <div key={agent.agentId}>
-                  <h3 className="xd-subhead">
+                  <h3 className="xd-subhead xd-disc-agenthead">
                     <FiZap /> {agent.agentId}
-                    <span className={`xd-status ${agent.status === 'SUCCESS' ? 'xd-status-active' : 'xd-status-onhold'} xd-disc-agent-status`}>{agent.status}</span>
+                    <span className={`xd-disc-pill ${agent.status === 'SUCCESS' ? 'ok' : 'bad'} xd-disc-pill-sm`}>{agent.status}</span>
                   </h3>
 
                   {subs.map((sub) => {
                     const insights = parseInsights(sub.insights);
+                    const unhealthy = sub.health?.unhealthyResources ?? 0;
                     return (
                       <div className="xd-card xd-disc-sub" key={sub.subscriptionId}>
                         <div className="xd-disc-sub-head">
-                          <div>
-                            <div className="xd-disc-sub-name">{sub.subscriptionName}</div>
-                            <div className="xd-disc-sub-id">{sub.subscriptionId}</div>
+                          <div className="xd-disc-sub-head-l">
+                            <span className="xd-disc-sub-icon">{CLOUD_ICON[envCode] || <FiCloud />}</span>
+                            <div>
+                              <div className="xd-disc-sub-name">{sub.subscriptionName}</div>
+                              <div className="xd-disc-sub-id">{sub.subscriptionId}</div>
+                            </div>
                           </div>
                           <span className={`xd-status ${sub.state === 'Enabled' ? 'xd-status-active' : 'xd-status-onhold'}`}>{sub.state}</span>
                         </div>
@@ -139,8 +163,8 @@ export default function DiscoveryPage() {
                         <div className="xd-disc-cols">
                           <StatGroup icon={<FiCpu />} title="Compute" stats={[
                             { label: 'Total VMs', value: sub.compute?.totalVMs ?? 0 },
-                            { label: 'Linux VMs', value: sub.compute?.linuxVMs ?? 0 },
-                            { label: 'Windows VMs', value: sub.compute?.windowsVMs ?? 0 },
+                            { label: 'Linux', value: sub.compute?.linuxVMs ?? 0 },
+                            { label: 'Windows', value: sub.compute?.windowsVMs ?? 0 },
                           ]} />
                           <StatGroup icon={<FiHardDrive />} title="Storage" stats={[
                             { label: 'Storage Accounts', value: sub.storage?.storageAccounts ?? 0 },
@@ -160,18 +184,23 @@ export default function DiscoveryPage() {
                             { label: 'AKS Clusters', value: sub.containers?.aksClusters ?? 0 },
                           ]} />
                           <StatGroup icon={<FiActivity />} title="Health" stats={[
-                            { label: 'Healthy', value: sub.health?.healthyResources ?? 0 },
-                            { label: 'Unhealthy', value: sub.health?.unhealthyResources ?? 0 },
+                            { label: 'Healthy', value: sub.health?.healthyResources ?? 0, tone: 'ok' },
+                            { label: 'Unhealthy', value: unhealthy, tone: unhealthy ? 'bad' : undefined },
                           ]} />
                         </div>
 
                         {insights.length > 0 && (
-                          <>
-                            <div className="xd-disc-group-head xd-disc-insights-head"><FiActivity /><span>Insights & Recommendations</span></div>
-                            <ul className="xd-disc-insights">
-                              {insights.map((t, i) => <li key={i}>{t}</li>)}
-                            </ul>
-                          </>
+                          <div className="xd-disc-insights-wrap">
+                            <div className="xd-disc-group-head"><FiZap /><span>Insights &amp; Recommendations</span></div>
+                            <div className="xd-disc-insights">
+                              {insights.map((t, i) => (
+                                <div className="xd-disc-insight" key={i}>
+                                  <span className="xd-disc-insight-no">{i + 1}</span>
+                                  <span className="xd-disc-insight-text">{t}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         )}
                       </div>
                     );
