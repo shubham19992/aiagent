@@ -1,6 +1,6 @@
 // ============================================================
 // credentials.js — client for the credentials service /api/v3/credentials/*
-// (the "Create Connect" backend). Runs on its own host/port (8088);
+// (the "Create Connect" backend). Runs on its own host/port (8084);
 // override with VITE_CREDENTIALS_BASE_URL.
 //
 // A credential carries { id, name, op_code, env_code, env_id, values,
@@ -9,7 +9,7 @@
 // ============================================================
 import { tokenStore } from './client';
 
-const RAW = import.meta.env.VITE_CREDENTIALS_BASE_URL || 'http://10.1.151.228:8088';
+const RAW = import.meta.env.VITE_CREDENTIALS_BASE_URL || 'http://10.1.151.228:8084';
 export const CREDENTIALS_BASE = RAW.replace(/\/+$/, '');
 
 const enc = encodeURIComponent;
