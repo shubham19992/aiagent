@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useOutletContext, Link } from 'react-router-dom';
 import {
-  FiCheckCircle, FiAlertTriangle, FiArrowLeft, FiCpu, FiDatabase, FiHardDrive,
-  FiShare2, FiBox, FiActivity, FiZap, FiLayers, FiCheck, FiX, FiCloud,
+  FiAlertTriangle, FiArrowLeft, FiCpu, FiDatabase, FiHardDrive,
+  FiShare2, FiBox, FiActivity, FiZap, FiCloud,
 } from 'react-icons/fi';
 import { FaAws } from 'react-icons/fa';
 import { VscAzure } from 'react-icons/vsc';
@@ -36,18 +36,6 @@ function StatGroup({ icon, title, stats }) {
   );
 }
 
-function Kpi({ icon, label, value, tone }) {
-  return (
-    <div className={`xd-disc-kpi ${tone ? `xd-disc-kpi-${tone}` : ''}`}>
-      <span className="xd-disc-kpi-icon">{icon}</span>
-      <span className="xd-disc-kpi-body">
-        <span className="xd-disc-kpi-val">{value}</span>
-        <span className="xd-disc-kpi-label">{label}</span>
-      </span>
-    </div>
-  );
-}
-
 /** Cloud discovery result — shown after Save & Connect and from the
  *  connections list "Connect" action. */
 export default function DiscoveryPage() {
@@ -74,9 +62,6 @@ export default function DiscoveryPage() {
       .catch((err) => { if (alive) { setError(err?.message || 'Discovery failed.'); setLoading(false); } });
     return () => { alive = false; };
   }, [envCode]);
-
-  const ok = result?.status === 'COMPLETED';
-  const s = result?.summary || {};
 
   return (
     <>
@@ -109,21 +94,10 @@ export default function DiscoveryPage() {
               <div className="xd-disc-hero-main">
                 <div className="xd-disc-hero-top">
                   <span className="xd-disc-hero-cloudname">{result.cloudProvider}</span>
-                  <span className={`xd-disc-pill ${ok ? 'ok' : 'bad'}`}>
-                    {ok ? <FiCheckCircle /> : <FiAlertTriangle />} {result.status}
-                  </span>
                 </div>
                 <div className="xd-disc-meta">
                   <span className="xd-disc-meta-item">Executed<b>{fmtDateTime(result.executionTime)}</b></span>
-                  <span className="xd-disc-meta-item">Request<b>{result.requestId}</b></span>
-                  {result.projectId && <span className="xd-disc-meta-item">Project<b>{result.projectId}</b></span>}
                 </div>
-              </div>
-              <div className="xd-disc-kpis">
-                <Kpi icon={<FiLayers />} label="Requested" value={s.totalAgentsRequested ?? 0} />
-                <Kpi icon={<FiZap />} label="Executed" value={s.totalAgentsExecuted ?? 0} />
-                <Kpi icon={<FiCheck />} label="Successful" value={s.successfulAgents ?? 0} tone="ok" />
-                <Kpi icon={<FiX />} label="Failed" value={s.failedAgents ?? 0} tone={s.failedAgents ? 'bad' : undefined} />
               </div>
             </div>
 
@@ -134,7 +108,6 @@ export default function DiscoveryPage() {
                 <div key={agent.agentId}>
                   <h3 className="xd-subhead xd-disc-agenthead">
                     <FiZap /> {agent.agentId}
-                    <span className={`xd-disc-pill ${agent.status === 'SUCCESS' ? 'ok' : 'bad'} xd-disc-pill-sm`}>{agent.status}</span>
                   </h3>
 
                   {subs.map((sub) => {
