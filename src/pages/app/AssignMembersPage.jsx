@@ -35,22 +35,32 @@ const opRoles = (opName) => [
 ];
 
 // ── Custom-role access model ──────────────────────────────────────────
-// A custom role grants a per-module access level. Modules an admin can
-// scope; levels go from no access up to full management.
-const ACCESS_MODULES = [
-  { key: 'dashboard', label: 'Dashboard' },
+// A custom role grants a per-module access level. The modules differ by
+// scope: project-wide areas vs. a single observability's areas.
+const PROJECT_MODULES = [
+  { key: 'overview', label: 'Overview' },
   { key: 'connections', label: 'Connections' },
-  { key: 'alerts', label: 'Alerts' },
-  { key: 'billing', label: 'Billing' },
+  { key: 'observabilities', label: 'Observabilities' },
   { key: 'members', label: 'Members' },
-  { key: 'reports', label: 'Reports' },
+  { key: 'billing', label: 'Billing' },
+  { key: 'settings', label: 'Settings' },
+];
+const OBS_MODULES = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'cost', label: 'Cost' },
+  { key: 'network', label: 'Network' },
+  { key: 'compute', label: 'Compute' },
+  { key: 'storage', label: 'Storage' },
+  { key: 'security', label: 'Security' },
+  { key: 'reliability', label: 'Reliability' },
+  { key: 'alerts', label: 'Alerts' },
 ];
 const ACCESS_LEVELS = [
   { value: 'none', label: 'None' },
   { value: 'view', label: 'View' },
   { value: 'manage', label: 'Manage' },
 ];
-const emptyAccess = () => Object.fromEntries(ACCESS_MODULES.map((m) => [m.key, 'none']));
+const emptyAccess = (modules) => Object.fromEntries(modules.map((m) => [m.key, 'none']));
 
 // Toggle a user under a role within a flat [{userId,userName,role}] list.
 // Same role again removes; a different role switches the user over.
@@ -131,11 +141,11 @@ function MemberPills({ list, onRemove, empty = 'No members assigned yet' }) {
 }
 
 /** Side panel to add a custom role with per-module access (checkboxes). */
-function AddRoleForm({ onAdd }) {
+function AddRoleForm({ onAdd, modules }) {
   const [name, setName] = useState('');
-  const [access, setAccess] = useState(emptyAccess);
+  const [access, setAccess] = useState(() => emptyAccess(modules));
 
-  const reset = () => { setName(''); setAccess(emptyAccess()); };
+  const reset = () => { setName(''); setAccess(emptyAccess(modules)); };
   // Checking a level sets it; checking the active level again clears to none.
   const setLevel = (key, level) =>
     setAccess((a) => ({ ...a, [key]: a[key] === level ? 'none' : level }));
@@ -146,7 +156,7 @@ function AddRoleForm({ onAdd }) {
     reset();
   };
 
-  const hasAccess = ACCESS_MODULES.some((m) => access[m.key] !== 'none');
+  const hasAccess = modules.some((m) => access[m.key] !== 'none');
 
   return (
     <div className="xd-am-addrole">
@@ -168,7 +178,7 @@ function AddRoleForm({ onAdd }) {
         />
         <label className="xd-conn-label">Access — what this role can do</label>
         <div className="xd-am-access-list">
-          {ACCESS_MODULES.map((m) => (
+          {modules.map((m) => (
             <div className="xd-am-access-cell" key={m.key}>
               <span className="xd-am-access-mod">{m.label}</span>
               <div className="xd-am-access-checks">
@@ -200,7 +210,7 @@ function AddRoleForm({ onAdd }) {
 }
 
 /** A role → users table (left) beside the Add Role form (right). */
-function RoleAssigner({ roles, list, setList, userOptions, onAddRole, onRemoveRole }) {
+function RoleAssigner({ roles, list, setList, userOptions, onAddRole, onRemoveRole, modules }) {
   const isOn = (userId, role) => list.some((u) => u.userId === userId && u.role === role);
   const roleOf = (userId) => list.find((u) => u.userId === userId)?.role;
   const count = (role) => list.filter((u) => u.role === role).length;
@@ -235,7 +245,7 @@ function RoleAssigner({ roles, list, setList, userOptions, onAddRole, onRemoveRo
       </div>
       {onAddRole && (
         <div className="xd-am-roleform-col">
-          <AddRoleForm onAdd={onAddRole} />
+          <AddRoleForm onAdd={onAddRole} modules={modules} />
         </div>
       )}
     </div>
@@ -403,6 +413,7 @@ export default function AssignMembersPage() {
                 userOptions={userOptions}
                 onAddRole={addProjectRole}
                 onRemoveRole={removeProjectRole}
+                modules={PROJECT_MODULES}
               />
               <div className="xd-am-summary">
                 <MemberPills list={projectMembers} onRemove={(id) => setProjectMembers((p) => p.filter((u) => u.userId !== id))} />
@@ -435,6 +446,7 @@ export default function AssignMembersPage() {
                 userOptions={userOptions}
                 onAddRole={addObsRole}
                 onRemoveRole={removeObsRole}
+                modules={OBS_MODULES}
               />
               <div className="xd-am-summary">
                 <MemberPills list={obsList} onRemove={(id) => setObsList((p) => p.filter((u) => u.userId !== id))} />
