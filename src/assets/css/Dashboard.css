@@ -1224,6 +1224,16 @@ select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink
   .xd-am-roleform-col { flex: 1 1 auto; width: 100%; }
 }
 
+/* add-role: collapsed button (opens the form on the right) */
+.xd-am-addrole-btn {
+  flex: 0 0 auto; align-self: flex-start;
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; border: 1px dashed var(--xd-line); color: var(--xd-emerald);
+  border-radius: 9px; padding: 9px 16px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: all .14s;
+}
+.xd-am-addrole-btn:hover { border-color: var(--xd-emerald); background: rgba(var(--xd-accent-rgb), .08); }
+
 /* add-role form — card with accent header */
 .xd-am-addrole {
   border: 1px solid var(--xd-line); border-radius: 12px;
@@ -1244,6 +1254,11 @@ select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink
 .xd-am-addrole-htext { display: flex; flex-direction: column; line-height: 1.3; }
 .xd-am-addrole-title { font-size: 13.5px; font-weight: 800; }
 .xd-am-addrole-sub { font-size: 11px; color: var(--xd-soft); font-weight: 600; }
+.xd-am-addrole-close {
+  margin-left: auto; border: none; background: transparent; color: var(--xd-soft);
+  cursor: pointer; display: inline-flex; align-items: center; padding: 2px; font-size: 15px;
+}
+.xd-am-addrole-close:hover { color: var(--xd-ink); }
 .xd-am-addrole-body { padding: 14px; }
 .xd-am-addrole-body .xd-conn-label:first-of-type { margin-top: 0; }
 .xd-am-addrole-err { margin-top: 10px; }

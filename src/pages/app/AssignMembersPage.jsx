@@ -121,7 +121,7 @@ function MemberPills({ list, onRemove, labelOf, empty = 'No members assigned yet
 }
 
 /** Side panel: name a custom role and pick its permissions (from the API). */
-function AddRoleForm({ permissions, onCreate }) {
+function AddRoleForm({ permissions, onCreate, onClose }) {
   const [name, setName] = useState('');
   const [picked, setPicked] = useState({});
   const [saving, setSaving] = useState(false);
@@ -136,6 +136,7 @@ function AddRoleForm({ permissions, onCreate }) {
     try {
       await onCreate(label, codes);
       setName(''); setPicked({});
+      if (onClose) onClose();
     } catch (e) {
       setErr(e?.message || 'Failed to create role.');
     } finally {
@@ -151,6 +152,11 @@ function AddRoleForm({ permissions, onCreate }) {
           <span className="xd-am-addrole-title">Add Role</span>
           <span className="xd-am-addrole-sub">Name it and pick its permissions</span>
         </span>
+        {onClose && (
+          <button type="button" className="xd-am-addrole-close" title="Close" onClick={onClose} disabled={saving}>
+            <FiX />
+          </button>
+        )}
       </div>
       <div className="xd-am-addrole-body">
         <label className="xd-conn-label">Role name</label>
@@ -187,8 +193,9 @@ function AddRoleForm({ permissions, onCreate }) {
   );
 }
 
-/** A role → users table (left) beside the Add Role form (right). */
+/** A role → users table (left); an Add Role button that opens a form (right). */
 function RoleAssigner({ roles, list, setList, userOptions, permissions, onCreateRole }) {
+  const [formOpen, setFormOpen] = useState(false);
   const isOn = (userId, role) => list.some((u) => u.userId === userId && u.role === role);
   const roleOf = (userId) => list.find((u) => u.userId === userId)?.role;
   const count = (role) => list.filter((u) => u.role === role).length;
@@ -223,9 +230,15 @@ function RoleAssigner({ roles, list, setList, userOptions, permissions, onCreate
         ))}
       </div>
       {onCreateRole && (
-        <div className="xd-am-roleform-col">
-          <AddRoleForm permissions={permissions} onCreate={onCreateRole} />
-        </div>
+        formOpen ? (
+          <div className="xd-am-roleform-col">
+            <AddRoleForm permissions={permissions} onCreate={onCreateRole} onClose={() => setFormOpen(false)} />
+          </div>
+        ) : (
+          <button type="button" className="xd-am-addrole-btn" onClick={() => setFormOpen(true)}>
+            <FiPlus /> Add Role
+          </button>
+        )
       )}
     </div>
   );
