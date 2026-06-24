@@ -31,9 +31,16 @@ export function subscribeLoading(fn) {
 // which service client makes them — drive the full-screen loader.
 if (typeof window !== 'undefined' && typeof window.fetch === 'function' && !window.__xdFetchLoading) {
   const orig = window.fetch.bind(window);
-  window.fetch = (...args) => {
+  window.fetch = (input, init) => {
+    // Opt-out: callers can pass { skipGlobalLoader: true } to run without
+    // the full-screen overlay (e.g. discovery, which has its own in-page
+    // loader). Strip the flag so it isn't forwarded to fetch.
+    if (init && init.skipGlobalLoader) {
+      const { skipGlobalLoader, ...rest } = init;
+      return orig(input, rest);
+    }
     startLoading();
-    return orig(...args).finally(stopLoading);
+    return orig(input, init).finally(stopLoading);
   };
   window.__xdFetchLoading = true;
 }

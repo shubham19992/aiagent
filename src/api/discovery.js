@@ -20,6 +20,8 @@ export async function runDiscovery({ agentNames, cloudProvider, userId, projectI
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify({ agentNames, cloudProvider, userId, projectId }),
+    // Discovery has its own in-page loader; skip the full-screen overlay.
+    skipGlobalLoader: true,
   });
   const text = await res.text();
   let json = null;
