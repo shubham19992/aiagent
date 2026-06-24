@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FiActivity, FiChevronDown, FiLogOut, FiLoader, FiFolder, FiPlusCircle, FiList, FiMenu, FiUsers, FiUserPlus } from 'react-icons/fi';
+import { FiActivity, FiChevronDown, FiLogOut, FiLoader, FiFolder, FiPlusCircle, FiList, FiMenu, FiUsers, FiUserPlus, FiX } from 'react-icons/fi';
 import '../../assets/css/Dashboard.css';
 import XopsLogo from '../../components/XopsLogo';
 import * as auth from '../../api/auth';
@@ -24,6 +24,8 @@ export default function AppLayout() {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState({ observability: true, project: true, users: true });
   const toggle = (k) => setOpen((s) => ({ ...s, [k]: !s[k] }));
+  const [confirmLogout, setConfirmLogout] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -40,9 +42,10 @@ export default function AppLayout() {
     return () => { alive = false; };
   }, []);
 
-  const logout = async () => {
+  const doLogout = async () => {
     // Call the backend logout API; auth.logout() clears all tokens/session
     // in its finally block even if the request fails.
+    setLoggingOut(true);
     try {
       await auth.logout();
     } finally {
@@ -181,7 +184,7 @@ export default function AppLayout() {
               <span className="xd-user-role">Online</span>
             </span>
           </div>
-          <button className="xd-logout" onClick={logout} type="button" title="Log out">
+          <button className="xd-logout" onClick={() => setConfirmLogout(true)} type="button" title="Log out">
             <FiLogOut />
           </button>
         </div>
@@ -190,6 +193,27 @@ export default function AppLayout() {
       <div className="xd-content-wrap">
         <Outlet context={{ ops, source, loading }} />
       </div>
+
+      {/* ── Logout confirm ── */}
+      {confirmLogout && (
+        <div className="xd-modal-overlay" onMouseDown={() => !loggingOut && setConfirmLogout(false)}>
+          <div className="xd-modal xd-modal-sm" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="xd-modal-head">
+              <h3>Log out</h3>
+              <button type="button" className="xd-icon-btn" onClick={() => setConfirmLogout(false)} disabled={loggingOut}><FiX /></button>
+            </div>
+            <div className="xd-modal-body">
+              <p>Are you sure you want to log out of your account?</p>
+            </div>
+            <div className="xd-modal-foot">
+              <button type="button" className="xd-btn-ghost" onClick={() => setConfirmLogout(false)} disabled={loggingOut}>Cancel</button>
+              <button type="button" className="xd-btn xd-btn-danger" onClick={doLogout} disabled={loggingOut}>
+                {loggingOut ? 'Logging out…' : 'Log out'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
