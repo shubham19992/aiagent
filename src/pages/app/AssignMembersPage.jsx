@@ -161,47 +161,60 @@ function AddRoleForm({ onAdd }) {
     reset();
   };
 
+  const hasAccess = ACCESS_MODULES.some((m) => access[m.key] !== 'none');
+
   return (
     <div className="xd-am-addrole">
-      <div className="xd-am-addrole-title"><FiPlus /> Add Role</div>
-      <label className="xd-conn-label">Role name</label>
-      <input
-        className="xd-conn-input"
-        placeholder="e.g. Cost Reviewer"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
-      />
-      <label className="xd-conn-label">Access — what this role can do</label>
-      <div className="xd-am-access-list">
-        {ACCESS_MODULES.map((m) => (
-          <div className="xd-am-access-cell" key={m.key}>
-            <span className="xd-am-access-mod">{m.label}</span>
-            <div className="xd-am-access-checks">
-              {ACCESS_LEVELS.filter((l) => l.value !== 'none').map((l) => (
-                <label className="xd-am-check" key={l.value}>
-                  <input
-                    type="checkbox"
-                    checked={access[m.key] === l.value}
-                    onChange={() => setLevel(m.key, l.value)}
-                  />
-                  {l.label}
-                </label>
-              ))}
-            </div>
-          </div>
-        ))}
+      <div className="xd-am-addrole-head">
+        <span className="xd-am-addrole-ico"><FiPlus /></span>
+        <span className="xd-am-addrole-htext">
+          <span className="xd-am-addrole-title">Add Role</span>
+          <span className="xd-am-addrole-sub">Name it and pick its access</span>
+        </span>
       </div>
-      <div className="xd-am-addrole-actions">
-        <button type="button" className="xd-btn xd-btn-sm" onClick={submit} disabled={!name.trim()}>
-          <FiPlus /> Add Role
-        </button>
+      <div className="xd-am-addrole-body">
+        <label className="xd-conn-label">Role name</label>
+        <input
+          className="xd-conn-input"
+          placeholder="e.g. Cost Reviewer"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
+        />
+        <label className="xd-conn-label">Access — what this role can do</label>
+        <div className="xd-am-access-list">
+          {ACCESS_MODULES.map((m) => (
+            <div className="xd-am-access-cell" key={m.key}>
+              <span className="xd-am-access-mod">{m.label}</span>
+              <div className="xd-am-access-checks">
+                {ACCESS_LEVELS.filter((l) => l.value !== 'none').map((l) => (
+                  <label className={`xd-am-check ${l.value}`} key={l.value}>
+                    <input
+                      type="checkbox"
+                      checked={access[m.key] === l.value}
+                      onChange={() => setLevel(m.key, l.value)}
+                    />
+                    {l.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="xd-am-addrole-actions">
+          <button type="button" className="xd-btn xd-btn-sm" onClick={submit} disabled={!name.trim()}>
+            <FiPlus /> Add Role
+          </button>
+        </div>
+        {name.trim() && !hasAccess && (
+          <p className="xd-am-addrole-hint">No access selected — this role will see nothing.</p>
+        )}
       </div>
     </div>
   );
 }
 
-/** Add Role form (left) beside a role → users table (right). */
+/** A role → users table (left) beside the Add Role form (right). */
 function RoleAssigner({ roles, list, setList, userOptions, onAddRole, onRemoveRole }) {
   const isOn = (userId, role) => list.some((u) => u.userId === userId && u.role === role);
   const roleOf = (userId) => list.find((u) => u.userId === userId)?.role;
@@ -209,11 +222,6 @@ function RoleAssigner({ roles, list, setList, userOptions, onAddRole, onRemoveRo
 
   return (
     <div className="xd-am-rolewrap">
-      {onAddRole && (
-        <div className="xd-am-roleform-col">
-          <AddRoleForm onAdd={onAddRole} />
-        </div>
-      )}
       <div className="xd-am-table">
         <div className="xd-am-trow xd-am-thead"><span>Role</span><span>Users</span></div>
         {roles.map((role) => (
@@ -241,6 +249,11 @@ function RoleAssigner({ roles, list, setList, userOptions, onAddRole, onRemoveRo
           </div>
         ))}
       </div>
+      {onAddRole && (
+        <div className="xd-am-roleform-col">
+          <AddRoleForm onAdd={onAddRole} />
+        </div>
+      )}
     </div>
   );
 }
