@@ -1213,25 +1213,35 @@ select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink
   border-color: rgba(var(--xd-accent-rgb), .4);
 }
 
-/* add-role form */
-.xd-am-addrole-btn {
-  margin-top: 10px; align-self: flex-start;
-  display: inline-flex; align-items: center; gap: 6px;
-  background: transparent; border: 1px dashed var(--xd-line); color: var(--xd-emerald);
-  border-radius: 8px; padding: 8px 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+/* role assigner: Add Role form (left) beside the role table (right) */
+.xd-am-rolewrap { display: flex; gap: 16px; align-items: flex-start; margin-top: 8px; }
+.xd-am-roleform-col { flex: 0 0 280px; }
+.xd-am-rolewrap .xd-am-table { flex: 1; min-width: 0; margin-top: 0; }
+@media (max-width: 820px) {
+  .xd-am-rolewrap { flex-direction: column; }
+  .xd-am-roleform-col { flex: 1 1 auto; width: 100%; }
 }
-.xd-am-addrole-btn:hover { border-color: var(--xd-emerald); background: rgba(var(--xd-accent-rgb), .08); }
+
+/* add-role form */
 .xd-am-addrole {
-  margin-top: 12px; padding: 14px; border: 1px solid var(--xd-line);
+  padding: 14px; border: 1px solid var(--xd-line);
   border-radius: 10px; background: var(--xd-card-2);
 }
-.xd-am-addrole .xd-conn-label:first-of-type { margin-top: 0; }
-.xd-am-access-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 10px; margin-top: 4px;
+.xd-am-addrole-title {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13.5px; font-weight: 800; margin-bottom: 10px;
 }
-.xd-am-access-cell { display: flex; flex-direction: column; gap: 5px; }
-.xd-am-access-mod { font-size: 12px; font-weight: 700; color: var(--xd-soft); }
+.xd-am-addrole-title svg { color: var(--xd-emerald); }
+.xd-am-addrole .xd-conn-label:first-of-type { margin-top: 0; }
+.xd-am-access-list { display: flex; flex-direction: column; gap: 9px; margin-top: 4px; }
+.xd-am-access-cell { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.xd-am-access-mod { font-size: 12.5px; font-weight: 700; color: var(--xd-soft); }
+.xd-am-access-checks { display: inline-flex; gap: 12px; }
+.xd-am-check {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; color: var(--xd-ink); cursor: pointer;
+}
+.xd-am-check input { accent-color: var(--xd-emerald); cursor: pointer; }
 .xd-am-addrole-actions {
   display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;
 }
