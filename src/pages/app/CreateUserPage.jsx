@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from './_parts';
 import { createUser } from '../../api/users';
-
-// Org-level roles (Product tier) for the orgRole select.
-const ORG_ROLES = ['SuperAdmin', 'Product_Admin', 'Product_Support'];
+import { listRoles } from '../../api/rbac';
 
 export default function CreateUserPage() {
   const navigate = useNavigate();
+
+  // Org-level (product) roles for the orgRole select — loaded from the API.
+  const [orgRoles, setOrgRoles] = useState([]);
 
   const [form, setForm] = useState({
     login: '', email: '', password: '', fullName: '', phoneNumber: '',
@@ -17,6 +18,14 @@ export default function CreateUserPage() {
   const [saving, setSaving] = useState(false);
 
   const set = (k, v) => { setForm((f) => ({ ...f, [k]: v })); setError(''); };
+
+  useEffect(() => {
+    let alive = true;
+    listRoles({ level: 'product' })
+      .then((roles) => { if (alive) setOrgRoles(roles); })
+      .catch(() => { if (alive) setOrgRoles([]); });
+    return () => { alive = false; };
+  }, []);
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -88,7 +97,7 @@ export default function CreateUserPage() {
                   <label className="xd-conn-label">Org Role</label>
                   <select className="xd-conn-input" value={form.orgRole} onChange={(e) => set('orgRole', e.target.value)}>
                     <option value="">— None —</option>
-                    {ORG_ROLES.map((r) => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
+                    {orgRoles.map((r) => <option key={r.code} value={r.name}>{r.name.replace(/_/g, ' ')}</option>)}
                   </select>
                 </div>
 

@@ -1207,12 +1207,13 @@ select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink
   border-color: rgba(var(--xd-accent-rgb), .4);
 }
 
-/* custom role: delete button + access summary tags */
-.xd-am-roledel {
-  border: none; background: transparent; color: var(--xd-soft); cursor: pointer;
-  display: inline-flex; align-items: center; padding: 0; font-size: 12px;
+/* custom-role tag in the role table */
+.xd-am-customtag {
+  margin-left: 6px; font-size: 9.5px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .04em; padding: 1px 6px; border-radius: 999px;
+  color: var(--xd-emerald); background: rgba(var(--xd-accent-rgb), .12);
+  border: 1px solid rgba(var(--xd-accent-rgb), .4);
 }
-.xd-am-roledel:hover { color: #f2495c; }
 
 /* role assigner: role table (left) beside the Add Role form (right) */
 .xd-am-rolewrap { display: flex; gap: 16px; align-items: flex-start; margin-top: 8px; }
@@ -1245,28 +1246,26 @@ select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink
 .xd-am-addrole-sub { font-size: 11px; color: var(--xd-soft); font-weight: 600; }
 .xd-am-addrole-body { padding: 14px; }
 .xd-am-addrole-body .xd-conn-label:first-of-type { margin-top: 0; }
-.xd-am-addrole-hint { margin: 10px 0 0; font-size: 11.5px; color: var(--xd-soft); }
+.xd-am-addrole-err { margin-top: 10px; }
+.xd-am-noperm { font-size: 12.5px; margin-top: 6px; }
 
-.xd-am-access-list { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
-.xd-am-access-cell {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  padding: 6px 8px; border-radius: 8px;
+/* permission checkbox list (from the API) */
+.xd-am-perm-list {
+  display: flex; flex-direction: column; gap: 2px; margin-top: 6px;
+  max-height: 280px; overflow-y: auto;
 }
-.xd-am-access-cell:hover { background: rgba(var(--xd-accent-rgb), .05); }
-.xd-am-access-mod { font-size: 12.5px; font-weight: 700; }
-.xd-am-access-checks { display: inline-flex; gap: 14px; }
-
-/* level toggle with a visible checkbox */
-.xd-am-check {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 12px; font-weight: 600; color: var(--xd-ink);
-  cursor: pointer; user-select: none;
+.xd-am-perm {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 7px 8px; border-radius: 8px; cursor: pointer;
 }
-.xd-am-check input {
-  width: 15px; height: 15px; margin: 0;
+.xd-am-perm:hover { background: rgba(var(--xd-accent-rgb), .05); }
+.xd-am-perm input {
+  width: 15px; height: 15px; margin: 2px 0 0; flex: 0 0 auto;
   accent-color: var(--xd-emerald); cursor: pointer;
 }
-.xd-am-check:hover { color: var(--xd-emerald); }
+.xd-am-perm-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.xd-am-perm-name { font-size: 12.5px; font-weight: 700; }
+.xd-am-perm-desc { font-size: 11px; color: var(--xd-soft); line-height: 1.35; }
 .xd-am-addrole-actions { margin-top: 16px; }
 .xd-am-addrole-actions .xd-btn { width: 100%; justify-content: center; }
 
