@@ -1241,26 +1241,19 @@ select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink
 }
 .xd-am-access-cell:hover { background: rgba(var(--xd-accent-rgb), .05); }
 .xd-am-access-mod { font-size: 12.5px; font-weight: 700; }
-.xd-am-access-checks { display: inline-flex; gap: 6px; }
+.xd-am-access-checks { display: inline-flex; gap: 14px; }
 
-/* level toggle rendered as a pill (native checkbox hidden) */
+/* level toggle with a visible checkbox */
 .xd-am-check {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 3px 10px; border-radius: 999px;
-  border: 1px solid var(--xd-line); background: var(--xd-card);
-  font-size: 11px; font-weight: 700; color: var(--xd-soft);
-  cursor: pointer; user-select: none; transition: all .14s;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: var(--xd-ink);
+  cursor: pointer; user-select: none;
 }
-.xd-am-check input { position: absolute; opacity: 0; width: 0; height: 0; }
-.xd-am-check:hover { border-color: var(--xd-emerald); color: var(--xd-ink); }
-.xd-am-check.view:has(input:checked) {
-  color: var(--xd-mint); background: rgba(115, 191, 105, .14);
-  border-color: rgba(115, 191, 105, .45);
+.xd-am-check input {
+  width: 15px; height: 15px; margin: 0;
+  accent-color: var(--xd-emerald); cursor: pointer;
 }
-.xd-am-check.manage:has(input:checked) {
-  color: var(--xd-emerald); background: rgba(var(--xd-accent-rgb), .14);
-  border-color: rgba(var(--xd-accent-rgb), .5);
-}
+.xd-am-check:hover { color: var(--xd-emerald); }
 .xd-am-addrole-actions { margin-top: 16px; }
 .xd-am-addrole-actions .xd-btn { width: 100%; justify-content: center; }
 
