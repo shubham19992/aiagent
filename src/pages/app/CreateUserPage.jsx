@@ -7,7 +7,7 @@ import { listRoles } from '../../api/rbac';
 export default function CreateUserPage() {
   const navigate = useNavigate();
 
-  // Org-level (product) roles for the orgRole select — loaded from the API.
+  // Roles for the Role select — full list loaded from the roles API.
   const [orgRoles, setOrgRoles] = useState([]);
 
   const [form, setForm] = useState({
@@ -21,7 +21,7 @@ export default function CreateUserPage() {
 
   useEffect(() => {
     let alive = true;
-    listRoles({ level: 'product' })
+    listRoles()
       .then((roles) => { if (alive) setOrgRoles(roles); })
       .catch(() => { if (alive) setOrgRoles([]); });
     return () => { alive = false; };
@@ -94,7 +94,7 @@ export default function CreateUserPage() {
                 </div>
 
                 <div className="xd-conn-field">
-                  <label className="xd-conn-label">Org Role</label>
+                  <label className="xd-conn-label">Role</label>
                   <select className="xd-conn-input" value={form.orgRole} onChange={(e) => set('orgRole', e.target.value)}>
                     <option value="">— None —</option>
                     {orgRoles.map((r) => <option key={r.code} value={r.name}>{r.name.replace(/_/g, ' ')}</option>)}
