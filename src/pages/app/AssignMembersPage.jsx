@@ -130,21 +130,6 @@ function MemberPills({ list, onRemove, empty = 'No members assigned yet' }) {
   );
 }
 
-/** Small summary of the modules a custom role can access. */
-function RoleAccessTags({ access }) {
-  const granted = ACCESS_MODULES.filter((m) => access?.[m.key] && access[m.key] !== 'none');
-  if (granted.length === 0) return <span className="xd-am-access-none">no access</span>;
-  return (
-    <span className="xd-am-access-tags">
-      {granted.map((m) => (
-        <span key={m.key} className={`xd-am-access-tag ${access[m.key]}`}>
-          {m.label} · {access[m.key]}
-        </span>
-      ))}
-    </span>
-  );
-}
-
 /** Side panel to add a custom role with per-module access (checkboxes). */
 function AddRoleForm({ onAdd }) {
   const [name, setName] = useState('');
@@ -232,7 +217,6 @@ function RoleAssigner({ roles, list, setList, userOptions, onAddRole, onRemoveRo
                 <button type="button" className="xd-am-roledel" title="Remove role"
                   onClick={() => onRemoveRole(role)}><FiX /></button>
               )}
-              {role.access && <RoleAccessTags access={role.access} />}
             </span>
             <UserMultiSelect
               userOptions={userOptions}

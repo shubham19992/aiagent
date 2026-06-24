@@ -1200,18 +1200,6 @@ select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink
   display: inline-flex; align-items: center; padding: 0; font-size: 12px;
 }
 .xd-am-roledel:hover { color: #f2495c; }
-.xd-am-access-tags { display: inline-flex; flex-wrap: wrap; gap: 4px; margin-left: 2px; }
-.xd-am-access-none { font-size: 10.5px; font-weight: 600; color: var(--xd-soft); margin-left: 2px; }
-.xd-am-access-tag {
-  font-size: 10px; font-weight: 700; letter-spacing: .02em;
-  padding: 1px 6px; border-radius: 999px; color: var(--xd-soft);
-  background: rgba(204, 204, 220, .12); border: 1px solid var(--xd-line);
-}
-.xd-am-access-tag.view { color: var(--xd-mint); border-color: rgba(115, 191, 105, .35); }
-.xd-am-access-tag.manage {
-  color: var(--xd-emerald); background: rgba(var(--xd-accent-rgb), .14);
-  border-color: rgba(var(--xd-accent-rgb), .4);
-}
 
 /* role assigner: role table (left) beside the Add Role form (right) */
 .xd-am-rolewrap { display: flex; gap: 16px; align-items: flex-start; margin-top: 8px; }
