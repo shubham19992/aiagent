@@ -66,7 +66,6 @@ export default function AppLayout() {
               <FiMenu />
             </button>
           </div>
-          {!collapsed && <span className="xd-side-tag">Automation Governance</span>}
         </div>
 
         <nav className="xd-nav">

@@ -183,7 +183,6 @@ const UIDAILogin = () => {
           </div>
 
           <div className="xlogin-hero-body">
-            <span className="xlogin-eyebrow">Automation Governance Platform</span>
             <h1 className="xlogin-hero-title">
               Run every operation<br />from a single pane.
             </h1>

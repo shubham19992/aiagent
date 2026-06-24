@@ -154,10 +154,7 @@ const ResetPassword = () => {
           <div className="header-brand">
             <XopsLogo height={44} />
           </div>
-          <h1 className="header-title">xOps Automation Governance Tool</h1>
-          <div className="header-authority">
-            Automation Governance<br />Platform
-          </div>
+          <h1 className="header-title">xOps Tool</h1>
         </div>
       </header>
 
