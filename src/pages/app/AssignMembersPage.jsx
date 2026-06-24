@@ -279,7 +279,7 @@ export default function AssignMembersPage() {
   if (notFound) {
     return (
       <>
-        <PageHeader crumbs={[{ label: 'Manage Project', to: '/dashboard/projects' }, { label: 'Assign Members' }]} />
+        <PageHeader crumbs={[{ label: 'Manage Project', to: '/dashboard/projects' }, { label: 'Manage Users' }]} />
         <main className="xd-main">
           <div className="xd-empty">
             <p>Project not found.</p>
@@ -298,13 +298,13 @@ export default function AssignMembersPage() {
         crumbs={[
           { label: 'Manage Project', to: '/dashboard/projects' },
           ...(project ? [{ label: project.name, to: `/dashboard/projects/${project.id}` }] : []),
-          { label: 'Assign Members' },
+          { label: 'Manage Users' },
         ]}
         source={source}
       />
       <main className="xd-main xd-am-main">
         <div className="xd-pagelead">
-          <h1>Assign Members</h1>
+          <h1>Manage Users</h1>
           <p>Assign users at three scopes: the whole project, a single observability, or a specific connection.</p>
         </div>
 

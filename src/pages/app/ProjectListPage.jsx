@@ -158,7 +158,7 @@ export default function ProjectListPage() {
                       <div className="xd-pcard-menu-list" role="menu">
                         <Link to={`/dashboard/projects/${p.id}/assign`} className="xd-pcard-menu-item" role="menuitem"
                           onClick={() => setOpenMenu(null)}>
-                          <FiUserPlus /> Assign Members
+                          <FiUserPlus /> Manage Users
                         </Link>
                         {!isDemoProject(p) && (
                           <Link to={`/dashboard/projects/${p.id}/edit`} className="xd-pcard-menu-item" role="menuitem"
