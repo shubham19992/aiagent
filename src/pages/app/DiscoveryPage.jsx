@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useOutletContext, Link } from 'react-router-dom';
 import {
   FiAlertTriangle, FiArrowLeft, FiCpu, FiDatabase, FiHardDrive,
-  FiShare2, FiBox, FiActivity, FiZap, FiCloud,
+  FiShare2, FiBox, FiActivity, FiZap, FiCloud, FiLoader,
 } from 'react-icons/fi';
 import { FaAws } from 'react-icons/fa';
 import { VscAzure } from 'react-icons/vsc';
 import { SiGooglecloud } from 'react-icons/si';
-import { PageHeader, Spinner } from './_parts';
+import { PageHeader } from './_parts';
 import { runDiscovery, parseInsights } from '../../api/discovery';
 import { tokenStore } from '../../api/client';
 
@@ -20,6 +20,35 @@ const fmtDateTime = (d) => {
   try { return new Date(d).toLocaleString(undefined, { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
   catch { return d; }
 };
+
+// Reassuring messages cycled while the (slow) discovery API runs.
+const DISCOVERY_TIPS = [
+  'Connecting to your cloud provider…',
+  'Scanning subscriptions and resource groups…',
+  'Collecting compute, storage and networking inventory…',
+  'Analysing resource health and generating insights…',
+  'Almost there — compiling the discovery report…',
+];
+
+/** Loader shown while discovery runs; cycles a status message so the
+ *  user knows it's still working during the longer API wait. */
+function DiscoveryLoading() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setI((n) => (n + 1) % DISCOVERY_TIPS.length), 2500);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <div className="xd-disc-loading">
+      <FiLoader className="xd-spin xd-disc-loading-ico" />
+      <div className="xd-disc-loading-title">Running discovery…</div>
+      <div className="xd-disc-loading-msg">{DISCOVERY_TIPS[i]}</div>
+      <div className="xd-disc-loading-hint">
+        This can take a minute or two as we scan your cloud resources. Please keep this page open.
+      </div>
+    </div>
+  );
+}
 
 function StatGroup({ icon, title, stats }) {
   return (
@@ -91,7 +120,7 @@ export default function DiscoveryPage() {
         </div>
 
         {loading ? (
-          <Spinner label="Running discovery…" />
+          <DiscoveryLoading />
         ) : error ? (
           <div className="xd-empty"><FiAlertTriangle /><p>{error}</p></div>
         ) : result ? (

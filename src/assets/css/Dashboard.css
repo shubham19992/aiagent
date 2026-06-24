@@ -347,6 +347,19 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 }
 .xd-chip.on { border-color: var(--xd-emerald); color: var(--xd-emerald); background: rgba(245,112,28,.1); }
 
+/* ── cloud discovery loading ── */
+.xd-disc-loading {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  gap: 8px; padding: 56px 24px;
+  background: var(--xd-card); border: 1px solid var(--xd-line); border-radius: 14px;
+}
+.xd-disc-loading-ico { font-size: 30px; color: var(--xd-emerald); }
+.xd-disc-loading-title { font-size: 17px; font-weight: 800; margin-top: 4px; }
+.xd-disc-loading-msg {
+  font-size: 13.5px; font-weight: 600; color: var(--xd-emerald); min-height: 18px;
+}
+.xd-disc-loading-hint { font-size: 12.5px; color: var(--xd-soft); max-width: 440px; }
+
 /* ── cloud discovery result ── */
 .xd-disc-hero {
   display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 20px;
