@@ -1194,6 +1194,48 @@ select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink
   border-color: rgba(var(--xd-accent-rgb), .4);
 }
 
+/* custom role: delete button + access summary tags */
+.xd-am-roledel {
+  border: none; background: transparent; color: var(--xd-soft); cursor: pointer;
+  display: inline-flex; align-items: center; padding: 0; font-size: 12px;
+}
+.xd-am-roledel:hover { color: #f2495c; }
+.xd-am-access-tags { display: inline-flex; flex-wrap: wrap; gap: 4px; margin-left: 2px; }
+.xd-am-access-none { font-size: 10.5px; font-weight: 600; color: var(--xd-soft); margin-left: 2px; }
+.xd-am-access-tag {
+  font-size: 10px; font-weight: 700; letter-spacing: .02em;
+  padding: 1px 6px; border-radius: 999px; color: var(--xd-soft);
+  background: rgba(204, 204, 220, .12); border: 1px solid var(--xd-line);
+}
+.xd-am-access-tag.view { color: var(--xd-mint); border-color: rgba(115, 191, 105, .35); }
+.xd-am-access-tag.manage {
+  color: var(--xd-emerald); background: rgba(var(--xd-accent-rgb), .14);
+  border-color: rgba(var(--xd-accent-rgb), .4);
+}
+
+/* add-role form */
+.xd-am-addrole-btn {
+  margin-top: 10px; align-self: flex-start;
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; border: 1px dashed var(--xd-line); color: var(--xd-emerald);
+  border-radius: 8px; padding: 8px 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.xd-am-addrole-btn:hover { border-color: var(--xd-emerald); background: rgba(var(--xd-accent-rgb), .08); }
+.xd-am-addrole {
+  margin-top: 12px; padding: 14px; border: 1px solid var(--xd-line);
+  border-radius: 10px; background: var(--xd-card-2);
+}
+.xd-am-addrole .xd-conn-label:first-of-type { margin-top: 0; }
+.xd-am-access-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px; margin-top: 4px;
+}
+.xd-am-access-cell { display: flex; flex-direction: column; gap: 5px; }
+.xd-am-access-mod { font-size: 12px; font-weight: 700; color: var(--xd-soft); }
+.xd-am-addrole-actions {
+  display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;
+}
+
 .xd-am-summary { display: flex; flex-direction: column; gap: 12px; }
 .xd-am-srow {
   background: var(--xd-card-2); border: 1px solid var(--xd-line);

@@ -1,11 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers, FiShield, FiLink, FiFolder, FiEye } from 'react-icons/fi';
+import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers, FiShield, FiFolder, FiEye, FiPlus } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listUsers } from '../../api/users';
 import { getProject } from '../../api/projects';
-import { listCredentials } from '../../api/credentials';
-import { getMembers, saveMembers } from '../../api/members';
 import { setMembership } from '../../store/projectsStore';
 import { tokenStore } from '../../api/client';
 
@@ -35,6 +33,24 @@ const opRoles = (opName) => [
   { value: `${opName}_Observe_Basic`, label: `${opName} Observe · Basic` },
   { value: `${opName}_Observe_Cost`, label: `${opName} Observe · Cost` },
 ];
+
+// ── Custom-role access model ──────────────────────────────────────────
+// A custom role grants a per-module access level. Modules an admin can
+// scope; levels go from no access up to full management.
+const ACCESS_MODULES = [
+  { key: 'dashboard', label: 'Dashboard' },
+  { key: 'connections', label: 'Connections' },
+  { key: 'alerts', label: 'Alerts' },
+  { key: 'billing', label: 'Billing' },
+  { key: 'members', label: 'Members' },
+  { key: 'reports', label: 'Reports' },
+];
+const ACCESS_LEVELS = [
+  { value: 'none', label: 'None' },
+  { value: 'view', label: 'View' },
+  { value: 'manage', label: 'Manage' },
+];
+const emptyAccess = () => Object.fromEntries(ACCESS_MODULES.map((m) => [m.key, 'none']));
 
 // Toggle a user under a role within a flat [{userId,userName,role}] list.
 // Same role again removes; a different role switches the user over.
@@ -114,43 +130,127 @@ function MemberPills({ list, onRemove, empty = 'No members assigned yet' }) {
   );
 }
 
-/** A role → users table (one multi-select per role). Used by Project + Observability. */
-function RoleAssigner({ roles, list, setList, userOptions }) {
+/** Small summary of the modules a custom role can access. */
+function RoleAccessTags({ access }) {
+  const granted = ACCESS_MODULES.filter((m) => access?.[m.key] && access[m.key] !== 'none');
+  if (granted.length === 0) return <span className="xd-am-access-none">no access</span>;
+  return (
+    <span className="xd-am-access-tags">
+      {granted.map((m) => (
+        <span key={m.key} className={`xd-am-access-tag ${access[m.key]}`}>
+          {m.label} · {access[m.key]}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/** Inline form to add a custom role with per-module access. */
+function AddRoleForm({ onAdd }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [access, setAccess] = useState(emptyAccess);
+
+  const reset = () => { setName(''); setAccess(emptyAccess()); };
+  const close = () => { reset(); setOpen(false); };
+  const submit = () => {
+    const label = name.trim();
+    if (!label) return;
+    onAdd({ value: label.replace(/\s+/g, '_'), label, access: { ...access }, custom: true });
+    close();
+  };
+
+  if (!open) {
+    return (
+      <button type="button" className="xd-am-addrole-btn" onClick={() => setOpen(true)}>
+        <FiPlus /> Add Role
+      </button>
+    );
+  }
+
+  return (
+    <div className="xd-am-addrole">
+      <label className="xd-conn-label">Role name</label>
+      <input
+        className="xd-conn-input"
+        placeholder="e.g. Cost Reviewer"
+        value={name}
+        autoFocus
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
+      />
+      <label className="xd-conn-label">Access — what this role can do</label>
+      <div className="xd-am-access-grid">
+        {ACCESS_MODULES.map((m) => (
+          <div className="xd-am-access-cell" key={m.key}>
+            <span className="xd-am-access-mod">{m.label}</span>
+            <select
+              className="xd-conn-input"
+              value={access[m.key]}
+              onChange={(e) => setAccess((a) => ({ ...a, [m.key]: e.target.value }))}
+            >
+              {ACCESS_LEVELS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
+            </select>
+          </div>
+        ))}
+      </div>
+      <div className="xd-am-addrole-actions">
+        <button type="button" className="xd-btn-ghost xd-btn-sm" onClick={close}>Cancel</button>
+        <button type="button" className="xd-btn xd-btn-sm" onClick={submit} disabled={!name.trim()}>
+          <FiCheck /> Add Role
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** A role → users table (one multi-select per role) + an Add Role form. */
+function RoleAssigner({ roles, list, setList, userOptions, onAddRole, onRemoveRole }) {
   const isOn = (userId, role) => list.some((u) => u.userId === userId && u.role === role);
   const roleOf = (userId) => list.find((u) => u.userId === userId)?.role;
   const count = (role) => list.filter((u) => u.role === role).length;
 
   return (
-    <div className="xd-am-table">
-      <div className="xd-am-trow xd-am-thead"><span>Role</span><span>Users</span></div>
-      {roles.map((role) => (
-        <div className="xd-am-trow" key={role.value}>
-          <span className="xd-am-trole-label"><FiShield /> {role.label}</span>
-          <UserMultiSelect
-            userOptions={userOptions}
-            count={count(role.value)}
-            isSelected={(id) => isOn(id, role.value)}
-            onToggle={(user) => setList((prev) => togglePick(prev, user, role.value))}
-            tagFor={(m) => {
-              const r = roleOf(m.id);
-              return r && r !== role.value
-                ? <span className="xd-am-othertag">already {prettyRole(r)}</span>
-                : null;
-            }}
-          />
-        </div>
-      ))}
-    </div>
+    <>
+      <div className="xd-am-table">
+        <div className="xd-am-trow xd-am-thead"><span>Role</span><span>Users</span></div>
+        {roles.map((role) => (
+          <div className="xd-am-trow" key={role.value}>
+            <span className="xd-am-trole-label">
+              <FiShield /> {role.label}
+              {role.custom && onRemoveRole && (
+                <button type="button" className="xd-am-roledel" title="Remove role"
+                  onClick={() => onRemoveRole(role)}><FiX /></button>
+              )}
+              {role.access && <RoleAccessTags access={role.access} />}
+            </span>
+            <UserMultiSelect
+              userOptions={userOptions}
+              count={count(role.value)}
+              isSelected={(id) => isOn(id, role.value)}
+              onToggle={(user) => setList((prev) => togglePick(prev, user, role.value))}
+              tagFor={(m) => {
+                const r = roleOf(m.id);
+                return r && r !== role.value
+                  ? <span className="xd-am-othertag">already {prettyRole(r)}</span>
+                  : null;
+              }}
+            />
+          </div>
+        ))}
+      </div>
+      {onAddRole && <AddRoleForm onAdd={onAddRole} />}
+    </>
   );
 }
 
 /**
- * Assign members to a project at three scopes (stacked sections):
- *   1. Project   — users across the whole project (project roles)
+ * Assign members to a project at two scopes (stacked sections):
+ *   1. Project       — users across the whole project (project roles)
  *   2. Observability — users per observability (op roles)
- *   3. Connection — simple user list per connection (saved to backend)
- * NOTE: only the Connection scope is persisted right now; Project and
- * Observability assignments are local UI state (save wiring TBD).
+ * Both scopes support custom roles with per-module access. Assignments
+ * are kept in local UI state and persisted to the project membership
+ * overlay on save (backend wiring for the new scopes is TBD).
  */
 export default function AssignMembersPage() {
   const { projectId } = useParams();
@@ -161,27 +261,22 @@ export default function AssignMembersPage() {
   const [project, setProject] = useState(null);
   const [notFound, setNotFound] = useState(false);
 
-  const [creds, setCreds] = useState([]);
   const [users, setUsers] = useState([]);
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  // Scope 1 — project-level (local only): [{ userId, userName, role }]
-  const [projectMembers, setProjectMembers] = useState([]);
-  // Scope 2 — observability-level (local only): { [opCode]: [{ userId, userName, role }] }
-  const [obsMembers, setObsMembers] = useState({});
-  // Scope 3 — connection-level (saved): { [credId]: { [opCode]: [{ userId, userName, role }] } }
-  const [assignments, setAssignments] = useState({});
+  // Scope 1 — project-level: members + the roles they can take.
+  const [projectMembers, setProjectMembers] = useState([]); // [{ userId, userName, role }]
+  const [projectRoles, setProjectRoles] = useState(PROJECT_ROLES);
+  // Scope 2 — observability-level, keyed by op code.
+  const [obsMembers, setObsMembers] = useState({});   // { [opCode]: [{ userId, userName, role }] }
+  const [obsRolesMap, setObsRolesMap] = useState({}); // { [opCode]: [extra custom roles] }
 
-  const [obsOp, setObsOp] = useState('');           // selected op for the Observability section
-  const [activeOp, setActiveOp] = useState('');     // selected op for the Connection section
-  const [activeCred, setActiveCred] = useState(''); // selected connection id
+  const [obsOp, setObsOp] = useState(''); // selected op for the Observability section
 
   const obs = project?.observabilities || [];
-  const credById = useMemo(() => Object.fromEntries(creds.map((c) => [c.id, c])), [creds]);
-  const credsForOp = useMemo(() => creds.filter((c) => c.op_code === activeOp), [creds, activeOp]);
   const opName = (code) => obs.find((o) => o.code === code)?.name || code;
 
   useEffect(() => {
@@ -189,18 +284,12 @@ export default function AssignMembersPage() {
     setLoading(true);
     Promise.all([
       getProject(projectId),
-      listCredentials().catch(() => []),
       listUsers().catch(() => ({ items: [] })),
-      getMembers(projectId).catch(() => ({})),
-    ]).then(([proj, credItems, usersRes, existing]) => {
+    ]).then(([proj, usersRes]) => {
       if (!alive) return;
       setProject(proj);
-      setCreds(credItems);
-      const firstOp = proj?.observabilities?.[0]?.code || '';
-      setObsOp(firstOp);
-      setActiveOp(firstOp);
+      setObsOp(proj?.observabilities?.[0]?.code || '');
       setUsers(usersRes.items);
-      setAssignments(existing && typeof existing === 'object' ? existing : {});
       setSource('api');
       setLoading(false);
     }).catch(() => {
@@ -211,63 +300,52 @@ export default function AssignMembersPage() {
     return () => { alive = false; };
   }, [projectId]);
 
-  // Keep the selected connection valid for the chosen observability.
-  useEffect(() => {
-    if (!credsForOp.some((c) => c.id === activeCred)) {
-      setActiveCred(credsForOp[0]?.id || '');
-    }
-  }, [activeOp, creds]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const userOptions = useMemo(
     () => users.map((u, i) => ({ id: u.id ?? `u${i}`, name: userName(u), you: (u.id ?? `u${i}`) === myId })),
     [users, myId],
   );
 
-  // ── Observability scope helpers (operate on the selected op's list) ──
+  // ── Project scope role management ──
+  const addProjectRole = (role) => setProjectRoles((r) => [...r, role]);
+  const removeProjectRole = (role) => {
+    setProjectRoles((r) => r.filter((x) => x.value !== role.value));
+    setProjectMembers((m) => m.filter((u) => u.role !== role.value));
+  };
+
+  // ── Observability scope helpers (operate on the selected op) ──
   const obsList = obsMembers[obsOp] || [];
   const setObsList = (updater) => setObsMembers((prev) => {
     const cur = prev[obsOp] || [];
     const next = typeof updater === 'function' ? updater(cur) : updater;
     return { ...prev, [obsOp]: next };
   });
-
-  // ── Connection scope (simple list per connection + op) ──
-  const credList = (activeCred && activeOp && assignments[activeCred]?.[activeOp]) || [];
-  const isCredUserOn = (userId) => credList.some((u) => u.userId === userId);
-  const toggleCredUser = (user) => {
-    if (!activeCred || !activeOp) return;
-    setAssignments((prev) => {
-      const credMap = { ...(prev[activeCred] || {}) };
-      const list = [...(credMap[activeOp] || [])];
-      const idx = list.findIndex((u) => u.userId === user.id);
-      if (idx >= 0) list.splice(idx, 1);
-      else list.push({ userId: user.id, userName: user.name, role: 'Project_Member' });
-      credMap[activeOp] = list;
-      return { ...prev, [activeCred]: credMap };
-    });
-    setError('');
+  const obsRoles = useMemo(
+    () => [...opRoles(opName(obsOp)), ...(obsRolesMap[obsOp] || [])],
+    [obsOp, obsRolesMap, obs], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  const addObsRole = (role) =>
+    setObsRolesMap((m) => ({ ...m, [obsOp]: [...(m[obsOp] || []), role] }));
+  const removeObsRole = (role) => {
+    setObsRolesMap((m) => ({ ...m, [obsOp]: (m[obsOp] || []).filter((x) => x.value !== role.value) }));
+    setObsList((prev) => prev.filter((u) => u.role !== role.value));
   };
-  const removeCredUser = (userId) => setAssignments((prev) => {
-    const credMap = { ...(prev[activeCred] || {}) };
-    credMap[activeOp] = (credMap[activeOp] || []).filter((u) => u.userId !== userId);
-    return { ...prev, [activeCred]: credMap };
-  });
 
   const save = async () => {
     setSaving(true);
     setError('');
     try {
-      await saveMembers(projectId, assignments);
+      // Build the membership overlay (op -> [names], name -> role) from
+      // both scopes. Project-scope members live under a 'PROJECT' bucket.
       const ovA = {}; const ovR = {};
-      Object.values(assignments).forEach((opMap) => {
-        Object.entries(opMap || {}).forEach(([op, list]) => {
-          ovA[op] = ovA[op] || [];
-          list.forEach((u) => {
-            if (!ovA[op].includes(u.userName)) ovA[op].push(u.userName);
-            ovR[u.userName] = u.role;
-          });
+      const collect = (op, list) => {
+        ovA[op] = ovA[op] || [];
+        (list || []).forEach((u) => {
+          if (!ovA[op].includes(u.userName)) ovA[op].push(u.userName);
+          ovR[u.userName] = u.role;
         });
-      });
+      };
+      collect('PROJECT', projectMembers);
+      Object.entries(obsMembers).forEach(([op, list]) => collect(op, list));
       setMembership(projectId, { assignments: ovA, roles: ovR });
       navigate('/dashboard/projects');
     } catch (err) {
@@ -290,8 +368,6 @@ export default function AssignMembersPage() {
     );
   }
 
-  const activeCredObj = credById[activeCred];
-
   return (
     <>
       <PageHeader
@@ -305,7 +381,7 @@ export default function AssignMembersPage() {
       <main className="xd-main xd-am-main">
         <div className="xd-pagelead">
           <h1>Manage Users</h1>
-          <p>Assign users at three scopes: the whole project, a single observability, or a specific connection.</p>
+          <p>Assign users across the whole project or a single observability. Add custom roles and choose what each role can access.</p>
         </div>
 
         {loading ? (
@@ -322,7 +398,14 @@ export default function AssignMembersPage() {
               <div className="xd-am-head"><FiFolder /><h3>Project members</h3>
                 <span className="xd-am-scope-hint">Assigned across the whole project</span>
               </div>
-              <RoleAssigner roles={PROJECT_ROLES} list={projectMembers} setList={setProjectMembers} userOptions={userOptions} />
+              <RoleAssigner
+                roles={projectRoles}
+                list={projectMembers}
+                setList={setProjectMembers}
+                userOptions={userOptions}
+                onAddRole={addProjectRole}
+                onRemoveRole={removeProjectRole}
+              />
               <div className="xd-am-summary">
                 <MemberPills list={projectMembers} onRemove={(id) => setProjectMembers((p) => p.filter((u) => u.userId !== id))} />
               </div>
@@ -347,65 +430,17 @@ export default function AssignMembersPage() {
                 })}
               </div>
               <label className="xd-conn-label">Members for {opName(obsOp)}</label>
-              <RoleAssigner roles={opRoles(opName(obsOp))} list={obsList} setList={setObsList} userOptions={userOptions} />
+              <RoleAssigner
+                roles={obsRoles}
+                list={obsList}
+                setList={setObsList}
+                userOptions={userOptions}
+                onAddRole={addObsRole}
+                onRemoveRole={removeObsRole}
+              />
               <div className="xd-am-summary">
                 <MemberPills list={obsList} onRemove={(id) => setObsList((p) => p.filter((u) => u.userId !== id))} />
               </div>
-            </div>
-
-            {/* ── Scope 3: Connection-level members (saved) ── */}
-            <div className="xd-card xd-am-card">
-              <div className="xd-am-head"><FiLink /><h3>Connection members</h3>
-                <span className="xd-am-scope-hint">Simple user list per connection · saved</span>
-              </div>
-              <label className="xd-conn-label">Observability</label>
-              <div className="xd-am-ops">
-                {obs.map((o) => (
-                  <button key={o.code} type="button"
-                    className={`xd-am-op ${activeOp === o.code ? 'on' : ''}`}
-                    onClick={() => setActiveOp(o.code)}>
-                    {o.name}
-                  </button>
-                ))}
-              </div>
-
-              <label className="xd-conn-label">Connection</label>
-              {credsForOp.length === 0 ? (
-                <div className="xd-muted xd-am-none">
-                  <FiLink /> No connection for {opName(activeOp)}. Create one via Create Connect first.
-                </div>
-              ) : (
-                <div className="xd-am-ops">
-                  {credsForOp.map((c) => {
-                    const count = ((assignments[c.id]?.[activeOp]) || []).length;
-                    return (
-                      <button key={c.id} type="button"
-                        className={`xd-am-op ${activeCred === c.id ? 'on' : ''}`}
-                        onClick={() => setActiveCred(c.id)}>
-                        {c.name}{count > 0 && <span className="xd-am-op-count">{count}</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {activeCredObj && (
-                <>
-                  <label className="xd-conn-label">
-                    Users for {activeCredObj.name}
-                    <span className="xd-am-opcode"> · {opName(activeOp)}</span>
-                  </label>
-                  <UserMultiSelect
-                    userOptions={userOptions}
-                    count={credList.length}
-                    isSelected={isCredUserOn}
-                    onToggle={toggleCredUser}
-                  />
-                  <div className="xd-am-summary">
-                    <MemberPills list={credList} onRemove={removeCredUser} empty="No users on this connection yet" />
-                  </div>
-                </>
-              )}
             </div>
 
             <div className="xd-assign-bar">
