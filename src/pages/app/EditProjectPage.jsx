@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiCheck, FiX, FiImage } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import ConnectionsSelect from './_ConnSelect';
 import { listMenu } from '../../api/observability';
-import { listAssignableUsers } from '../../api/authz';
 import { listCredentials } from '../../api/credentials';
 import { getProject, updateProject } from '../../api/projects';
 import { getMembership, setMembership } from '../../store/projectsStore';
@@ -33,21 +32,13 @@ export default function EditProjectPage() {
   const [notFound, setNotFound] = useState(false);
 
   const [ops, setOps] = useState([]);
-  const [owners, setOwners] = useState([]);
   const [creds, setCreds] = useState([]); // connections (credentials) to associate
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
 
-  // Owner options = the users assignable as project owner (authz API).
-  const ownerOptions = useMemo(
-    () => owners.map((o) => ({ ...o, you: o.id === myId })),
-    [owners, myId],
-  );
-
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('Planning');
-  const [ownerId, setOwnerId] = useState(myId);
   const [image, setImage] = useState('');
   const [imageChanged, setImageChanged] = useState(false);
   const [startDate, setStartDate] = useState('');
@@ -74,20 +65,18 @@ export default function EditProjectPage() {
     let alive = true;
     setLoading(true);
     // Only getProject failing means "not found"; the others are non-critical
-    // (menu/owners/connections) so a failure there must not hide the project.
+    // (menu/connections) so a failure there must not hide the project.
     Promise.all([
       getProject(projectId),
       listMenu().catch(() => ({ items: [], source: 'api' })),
-      listAssignableUsers('project_owner').catch(() => ({ items: [] })),
       listCredentials().catch(() => []),
-    ]).then(([proj, opsRes, ownersRes, credsRes]) => {
+    ]).then(([proj, opsRes, credsRes]) => {
       if (!alive) return;
       setProject(proj);
       // Seed the form from the loaded project.
       setName(proj.name || '');
       setDescription(proj.description || '');
       setStatus(proj.status || 'Planning');
-      setOwnerId(proj.ownerUserId || myId);
       setImage(proj.image || '');
       setStartDate(proj.startDate || '');
       setEndDate(proj.endDate || '');
@@ -95,13 +84,6 @@ export default function EditProjectPage() {
       setConnIds(Array.isArray(proj.connectionIds) ? proj.connectionIds : []);
       setCreds(Array.isArray(credsRes) ? credsRes : []);
       setOps(opsRes.items); setSource(opsRes.source);
-      // Keep the project's current owner selectable even if they're no
-      // longer in the assignable list.
-      let list = ownersRes.items;
-      if (proj.ownerUserId && !list.some((o) => o.id === proj.ownerUserId)) {
-        list = [{ id: proj.ownerUserId, name: proj.owner || proj.ownerUserId }, ...list];
-      }
-      setOwners(list);
       setLoading(false);
     }).catch(() => {
       if (!alive) return;
@@ -141,11 +123,11 @@ export default function EditProjectPage() {
     if (selected.length === 0) return setError('Select at least one observability to observe.');
 
     const chosenOps = selectedOps.map((op) => ({ code: op.code, name: op.name }));
-    const ownerOpt = ownerOptions.find((o) => o.id === ownerId);
 
     const payload = {
       name: name.trim(), description: description.trim(),
-      status, owner: ownerOpt?.name || currentUser, ownerUserId: ownerId,
+      // Owner is no longer editable here; keep the project's existing owner.
+      status, owner: project?.owner || currentUser, ownerUserId: project?.ownerUserId || myId,
       startDate, endDate, observabilities: chosenOps, connectionIds: connIds,
     };
     // Only send the cover image when it actually changed (a new data URL,
@@ -239,21 +221,11 @@ export default function EditProjectPage() {
                     onChange={(e) => setDescription(e.target.value)} />
                 </div>
 
-                <div className="xd-field-row2">
-                  <div className="xd-conn-field">
-                    <label className="xd-conn-label">Status</label>
-                    <select className="xd-conn-input" value={status} onChange={(e) => setStatus(e.target.value)}>
-                      {STATUSES.map((s) => <option key={s}>{s}</option>)}
-                    </select>
-                  </div>
-                  <div className="xd-conn-field">
-                    <label className="xd-conn-label">Project Owner</label>
-                    <select className="xd-conn-input" value={ownerId} onChange={(e) => setOwnerId(e.target.value)}>
-                      {ownerOptions.map((m) => (
-                        <option key={m.id} value={m.id}>{m.name}{m.you ? ' (you)' : ''}</option>
-                      ))}
-                    </select>
-                  </div>
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Status</label>
+                  <select className="xd-conn-input" value={status} onChange={(e) => setStatus(e.target.value)}>
+                    {STATUSES.map((s) => <option key={s}>{s}</option>)}
+                  </select>
                 </div>
 
                 <div className="xd-field-row2">
