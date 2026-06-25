@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiCheck, FiX, FiImage } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listMenu } from '../../api/observability';
-import { listAssignableUsers } from '../../api/authz';
 import { createProject } from '../../api/projects';
 import { tokenStore } from '../../api/client';
 
@@ -26,20 +25,12 @@ export default function CreateProjectPage() {
   const myId = me.id || me.user_id || me.uuid || 'me';
 
   const [ops, setOps] = useState([]);
-  const [owners, setOwners] = useState([]);
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
-
-  // Owner options = the users assignable as project owner (authz API).
-  const ownerOptions = useMemo(
-    () => owners.map((o) => ({ ...o, you: o.id === myId })),
-    [owners, myId],
-  );
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('Planning');
-  const [ownerId, setOwnerId] = useState(myId);
   const [image, setImage] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -62,19 +53,12 @@ export default function CreateProjectPage() {
 
   useEffect(() => {
     let alive = true;
-    Promise.all([listMenu(), listAssignableUsers('project_owner')]).then(([opsRes, ownersRes]) => {
+    listMenu().then((opsRes) => {
       if (!alive) return;
       setOps(opsRes.items); setSource(opsRes.source);
-      setOwners(ownersRes.items);
-      // Default the owner to the logged-in user if they can be an owner,
-      // otherwise the first assignable owner.
-      const list = ownersRes.items;
-      const mine = list.find((o) => o.id === myId);
-      setOwnerId(mine ? mine.id : (list[0]?.id || ''));
       setLoading(false);
     }).catch(() => {
       if (!alive) return;
-      setOwners([]);
       setLoading(false);
     });
     return () => { alive = false; };
@@ -97,15 +81,15 @@ export default function CreateProjectPage() {
     if (selected.length === 0) return setError('Select at least one observability to observe.');
 
     const chosenOps = selectedOps.map((op) => ({ code: op.code, name: op.name }));
-    const ownerOpt = ownerOptions.find((o) => o.id === ownerId);
 
     setSaving(true);
     setError('');
     try {
       // Create the project on the backend, then go assign members.
+      // Owner defaults to the creating user (no owner picker in the form).
       const project = await createProject({
         name: name.trim(), description: description.trim(),
-        status, owner: ownerOpt?.name || currentUser, ownerUserId: ownerId, image,
+        status, owner: currentUser, ownerUserId: myId, image,
         startDate, endDate, observabilities: chosenOps,
       });
       navigate(`/dashboard/projects/${project.id}/assign`);
@@ -166,21 +150,11 @@ export default function CreateProjectPage() {
                     onChange={(e) => setDescription(e.target.value)} />
                 </div>
 
-                <div className="xd-field-row2">
-                  <div className="xd-conn-field">
-                    <label className="xd-conn-label">Status</label>
-                    <select className="xd-conn-input" value={status} onChange={(e) => setStatus(e.target.value)}>
-                      {STATUSES.map((s) => <option key={s}>{s}</option>)}
-                    </select>
-                  </div>
-                  <div className="xd-conn-field">
-                    <label className="xd-conn-label">Project Owner</label>
-                    <select className="xd-conn-input" value={ownerId} onChange={(e) => setOwnerId(e.target.value)}>
-                      {ownerOptions.map((m) => (
-                        <option key={m.id} value={m.id}>{m.name}{m.you ? ' (you)' : ''}</option>
-                      ))}
-                    </select>
-                  </div>
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Status</label>
+                  <select className="xd-conn-input" value={status} onChange={(e) => setStatus(e.target.value)}>
+                    {STATUSES.map((s) => <option key={s}>{s}</option>)}
+                  </select>
                 </div>
 
                 <div className="xd-field-row2">
