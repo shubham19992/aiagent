@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers, FiShield, FiFolder, FiEye, FiPlus } from 'react-icons/fi';
+import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers, FiShield, FiFolder, FiEye, FiPlus, FiLink } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listUsers } from '../../api/users';
 import { getProject } from '../../api/projects';
+import { listCredentials } from '../../api/credentials';
 import {
   listRoles, listCustomRoles, listPermissions, createCustomRole,
   getRoleAssignments, saveRoleAssignments,
@@ -262,6 +263,7 @@ export default function AssignMembersPage() {
   const [notFound, setNotFound] = useState(false);
 
   const [users, setUsers] = useState([]);
+  const [creds, setCreds] = useState([]); // connections (credentials) — read-only display
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -290,12 +292,13 @@ export default function AssignMembersPage() {
         const proj = await getProject(projectId);
         if (!alive) return;
         const ops = proj?.observabilities || [];
-        const [usersRes, pRoles, pCustoms, pPerms, assignmentsData, ...opData] = await Promise.all([
+        const [usersRes, pRoles, pCustoms, pPerms, assignmentsData, credsRes, ...opData] = await Promise.all([
           listUsers().catch(() => ({ items: [] })),
           listRoles({ level: 'project' }).catch(() => []),
           listCustomRoles({ level: 'project', projectId }).catch(() => []),
           listPermissions({ level: 'project' }).catch(() => []),
           getRoleAssignments(projectId).catch(() => ({ project: {}, observability: {} })),
+          listCredentials().catch(() => []),
           ...ops.flatMap((op) => [
             listRoles({ level: 'ops', opCode: op.code }).catch(() => []),
             listCustomRoles({ level: 'ops', opCode: op.code, projectId }).catch(() => []),
@@ -317,6 +320,7 @@ export default function AssignMembersPage() {
         setProject(proj);
         setObsOp(ops[0]?.code || '');
         setUsers(usersRes.items);
+        setCreds(Array.isArray(credsRes) ? credsRes : []);
         setProjectRoles([...pRoles, ...pCustoms].map(normRole));
         setProjectPerms(pPerms);
         setObsRolesMap(rolesByOp);
@@ -356,6 +360,7 @@ export default function AssignMembersPage() {
   });
   const obsRoles = obsRolesMap[obsOp] || [];
   const obsPerms = obsPermsMap[obsOp] || [];
+  const credsForOp = creds.filter((c) => c.op_code === obsOp);
 
   const isCustom = (roleCode, roles) => roles.some((r) => r.value === roleCode && r.custom);
 
@@ -469,6 +474,20 @@ export default function AssignMembersPage() {
                   );
                 })}
               </div>
+              <label className="xd-conn-label">Connections in {opName(obsOp)}</label>
+              {credsForOp.length === 0 ? (
+                <div className="xd-muted xd-am-none"><FiLink /> No connections for {opName(obsOp)}.</div>
+              ) : (
+                <div className="xd-am-conns">
+                  {credsForOp.map((c) => (
+                    <span className="xd-am-conn" key={c.id}>
+                      <FiLink /> {c.name}
+                      {c.env_code && <span className="xd-am-conn-env">{String(c.env_code).toUpperCase()}</span>}
+                    </span>
+                  ))}
+                </div>
+              )}
+
               <label className="xd-conn-label">Members for {opName(obsOp)}</label>
               <RoleAssigner
                 roles={obsRoles}
