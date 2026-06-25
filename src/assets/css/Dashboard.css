@@ -1207,15 +1207,8 @@ select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink
   border-color: rgba(var(--xd-accent-rgb), .4);
 }
 
-/* read-only connections (credentials) for the selected observability */
-.xd-am-conns { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
-.xd-am-conn {
-  display: inline-flex; align-items: center; gap: 7px;
-  background: var(--xd-card-2); border: 1px solid var(--xd-line);
-  color: var(--xd-ink); border-radius: 999px; padding: 6px 12px;
-  font-size: 12.5px; font-weight: 600;
-}
-.xd-am-conn svg { color: var(--xd-emerald); }
+/* connection (credential) options inside the multi-select dropdown */
+.xd-am-conn-ico { display: inline-flex; color: var(--xd-emerald); font-size: 13px; }
 .xd-am-conn-env {
   font-size: 9.5px; font-weight: 800; letter-spacing: .04em;
   padding: 1px 6px; border-radius: 999px; color: var(--xd-soft);
