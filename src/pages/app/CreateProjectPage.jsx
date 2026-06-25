@@ -72,6 +72,16 @@ export default function CreateProjectPage() {
   const toggleConn = (id) =>
     setConnIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
 
+  // Connections belong to an observability (op_code); only offer those for the
+  // selected observabilities, and drop any selection whose op is deselected.
+  const credsForSelectedOps = creds.filter((c) => selected.includes(c.op_code));
+  useEffect(() => {
+    setConnIds((ids) => ids.filter((id) => {
+      const c = creds.find((x) => x.id === id);
+      return c && selected.includes(c.op_code);
+    }));
+  }, [selected, creds]);
+
   const toggleOp = (code) => {
     setSelected((s) => (s.includes(code) ? s.filter((c) => c !== code) : [...s, code]));
     setError('');
@@ -177,11 +187,6 @@ export default function CreateProjectPage() {
                       onChange={(e) => { setEndDate(e.target.value); setError(''); }} />
                   </div>
                 </div>
-
-                <div className="xd-conn-field">
-                  <label className="xd-conn-label">Connections <span className="xd-muted">(optional)</span></label>
-                  <ConnectionsSelect options={creds} selected={connIds} onToggle={toggleConn} />
-                </div>
               </section>
 
               {/* ── Column 2: what to observe ── */}
@@ -207,6 +212,13 @@ export default function CreateProjectPage() {
                     );
                   })}
                 </div>
+
+                {selected.length > 0 && (
+                  <div className="xd-conn-field xd-col-connfield">
+                    <label className="xd-conn-label">Connections <span className="xd-muted">(optional)</span></label>
+                    <ConnectionsSelect options={credsForSelectedOps} selected={connIds} onToggle={toggleConn} />
+                  </div>
+                )}
               </section>
             </div>
             </div>

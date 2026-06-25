@@ -612,6 +612,7 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 .xd-create-cols > .xd-create-col + .xd-create-col { border-left: 1px solid var(--xd-line); padding-left: 24px; }
 .xd-col-title { font-size: 15px; font-weight: 800; margin: 0; }
 .xd-col-hint { font-size: 12.5px; color: var(--xd-soft); margin: -6px 0 4px; }
+.xd-col-connfield { margin-top: 16px; }
 .xd-field-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .xd-field-row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: start; }
 @media (max-width: 900px) { .xd-field-row3 { grid-template-columns: 1fr; } }
