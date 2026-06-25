@@ -1,19 +1,14 @@
-import React, { useId } from 'react';
+import React from 'react';
 
 /**
  * xOps brand logo.
  *
  * A self-contained SVG so there's no image asset to ship/cache. The mark is a
- * tapered yellow swoosh on the brand orange→amber rounded tile (so it stays
- * visible on light and dark backgrounds). `variant="full"` adds the "xOps"
- * wordmark next to it (header lockup); `variant="mark"` renders the tile alone.
- *
- * Gradient ids are made unique per instance (useId) so multiple logos on one
- * page don't collide and lose their fill.
+ * tapered yellow swoosh above an "EY" wordmark on a transparent background.
+ * `variant="full"` adds the "xOps" wordmark next to it (header lockup);
+ * `variant="mark"` renders the mark alone (card badge).
  */
 const XopsLogo = ({ height = 40, variant = 'full', style, className }) => {
-  const uid = useId().replace(/[:]/g, '');
-  const gradId = `xops-grad-${uid}`;
   const tile = Math.round(height);
 
   const mark = (
@@ -25,14 +20,6 @@ const XopsLogo = ({ height = 40, variant = 'full', style, className }) => {
       aria-label="xOps logo"
       style={{ display: 'block', flex: '0 0 auto' }}
     >
-      <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#f15a24" />
-          <stop offset="100%" stopColor="#fba919" />
-        </linearGradient>
-      </defs>
-      {/* brand tile background */}
-      <rect x="0" y="0" width="320" height="320" rx="80" fill={`url(#${gradId})`} />
       {/* full tapered yellow swoosh (as supplied) */}
       <polygon points="12,118 305,8 305,98" fill="#F4E215" />
       {/* EY wordmark */}
@@ -44,7 +31,7 @@ const XopsLogo = ({ height = 40, variant = 'full', style, className }) => {
         fontWeight="800"
         fontSize="150"
         letterSpacing="-4"
-        fill="#ffffff"
+        fill="currentColor"
       >
         EY
       </text>
