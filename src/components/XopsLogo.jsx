@@ -1,70 +1,66 @@
 import React from 'react';
 
 const FONT = "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif";
-const YELLOW = '#F4E215';
+const EY_YELLOW = '#FFE600';
+const EY_DARK = '#2E2E38';
 
 /**
- * EY xOps brand logo — a single combined lockup.
+ * EY xOps brand logo.
  *
- * A self-contained SVG (no image asset to ship/cache): a tapered yellow swoosh
- * sweeps over the "EY xOps" wordmark, mixing the two into one mark. "EY" and
- * "Ops" use currentColor so the logo reads on light and dark surfaces; the "x"
- * carries the brand accent. `variant="mark"` renders a compact square badge
- * (swoosh over "EY"); `variant="full"` is the full wordmark lockup.
+ * A self-contained SVG (no image asset to ship/cache): an "EY" badge on the EY
+ * yellow rounded tile, followed by the "xOps" wordmark. `variant="mark"`
+ * renders the badge alone (card badge); `variant="full"` is the full lockup.
+ * "Ops" uses currentColor so the wordmark reads on light and dark surfaces.
  */
 const XopsLogo = ({ height = 40, variant = 'full', style, className }) => {
-  const h = Math.round(height);
+  const tile = Math.round(height);
+
+  const badge = (
+    <svg
+      width={tile}
+      height={tile}
+      viewBox="0 0 100 100"
+      role="img"
+      aria-label="EY xOps logo"
+      style={{ display: 'block', flex: '0 0 auto' }}
+    >
+      <rect x="1" y="1" width="98" height="98" rx="22" fill={EY_YELLOW} />
+      <text
+        x="50" y="70" textAnchor="middle"
+        fontFamily={FONT} fontWeight="900" fontSize="52" letterSpacing="-3"
+        fill={EY_DARK}
+      >
+        EY
+      </text>
+    </svg>
+  );
 
   if (variant === 'mark') {
     return (
       <span className={className} style={{ display: 'inline-flex', ...style }}>
-        <svg
-          width={h}
-          height={h}
-          viewBox="0 0 120 120"
-          role="img"
-          aria-label="EY xOps logo"
-          style={{ display: 'block', flex: '0 0 auto' }}
-        >
-          <polygon points="6,58 116,8 116,34" fill={YELLOW} />
-          <text
-            x="60" y="106" textAnchor="middle"
-            fontFamily={FONT} fontWeight="900" fontSize="60" letterSpacing="-3"
-            fill="currentColor"
-          >
-            EY
-          </text>
-        </svg>
+        {badge}
       </span>
     );
   }
 
-  // Full lockup: swoosh over the combined "EY xOps" wordmark, in one SVG.
-  const vw = 372;
-  const vh = 132;
-  const w = Math.round(height * (vw / vh));
   return (
-    <span className={className} style={{ display: 'inline-flex', alignItems: 'center', ...style }}>
-      <svg
-        width={w}
-        height={h}
-        viewBox={`0 0 ${vw} ${vh}`}
-        role="img"
-        aria-label="EY xOps logo"
-        style={{ display: 'block', flex: '0 0 auto' }}
+    <span
+      className={className}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: Math.round(height * 0.26), ...style }}
+    >
+      {badge}
+      <span
+        style={{
+          fontFamily: FONT,
+          fontWeight: 800,
+          fontSize: Math.round(height * 0.64),
+          letterSpacing: '-0.5px',
+          lineHeight: 1,
+        }}
       >
-        {/* tapered yellow swoosh sweeping across the top */}
-        <polygon points="8,74 364,10 364,44" fill={YELLOW} />
-        {/* combined EY xOps wordmark */}
-        <text
-          x="186" y="118" textAnchor="middle"
-          fontFamily={FONT} fontSize="66" letterSpacing="-2"
-        >
-          <tspan fontWeight="900" fill="currentColor">EY</tspan>
-          <tspan fontWeight="800" fill="#f15a24"> x</tspan>
-          <tspan fontWeight="800" fill="currentColor">Ops</tspan>
-        </text>
-      </svg>
+        <span style={{ color: '#f15a24' }}>x</span>
+        <span style={{ color: 'currentColor' }}>Ops</span>
+      </span>
     </span>
   );
 };
