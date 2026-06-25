@@ -1,46 +1,26 @@
-import React, { useId } from 'react';
+import React from 'react';
 
 /**
  * xOps brand logo.
  *
  * A self-contained SVG so there's no image asset to ship/cache. The mark is a
- * DevOps-style infinity loop in the brand indigo→violet gradient, set inside a
- * rounded tile. `variant="full"` adds the "xOps" wordmark next to it (header
- * lockup); `variant="mark"` renders the tile alone (centered card badge).
- *
- * Gradient ids are made unique per instance (useId) so multiple logos on one
- * page don't collide and lose their fill.
+ * tapered yellow swoosh. `variant="full"` adds the "xOps" wordmark next to it
+ * (header lockup); `variant="mark"` renders the swoosh alone (card badge).
  */
 const XopsLogo = ({ height = 40, variant = 'full', style, className }) => {
-  const uid = useId().replace(/[:]/g, '');
-  const gradId = `xops-grad-${uid}`;
   const tile = Math.round(height);
 
   const mark = (
     <svg
       width={tile}
       height={tile}
-      viewBox="0 0 44 44"
+      viewBox="0 0 320 320"
       role="img"
       aria-label="xOps logo"
       style={{ display: 'block', flex: '0 0 auto' }}
     >
-      <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#f15a24" />
-          <stop offset="100%" stopColor="#fba919" />
-        </linearGradient>
-      </defs>
-      <rect x="0" y="0" width="44" height="44" rx="11" fill={`url(#${gradId})`} />
-      {/* DevOps infinity loop */}
-      <path
-        d="M12 22 C12 16 16 16 22 22 C28 28 32 28 32 22 C32 16 28 16 22 22 C16 28 12 28 12 22 Z"
-        fill="none"
-        stroke="#ffffff"
-        strokeWidth="3.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      {/* tapered yellow swoosh */}
+      <polygon points="12,120 305,8 305,98" fill="#F4E215" />
     </svg>
   );
 
