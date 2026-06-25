@@ -4,6 +4,7 @@ import { FiArrowLeft } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listConnectionParams } from '../../api/observability';
 import { createCredential, patchCredential } from '../../api/credentials';
+import { listProjects } from '../../api/projects';
 
 const ENV_NAME = { aws: 'AWS', azure: 'Azure', gcp: 'GCP' };
 const isSecretParam = (p) => p.is_secret || p.data_type === 'secret';
@@ -23,6 +24,7 @@ export default function ConnectPage() {
   const editing = !!editCred;
 
   const [params, setParams] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
 
@@ -30,15 +32,20 @@ export default function ConnectPage() {
   const [form, setForm] = useState({});
   const [reveal, setReveal] = useState({});
   const [connName, setConnName] = useState(editCred?.name || '');
+  const [assocProject, setAssocProject] = useState(editCred?.project_id || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    listConnectionParams(opCode, envCode).then((p) => {
+    Promise.all([
+      listConnectionParams(opCode, envCode),
+      listProjects().catch(() => []),
+    ]).then(([p, projs]) => {
       if (!alive) return;
       setParams(p.items);
+      setProjects(Array.isArray(projs) ? projs : []);
       setSource('api');
       // In edit mode, prefill all fields from the credential. Secrets come
       // back masked ("••••••"); we keep that masked value as-is and only
@@ -102,6 +109,7 @@ export default function ConnectPage() {
           name: connName.trim() || editCred.name,
           values,
           secret_keys: secretKeys,
+          project_id: assocProject,
         });
         // After updating, return to the op page connections table.
         navigate(`/dashboard/observability/${opCode}`);
@@ -115,6 +123,7 @@ export default function ConnectPage() {
           env_id: params[0]?.env_id ?? null,
           values,
           secret_keys: secretKeys,
+          ...(assocProject ? { project_id: assocProject } : {}),
         });
         // Save & Connect kicks off discovery — show the result screen.
         navigate(`/dashboard/observability/${opCode}/${envCode}/discovery`, { state: { connection: created } });
@@ -155,6 +164,13 @@ export default function ConnectPage() {
                   placeholder={`e.g. ${envName} production`}
                   onChange={(e) => setConnName(e.target.value)}
                 />
+              </div>
+              <div className="xd-conn-field">
+                <label className="xd-conn-label">Associate with project <span className="xd-muted">(optional)</span></label>
+                <select className="xd-conn-input" value={assocProject} onChange={(e) => setAssocProject(e.target.value)}>
+                  <option value="">— None —</option>
+                  {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
               </div>
               {params.map((p) => {
                 const isSecret = p.is_secret || p.data_type === 'secret';

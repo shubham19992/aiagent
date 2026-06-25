@@ -2,8 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiCheck, FiX, FiImage } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
+import ConnectionsSelect from './_ConnSelect';
 import { listMenu } from '../../api/observability';
 import { listAssignableUsers } from '../../api/authz';
+import { listCredentials } from '../../api/credentials';
 import { getProject, updateProject } from '../../api/projects';
 import { getMembership, setMembership } from '../../store/projectsStore';
 import { tokenStore } from '../../api/client';
@@ -32,6 +34,7 @@ export default function EditProjectPage() {
 
   const [ops, setOps] = useState([]);
   const [owners, setOwners] = useState([]);
+  const [creds, setCreds] = useState([]); // connections (credentials) to associate
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
 
@@ -50,6 +53,7 @@ export default function EditProjectPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selected, setSelected] = useState([]);
+  const [connIds, setConnIds] = useState([]);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -69,7 +73,12 @@ export default function EditProjectPage() {
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    Promise.all([getProject(projectId), listMenu(), listAssignableUsers('project_owner')]).then(([proj, opsRes, ownersRes]) => {
+    Promise.all([
+      getProject(projectId),
+      listMenu(),
+      listAssignableUsers('project_owner'),
+      listCredentials().catch(() => []),
+    ]).then(([proj, opsRes, ownersRes, credsRes]) => {
       if (!alive) return;
       setProject(proj);
       // Seed the form from the loaded project.
@@ -81,6 +90,8 @@ export default function EditProjectPage() {
       setStartDate(proj.startDate || '');
       setEndDate(proj.endDate || '');
       setSelected((proj.observabilities || []).map((o) => o.code));
+      setConnIds(Array.isArray(proj.connectionIds) ? proj.connectionIds : []);
+      setCreds(Array.isArray(credsRes) ? credsRes : []);
       setOps(opsRes.items); setSource(opsRes.source);
       // Keep the project's current owner selectable even if they're no
       // longer in the assignable list.
@@ -103,6 +114,9 @@ export default function EditProjectPage() {
     setError('');
   };
 
+  const toggleConn = (id) =>
+    setConnIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+
   const selectedOps = selected
     .map((code) => ops.find((o) => o.code === code))
     .filter(Boolean);
@@ -120,7 +134,7 @@ export default function EditProjectPage() {
     const payload = {
       name: name.trim(), description: description.trim(),
       status, owner: ownerOpt?.name || currentUser, ownerUserId: ownerId,
-      startDate, endDate, observabilities: chosenOps,
+      startDate, endDate, observabilities: chosenOps, connectionIds: connIds,
     };
     // Only send the cover image when it actually changed (a new data URL,
     // or '' to clear it) — never re-send the read-back image_url.
@@ -241,6 +255,11 @@ export default function EditProjectPage() {
                     <input className="xd-conn-input" type="date" value={endDate}
                       onChange={(e) => { setEndDate(e.target.value); setError(''); }} />
                   </div>
+                </div>
+
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Connections <span className="xd-muted">(optional)</span></label>
+                  <ConnectionsSelect options={creds} selected={connIds} onToggle={toggleConn} />
                 </div>
               </section>
 

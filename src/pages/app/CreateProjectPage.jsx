@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiCheck, FiX, FiImage } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
+import ConnectionsSelect from './_ConnSelect';
 import { listMenu } from '../../api/observability';
+import { listCredentials } from '../../api/credentials';
 import { createProject } from '../../api/projects';
 import { tokenStore } from '../../api/client';
 
@@ -25,6 +27,7 @@ export default function CreateProjectPage() {
   const myId = me.id || me.user_id || me.uuid || 'me';
 
   const [ops, setOps] = useState([]);
+  const [creds, setCreds] = useState([]); // connections (credentials) to associate
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
 
@@ -35,6 +38,7 @@ export default function CreateProjectPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selected, setSelected] = useState([]);
+  const [connIds, setConnIds] = useState([]);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -53,9 +57,10 @@ export default function CreateProjectPage() {
 
   useEffect(() => {
     let alive = true;
-    listMenu().then((opsRes) => {
+    Promise.all([listMenu(), listCredentials().catch(() => [])]).then(([opsRes, credsRes]) => {
       if (!alive) return;
       setOps(opsRes.items); setSource(opsRes.source);
+      setCreds(Array.isArray(credsRes) ? credsRes : []);
       setLoading(false);
     }).catch(() => {
       if (!alive) return;
@@ -63,6 +68,9 @@ export default function CreateProjectPage() {
     });
     return () => { alive = false; };
   }, []);
+
+  const toggleConn = (id) =>
+    setConnIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
 
   const toggleOp = (code) => {
     setSelected((s) => (s.includes(code) ? s.filter((c) => c !== code) : [...s, code]));
@@ -90,7 +98,7 @@ export default function CreateProjectPage() {
       const project = await createProject({
         name: name.trim(), description: description.trim(),
         status, owner: currentUser, ownerUserId: myId, image,
-        startDate, endDate, observabilities: chosenOps,
+        startDate, endDate, observabilities: chosenOps, connectionIds: connIds,
       });
       navigate(`/dashboard/projects/${project.id}/assign`);
     } catch (err) {
@@ -168,6 +176,11 @@ export default function CreateProjectPage() {
                     <input className="xd-conn-input" type="date" value={endDate}
                       onChange={(e) => { setEndDate(e.target.value); setError(''); }} />
                   </div>
+                </div>
+
+                <div className="xd-conn-field">
+                  <label className="xd-conn-label">Connections <span className="xd-muted">(optional)</span></label>
+                  <ConnectionsSelect options={creds} selected={connIds} onToggle={toggleConn} />
                 </div>
               </section>
 

@@ -74,6 +74,7 @@ function normalize(p = {}) {
     startDate: dateOnly(p.start_date),
     endDate: dateOnly(p.end_date),
     observabilities: Array.isArray(p.observabilities) ? p.observabilities : [],
+    connectionIds: Array.isArray(p.connection_ids) ? p.connection_ids : [],
     image: p.has_image ? (p.image_url || '') : '',
     imageUrl: p.image_url || '',
     hasImage: !!p.has_image,
@@ -99,6 +100,8 @@ function serialize(d = {}) {
     end_date: toIso(d.endDate),
     observabilities: (d.observabilities || []).map((o) => ({ code: o.code, name: o.name })),
   };
+  // Optional: connections (credential ids) associated with the project.
+  if (Object.prototype.hasOwnProperty.call(d, 'connectionIds')) body.connection_ids = d.connectionIds || [];
   if (Object.prototype.hasOwnProperty.call(d, 'image')) body.image = d.image || '';
   return body;
 }

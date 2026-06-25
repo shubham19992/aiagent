@@ -1207,39 +1207,6 @@ select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink
   border-color: rgba(var(--xd-accent-rgb), .4);
 }
 
-/* observability + connections selectors side by side */
-.xd-am-obsrow {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start;
-}
-.xd-am-obsrow-field { display: flex; flex-direction: column; min-width: 0; }
-.xd-am-obsrow-field .xd-conn-label { margin-top: 0; }
-.xd-am-obsrow-field .xd-ms { margin-top: 0; }
-@media (max-width: 640px) { .xd-am-obsrow { grid-template-columns: 1fr; } }
-
-/* connection (credential) options inside the multi-select dropdown */
-.xd-am-conn-ico { display: inline-flex; color: var(--xd-emerald); font-size: 13px; }
-.xd-am-conn-env {
-  font-size: 9.5px; font-weight: 800; letter-spacing: .04em;
-  padding: 1px 6px; border-radius: 999px; color: var(--xd-soft);
-  background: rgba(204, 204, 220, .12); border: 1px solid var(--xd-line);
-}
-
-/* selected connections shown below the dropdown */
-.xd-am-conn-pickrow { display: flex; flex-direction: column; gap: 8px; }
-.xd-am-conn-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.xd-am-conn-chip {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: var(--xd-card-2); border: 1px solid var(--xd-line);
-  color: var(--xd-ink); border-radius: 999px; padding: 4px 8px 4px 10px;
-  font-size: 12px; font-weight: 600;
-}
-.xd-am-conn-chip > svg { color: var(--xd-emerald); }
-.xd-am-conn-chip-x {
-  border: none; background: transparent; color: var(--xd-soft); cursor: pointer;
-  display: inline-flex; align-items: center; padding: 0; font-size: 12px;
-}
-.xd-am-conn-chip-x:hover { color: #f2495c; }
-
 /* custom-role tag in the role table */
 .xd-am-customtag {
   margin-left: 6px; font-size: 9.5px; font-weight: 800; text-transform: uppercase;

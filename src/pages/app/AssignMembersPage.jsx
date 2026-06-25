@@ -1,10 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers, FiShield, FiFolder, FiEye, FiPlus, FiLink } from 'react-icons/fi';
+import { FiCheck, FiCheckCircle, FiChevronDown, FiX, FiUsers, FiShield, FiFolder, FiEye, FiPlus } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listUsers } from '../../api/users';
 import { getProject } from '../../api/projects';
-import { listCredentials } from '../../api/credentials';
 import {
   listRoles, listCustomRoles, listPermissions, createCustomRole,
   getRoleAssignments, saveRoleAssignments,
@@ -92,52 +91,6 @@ function UserMultiSelect({ placeholder = 'Select users…', userOptions, isSelec
                 <span className="xd-ms-opt-name">
                   {m.name}{m.you ? ' (you)' : ''}
                   {tagFor && tagFor(m)}
-                </span>
-                {on && <FiCheck className="xd-ms-opt-check" />}
-              </label>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/** Multi-select dropdown of connections (credentials) for an observability. */
-function ConnMultiSelect({ options, selected, onToggle }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-  useEffect(() => {
-    if (!open) return undefined;
-    const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDown);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open]);
-
-  const count = selected.length;
-  return (
-    <div className="xd-ms" ref={ref}>
-      <button type="button" className="xd-ms-btn" onClick={() => setOpen((o) => !o)}
-        aria-haspopup="listbox" aria-expanded={open}>
-        <span className="xd-ms-btn-label">{count ? `${count} selected` : 'Select connections…'}</span>
-        <FiChevronDown className={`xd-ms-caret ${open ? 'open' : ''}`} />
-      </button>
-      {open && (
-        <div className="xd-ms-menu" role="listbox" aria-multiselectable="true">
-          {options.length === 0 && <div className="xd-ms-empty xd-muted">No connections</div>}
-          {options.map((c) => {
-            const on = selected.includes(c.id);
-            return (
-              <label key={c.id} className={`xd-ms-opt ${on ? 'on' : ''}`} role="option" aria-selected={on}>
-                <input type="checkbox" checked={on} onChange={() => onToggle(c.id)} />
-                <span className="xd-am-conn-ico"><FiLink /></span>
-                <span className="xd-ms-opt-name">
-                  {c.name}{c.env_code ? <span className="xd-am-conn-env"> {String(c.env_code).toUpperCase()}</span> : null}
                 </span>
                 {on && <FiCheck className="xd-ms-opt-check" />}
               </label>
@@ -309,7 +262,6 @@ export default function AssignMembersPage() {
   const [notFound, setNotFound] = useState(false);
 
   const [users, setUsers] = useState([]);
-  const [creds, setCreds] = useState([]); // connections (credentials) — read-only display
   const [source, setSource] = useState('api');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -325,7 +277,6 @@ export default function AssignMembersPage() {
   const [obsPermsMap, setObsPermsMap] = useState({}); // { [opCode]: [permissions] }
 
   const [obsOp, setObsOp] = useState('');
-  const [connSel, setConnSel] = useState({}); // { [opCode]: [credId, ...] } selected connections
 
   const obs = project?.observabilities || [];
   const opName = (code) => obs.find((o) => o.code === code)?.name || code;
@@ -339,13 +290,12 @@ export default function AssignMembersPage() {
         const proj = await getProject(projectId);
         if (!alive) return;
         const ops = proj?.observabilities || [];
-        const [usersRes, pRoles, pCustoms, pPerms, assignmentsData, credsRes, ...opData] = await Promise.all([
+        const [usersRes, pRoles, pCustoms, pPerms, assignmentsData, ...opData] = await Promise.all([
           listUsers().catch(() => ({ items: [] })),
           listRoles({ level: 'project' }).catch(() => []),
           listCustomRoles({ level: 'project', projectId }).catch(() => []),
           listPermissions({ level: 'project' }).catch(() => []),
           getRoleAssignments(projectId).catch(() => ({ project: {}, observability: {} })),
-          listCredentials().catch(() => []),
           ...ops.flatMap((op) => [
             listRoles({ level: 'ops', opCode: op.code }).catch(() => []),
             listCustomRoles({ level: 'ops', opCode: op.code, projectId }).catch(() => []),
@@ -367,7 +317,6 @@ export default function AssignMembersPage() {
         setProject(proj);
         setObsOp(ops[0]?.code || '');
         setUsers(usersRes.items);
-        setCreds(Array.isArray(credsRes) ? credsRes : []);
         setProjectRoles([...pRoles, ...pCustoms].map(normRole));
         setProjectPerms(pPerms);
         setObsRolesMap(rolesByOp);
@@ -407,12 +356,6 @@ export default function AssignMembersPage() {
   });
   const obsRoles = obsRolesMap[obsOp] || [];
   const obsPerms = obsPermsMap[obsOp] || [];
-  const credsForOp = creds.filter((c) => c.op_code === obsOp);
-  const selConns = connSel[obsOp] || [];
-  const toggleConn = (id) => setConnSel((prev) => {
-    const cur = prev[obsOp] || [];
-    return { ...prev, [obsOp]: cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id] };
-  });
 
   const isCustom = (roleCode, roles) => roles.some((r) => r.value === roleCode && r.custom);
 
@@ -513,43 +456,19 @@ export default function AssignMembersPage() {
               <div className="xd-am-head"><FiEye /><h3>Observability members</h3>
                 <span className="xd-am-scope-hint">Assigned per observability</span>
               </div>
-              <div className="xd-am-obsrow">
-                <div className="xd-am-obsrow-field">
-                  <label className="xd-conn-label">Observability</label>
-                  <select className="xd-conn-input" value={obsOp} onChange={(e) => setObsOp(e.target.value)}>
-                    {obs.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
-                  </select>
-                </div>
-                {obsOp && (
-                  <div className="xd-am-obsrow-field">
-                    <label className="xd-conn-label">Connections</label>
-                    {credsForOp.length === 0 ? (
-                      <div className="xd-muted xd-am-none"><FiLink /> No connections for {opName(obsOp)}.</div>
-                    ) : (
-                      <div className="xd-am-conn-pickrow">
-                        <ConnMultiSelect options={credsForOp} selected={selConns} onToggle={toggleConn} />
-                        {selConns.length > 0 && (
-                          <div className="xd-am-conn-chips">
-                            {selConns.map((id) => {
-                              const c = credsForOp.find((x) => x.id === id);
-                              if (!c) return null;
-                              return (
-                                <span className="xd-am-conn-chip" key={id}>
-                                  <FiLink /> {c.name}
-                                  {c.env_code && <span className="xd-am-conn-env">{String(c.env_code).toUpperCase()}</span>}
-                                  <button type="button" className="xd-am-conn-chip-x" title="Remove"
-                                    onClick={() => toggleConn(id)}><FiX /></button>
-                                </span>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
+              <label className="xd-conn-label">Observability</label>
+              <div className="xd-am-ops">
+                {obs.map((o) => {
+                  const c = (obsMembers[o.code] || []).length;
+                  return (
+                    <button key={o.code} type="button"
+                      className={`xd-am-op ${obsOp === o.code ? 'on' : ''}`}
+                      onClick={() => setObsOp(o.code)}>
+                      {o.name}{c > 0 && <span className="xd-am-op-count">{c}</span>}
+                    </button>
+                  );
+                })}
               </div>
-
               <label className="xd-conn-label">Members for {opName(obsOp)}</label>
               <RoleAssigner
                 roles={obsRoles}
