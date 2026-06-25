@@ -33,8 +33,8 @@ const XopsLogo = ({ height = 40, variant = 'full', style, className }) => {
       </defs>
       {/* brand tile background */}
       <rect x="0" y="0" width="320" height="320" rx="80" fill={`url(#${gradId})`} />
-      {/* tapered yellow swoosh */}
-      <polygon points="40,210 285,80 285,165" fill="#F4E215" />
+      {/* full tapered yellow swoosh (as supplied) */}
+      <polygon points="12,118 305,8 305,98" fill="#F4E215" />
     </svg>
   );
 
