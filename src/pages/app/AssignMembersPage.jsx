@@ -526,7 +526,25 @@ export default function AssignMembersPage() {
                     {credsForOp.length === 0 ? (
                       <div className="xd-muted xd-am-none"><FiLink /> No connections for {opName(obsOp)}.</div>
                     ) : (
-                      <ConnMultiSelect options={credsForOp} selected={selConns} onToggle={toggleConn} />
+                      <div className="xd-am-conn-pickrow">
+                        <ConnMultiSelect options={credsForOp} selected={selConns} onToggle={toggleConn} />
+                        {selConns.length > 0 && (
+                          <div className="xd-am-conn-chips">
+                            {selConns.map((id) => {
+                              const c = credsForOp.find((x) => x.id === id);
+                              if (!c) return null;
+                              return (
+                                <span className="xd-am-conn-chip" key={id}>
+                                  <FiLink /> {c.name}
+                                  {c.env_code && <span className="xd-am-conn-env">{String(c.env_code).toUpperCase()}</span>}
+                                  <button type="button" className="xd-am-conn-chip-x" title="Remove"
+                                    onClick={() => toggleConn(id)}><FiX /></button>
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 )}

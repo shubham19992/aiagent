@@ -1223,6 +1223,23 @@ select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink
   background: rgba(204, 204, 220, .12); border: 1px solid var(--xd-line);
 }
 
+/* selected connections shown to the right of the dropdown */
+.xd-am-conn-pickrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.xd-am-conn-pickrow .xd-ms { flex: 0 0 170px; }
+.xd-am-conn-chips { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; min-width: 0; }
+.xd-am-conn-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--xd-card-2); border: 1px solid var(--xd-line);
+  color: var(--xd-ink); border-radius: 999px; padding: 4px 8px 4px 10px;
+  font-size: 12px; font-weight: 600;
+}
+.xd-am-conn-chip > svg { color: var(--xd-emerald); }
+.xd-am-conn-chip-x {
+  border: none; background: transparent; color: var(--xd-soft); cursor: pointer;
+  display: inline-flex; align-items: center; padding: 0; font-size: 12px;
+}
+.xd-am-conn-chip-x:hover { color: #f2495c; }
+
 /* custom-role tag in the role table */
 .xd-am-customtag {
   margin-left: 6px; font-size: 9.5px; font-weight: 800; text-transform: uppercase;
