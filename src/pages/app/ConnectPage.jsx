@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useOutletContext, useNavigate, useLocation, Link } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
+import ConnectionsSelect from './_ConnSelect';
 import { listConnectionParams } from '../../api/observability';
 import { createCredential, patchCredential } from '../../api/credentials';
 import { listProjects } from '../../api/projects';
@@ -32,9 +33,14 @@ export default function ConnectPage() {
   const [form, setForm] = useState({});
   const [reveal, setReveal] = useState({});
   const [connName, setConnName] = useState(editCred?.name || '');
-  const [assocProject, setAssocProject] = useState(editCred?.project_id || '');
+  const [assocProjects, setAssocProjects] = useState(
+    editCred?.project_ids || (editCred?.project_id ? [editCred.project_id] : []),
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  const toggleAssoc = (id) =>
+    setAssocProjects((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
 
   useEffect(() => {
     let alive = true;
@@ -109,7 +115,7 @@ export default function ConnectPage() {
           name: connName.trim() || editCred.name,
           values,
           secret_keys: secretKeys,
-          project_id: assocProject,
+          project_ids: assocProjects,
         });
         // After updating, return to the op page connections table.
         navigate(`/dashboard/observability/${opCode}`);
@@ -123,7 +129,7 @@ export default function ConnectPage() {
           env_id: params[0]?.env_id ?? null,
           values,
           secret_keys: secretKeys,
-          ...(assocProject ? { project_id: assocProject } : {}),
+          ...(assocProjects.length ? { project_ids: assocProjects } : {}),
         });
         // Save & Connect kicks off discovery — show the result screen.
         navigate(`/dashboard/observability/${opCode}/${envCode}/discovery`, { state: { connection: created } });
@@ -166,11 +172,14 @@ export default function ConnectPage() {
                 />
               </div>
               <div className="xd-conn-field">
-                <label className="xd-conn-label">Associate with project <span className="xd-muted">(optional)</span></label>
-                <select className="xd-conn-input" value={assocProject} onChange={(e) => setAssocProject(e.target.value)}>
-                  <option value="">— None —</option>
-                  {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-                </select>
+                <label className="xd-conn-label">Associate with projects <span className="xd-muted">(optional)</span></label>
+                <ConnectionsSelect
+                  options={projects}
+                  selected={assocProjects}
+                  onToggle={toggleAssoc}
+                  placeholder="— Select projects —"
+                  emptyText="No projects available."
+                />
               </div>
               {params.map((p) => {
                 const isSecret = p.is_secret || p.data_type === 'secret';

@@ -2,13 +2,17 @@ import React, { useEffect, useRef, useState } from 'react';
 import { FiCheck, FiChevronDown } from 'react-icons/fi';
 
 /**
- * Optional multi-select of connections (credentials) to associate with a
- * project. Reuses the shared `xd-ms` dropdown styling.
- *   options : [{ id, name, env_code }]
- *   selected: [credId, ...]
- *   onToggle: (credId) => void
+ * Optional multi-select of records (e.g. connections or projects). Reuses
+ * the shared `xd-ms` dropdown styling.
+ *   options : [{ id, name, env_code? }]
+ *   selected: [id, ...]
+ *   onToggle: (id) => void
  */
-export default function ConnectionsSelect({ options, selected, onToggle }) {
+export default function ConnectionsSelect({
+  options, selected, onToggle,
+  placeholder = '— Select connections —',
+  emptyText = 'No connections available.',
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useEffect(() => {
@@ -17,13 +21,13 @@ export default function ConnectionsSelect({ options, selected, onToggle }) {
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
 
-  if (options.length === 0) return <div className="xd-muted">No connections available.</div>;
+  if (options.length === 0) return <div className="xd-muted">{emptyText}</div>;
 
   return (
     <div className="xd-ms" ref={ref}>
       <button type="button" className="xd-conn-input xd-ms-toggle" onClick={() => setOpen((o) => !o)}>
         <span className={selected.length ? '' : 'xd-ms-ph'}>
-          {selected.length ? `${selected.length} selected` : '— Select connections —'}
+          {selected.length ? `${selected.length} selected` : placeholder}
         </span>
         <FiChevronDown />
       </button>
