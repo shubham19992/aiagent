@@ -513,21 +513,24 @@ export default function AssignMembersPage() {
               <div className="xd-am-head"><FiEye /><h3>Observability members</h3>
                 <span className="xd-am-scope-hint">Assigned per observability</span>
               </div>
-              <label className="xd-conn-label">Observability</label>
-              <select className="xd-conn-input" value={obsOp} onChange={(e) => setObsOp(e.target.value)}>
-                {obs.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
-              </select>
-
-              {obsOp && (
-                <>
-                  <label className="xd-conn-label">Connections</label>
-                  {credsForOp.length === 0 ? (
-                    <div className="xd-muted xd-am-none"><FiLink /> No connections for {opName(obsOp)}.</div>
-                  ) : (
-                    <ConnMultiSelect options={credsForOp} selected={selConns} onToggle={toggleConn} />
-                  )}
-                </>
-              )}
+              <div className="xd-am-obsrow">
+                <div className="xd-am-obsrow-field">
+                  <label className="xd-conn-label">Observability</label>
+                  <select className="xd-conn-input" value={obsOp} onChange={(e) => setObsOp(e.target.value)}>
+                    {obs.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
+                  </select>
+                </div>
+                {obsOp && (
+                  <div className="xd-am-obsrow-field">
+                    <label className="xd-conn-label">Connections</label>
+                    {credsForOp.length === 0 ? (
+                      <div className="xd-muted xd-am-none"><FiLink /> No connections for {opName(obsOp)}.</div>
+                    ) : (
+                      <ConnMultiSelect options={credsForOp} selected={selConns} onToggle={toggleConn} />
+                    )}
+                  </div>
+                )}
+              </div>
 
               <label className="xd-conn-label">Members for {opName(obsOp)}</label>
               <RoleAssigner

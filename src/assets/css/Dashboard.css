@@ -1207,6 +1207,14 @@ select.xd-conn-input { background-color: var(--xd-input-bg); color: var(--xd-ink
   border-color: rgba(var(--xd-accent-rgb), .4);
 }
 
+/* observability + connections selectors side by side */
+.xd-am-obsrow {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start;
+}
+.xd-am-obsrow-field { display: flex; flex-direction: column; min-width: 0; }
+.xd-am-obsrow-field .xd-conn-label { margin-top: 0; }
+@media (max-width: 640px) { .xd-am-obsrow { grid-template-columns: 1fr; } }
+
 /* connection (credential) options inside the multi-select dropdown */
 .xd-am-conn-ico { display: inline-flex; color: var(--xd-emerald); font-size: 13px; }
 .xd-am-conn-env {
