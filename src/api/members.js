@@ -7,7 +7,7 @@
 // (the GET / POST response also echoes userName per entry). role is
 // 'project_admin' | 'project_member'.
 // ============================================================
-import { tokenStore } from './client';
+import { serviceFetch } from './client';
 
 const RAW = import.meta.env.VITE_PROJECTS_BASE_URL || 'http://10.1.151.228:8083';
 export const MEMBERS_BASE = RAW.replace(/\/+$/, '');
@@ -15,13 +15,12 @@ export const MEMBERS_BASE = RAW.replace(/\/+$/, '');
 const enc = encodeURIComponent;
 
 async function call(path, { method = 'GET', body } = {}) {
-  const token = tokenStore.get();
-  const res = await fetch(`${MEMBERS_BASE}${path}`, {
+  // serviceFetch injects the token and auto-logs-out on a persistent 401.
+  const res = await serviceFetch(`${MEMBERS_BASE}${path}`, {
     method,
     headers: {
       accept: 'application/json',
       ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });

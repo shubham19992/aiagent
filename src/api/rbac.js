@@ -5,7 +5,7 @@
 //   • Custom roles (per project)             → VITE_API_BASE_URL (8081)
 //   • Project role assignments               → VITE_PROJECTS_BASE_URL (8083)
 // ============================================================
-import { tokenStore } from './client';
+import { serviceFetch } from './client';
 
 const norm = (raw, fallback) => (raw || fallback).replace(/\/+$/, '');
 const RBAC_BASE = norm(import.meta.env.VITE_OBS_BASE_URL, 'http://10.1.151.228:8085');
@@ -15,19 +15,19 @@ const ROLE_ASSIGN_BASE = norm(import.meta.env.VITE_PROJECTS_BASE_URL, 'http://10
 const enc = encodeURIComponent;
 
 async function call(base, path, { method = 'GET', body, query } = {}) {
-  const token = tokenStore.get();
   const url = new URL(`${base}${path}`);
   if (query) {
     Object.entries(query).forEach(([k, v]) => {
       if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
     });
   }
-  const res = await fetch(url, {
+  // serviceFetch injects the token, refreshes once on 401, and logs the user
+  // out (clears session + redirects to /login) if it's still 401.
+  const res = await serviceFetch(url, {
     method,
     headers: {
       accept: 'application/json',
       ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });

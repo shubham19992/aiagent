@@ -4,7 +4,7 @@
 // NO dummy/offline fallback: if the backend is unreachable the call
 // returns an empty list and `error`, and the UI shows its empty state.
 // ============================================================
-import { tokenStore } from './client';
+import { serviceFetch } from './client';
 
 // The observability service runs on its own host/port (8085), separate
 // from the main API gateway (VITE_API_BASE_URL, 8081). Override with
@@ -15,12 +15,9 @@ export const OBS_BASE = RAW.replace(/\/+$/, '');
 const enc = encodeURIComponent;
 
 async function getElements(path) {
-  const token = tokenStore.get();
-  const res = await fetch(`${OBS_BASE}${path}`, {
-    headers: {
-      accept: 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
+  // serviceFetch injects the token and auto-logs-out on a persistent 401.
+  const res = await serviceFetch(`${OBS_BASE}${path}`, {
+    headers: { accept: 'application/json' },
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const json = await res.json();

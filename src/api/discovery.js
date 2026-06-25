@@ -4,20 +4,19 @@
 // with VITE_AGENTS_BASE_URL. Called after Save & Connect succeeds and
 // from the connections list "Connect" action.
 // ============================================================
-import { tokenStore } from './client';
+import { serviceFetch } from './client';
 
 const RAW = import.meta.env.VITE_AGENTS_BASE_URL || 'http://10.1.151.228:8086';
 export const AGENTS_BASE = RAW.replace(/\/+$/, '');
 
 // body: { agentNames: [..], cloudProvider, userId, projectId }
 export async function runDiscovery({ agentNames, cloudProvider, userId, projectId } = {}) {
-  const token = tokenStore.get();
-  const res = await fetch(`${AGENTS_BASE}/api/v3/agents/execute`, {
+  // serviceFetch injects the token and auto-logs-out on a persistent 401.
+  const res = await serviceFetch(`${AGENTS_BASE}/api/v3/agents/execute`, {
     method: 'POST',
     headers: {
       accept: 'application/json',
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify({ agentNames, cloudProvider, userId, projectId }),
     // Discovery has its own in-page loader; skip the full-screen overlay.

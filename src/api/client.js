@@ -277,6 +277,40 @@ export async function authorizedFetch(input, init = {}) {
   return res;
 }
 
+// Lean authorized fetch for the cross-origin service clients (projects,
+// credentials, observability, members, rbac, discovery). Unlike
+// authorizedFetch it adds ONLY the caller's headers plus the bearer token —
+// no Cache-Control/Pragma — so it doesn't widen the CORS preflight surface for
+// services whose configs may not allow those headers. Refreshes once on 401
+// and, if it's still 401, logs the user out (clear session + go to /login).
+export async function serviceFetch(input, init = {}) {
+  const withToken = (token) => ({
+    ...init,
+    headers: {
+      ...(init.headers || {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+
+  let res = await fetch(input, withToken(tokenStore.get()));
+
+  if (res.status === 401 && tokenStore.getRefresh()) {
+    const newToken = await refreshAccessToken();
+    if (newToken) res = await fetch(input, withToken(newToken));
+  }
+
+  if (res.status === 401) {
+    let bodyMsg = '';
+    try {
+      const data = await res.clone().json();
+      bodyMsg = data?.error?.message || data?.message || '';
+    } catch { /* non-JSON body — ignore */ }
+    notifyAuthError(bodyMsg);
+  }
+
+  return res;
+}
+
 async function request(method, path, { body, query, auth = true, signal } = {}) {
   // Use the slash-normalized API_BASE (not RAW_BASE) so a trailing slash on
   // VITE_API_BASE_URL — common in the deployed build — doesn't produce a

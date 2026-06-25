@@ -7,7 +7,7 @@
 // secret_keys, is_active, created_by, created_at, updated_at }. Secret
 // values come back masked ("••••••") from the server.
 // ============================================================
-import { tokenStore } from './client';
+import { serviceFetch } from './client';
 
 const RAW = import.meta.env.VITE_CREDENTIALS_BASE_URL || 'http://10.1.151.228:8084';
 export const CREDENTIALS_BASE = RAW.replace(/\/+$/, '');
@@ -15,13 +15,12 @@ export const CREDENTIALS_BASE = RAW.replace(/\/+$/, '');
 const enc = encodeURIComponent;
 
 async function call(path, { method = 'GET', body } = {}) {
-  const token = tokenStore.get();
-  const res = await fetch(`${CREDENTIALS_BASE}${path}`, {
+  // serviceFetch injects the token and auto-logs-out on a persistent 401.
+  const res = await serviceFetch(`${CREDENTIALS_BASE}${path}`, {
     method,
     headers: {
       accept: 'application/json',
       ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
