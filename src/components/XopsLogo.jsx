@@ -1,16 +1,12 @@
 import React from 'react';
 
-const FONT = "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif";
-const EY_YELLOW = '#FFE600';
-
 /**
- * EY · xOps brand logo.
+ * xOps brand logo.
  *
- * A self-contained SVG so there's no image asset to ship/cache. The mark is the
- * EY beam over a bold "EY", followed by the "xOps" wordmark with a thin
- * divider. `variant="full"` is the full lockup; `variant="mark"` is the EY
- * mark alone (card badge). The mark uses currentColor for "EY" so it reads on
- * both light and dark surfaces (dark EY on light, light EY on dark).
+ * A self-contained SVG so there's no image asset to ship/cache. The mark is a
+ * tapered yellow swoosh above an "EY" wordmark on a transparent background.
+ * `variant="full"` adds the "xOps" wordmark next to it (header lockup);
+ * `variant="mark"` renders the mark alone (card badge).
  */
 const XopsLogo = ({ height = 40, variant = 'full', style, className }) => {
   const tile = Math.round(height);
@@ -19,22 +15,22 @@ const XopsLogo = ({ height = 40, variant = 'full', style, className }) => {
     <svg
       width={tile}
       height={tile}
-      viewBox="0 0 120 120"
+      viewBox="0 0 320 320"
       role="img"
-      aria-label="EY xOps logo"
+      aria-label="xOps logo"
       style={{ display: 'block', flex: '0 0 auto' }}
     >
-      {/* EY beam */}
-      <polygon points="4,52 118,6 118,33 4,60" fill={EY_YELLOW} />
+      {/* full tapered yellow swoosh (as supplied) */}
+      <polygon points="12,118 305,8 305,98" fill="#F4E215" />
       {/* EY wordmark */}
       <text
-        x="61"
-        y="108"
+        x="160"
+        y="258"
         textAnchor="middle"
-        fontFamily={FONT}
-        fontWeight="900"
-        fontSize="62"
-        letterSpacing="-3"
+        fontFamily="'Plus Jakarta Sans', 'Inter', system-ui, sans-serif"
+        fontWeight="800"
+        fontSize="150"
+        letterSpacing="-4"
         fill="currentColor"
       >
         EY
@@ -53,25 +49,14 @@ const XopsLogo = ({ height = 40, variant = 'full', style, className }) => {
   return (
     <span
       className={className}
-      style={{ display: 'inline-flex', alignItems: 'center', gap: Math.round(height * 0.22), ...style }}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: Math.round(height * 0.28), ...style }}
     >
       {mark}
-      {/* divider */}
-      <span
-        aria-hidden
-        style={{
-          width: Math.max(1, Math.round(height * 0.04)),
-          height: Math.round(height * 0.58),
-          background: 'currentColor',
-          opacity: 0.22,
-          borderRadius: 2,
-        }}
-      />
       <span
         style={{
-          fontFamily: FONT,
+          fontFamily: "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif",
           fontWeight: 800,
-          fontSize: Math.round(height * 0.62),
+          fontSize: Math.round(height * 0.66),
           letterSpacing: '-0.5px',
           lineHeight: 1,
         }}
