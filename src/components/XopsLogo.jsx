@@ -35,6 +35,19 @@ const XopsLogo = ({ height = 40, variant = 'full', style, className }) => {
       <rect x="0" y="0" width="320" height="320" rx="80" fill={`url(#${gradId})`} />
       {/* full tapered yellow swoosh (as supplied) */}
       <polygon points="12,118 305,8 305,98" fill="#F4E215" />
+      {/* EY wordmark */}
+      <text
+        x="160"
+        y="258"
+        textAnchor="middle"
+        fontFamily="'Plus Jakarta Sans', 'Inter', system-ui, sans-serif"
+        fontWeight="800"
+        fontSize="150"
+        letterSpacing="-4"
+        fill="#ffffff"
+      >
+        EY
+      </text>
     </svg>
   );
 
