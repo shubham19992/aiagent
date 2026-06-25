@@ -97,7 +97,7 @@ export default function CreateUserPage() {
                   <label className="xd-conn-label">Role</label>
                   <select className="xd-conn-input" value={form.orgRole} onChange={(e) => set('orgRole', e.target.value)}>
                     <option value="">— None —</option>
-                    {orgRoles.map((r) => <option key={r.code} value={r.name}>{r.name.replace(/_/g, ' ')}</option>)}
+                    {orgRoles.map((r) => <option key={r.code} value={r.code}>{r.name.replace(/_/g, ' ')}</option>)}
                   </select>
                 </div>
 

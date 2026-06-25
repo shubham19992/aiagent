@@ -1,12 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FiCheck, FiChevronDown } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { getUser, updateUser } from '../../api/users';
-import { listProjects } from '../../api/projects';
-
-// Org-level roles (Product tier) for the orgRole select.
-const ORG_ROLES = ['SuperAdmin', 'Product_Admin', 'Product_Support'];
+import { listRoles } from '../../api/rbac';
 
 // org_role can be a string, or an array of { role_name } objects.
 const roleNames = (u) => {
@@ -21,44 +17,53 @@ export default function EditUserPage() {
   const navigate = useNavigate();
   const { userId } = useParams();
 
-  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Roles for the Role select — full list loaded from the roles API.
+  const [roles, setRoles] = useState([]);
 
   const [form, setForm] = useState({
     login: '', email: '', fullName: '', phoneNumber: '', orgRole: '',
     // Carried through unchanged — no UI (matches Create form).
     admin: false, twoFactorEnabled: false, status: 'active',
   });
-  const [projectIds, setProjectIds] = useState([]);
-  const [projOpen, setProjOpen] = useState(false);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  const projRef = useRef(null);
-
-  useEffect(() => {
-    const onDoc = (e) => { if (projRef.current && !projRef.current.contains(e.target)) setProjOpen(false); };
-    document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
-  }, []);
 
   const set = (k, v) => { setForm((f) => ({ ...f, [k]: v })); setError(''); };
 
-  // Include the user's current role even if it's outside the standard catalog
-  // (e.g. "super_admin"), so the prefilled value shows in the dropdown.
-  const roleOptions = form.orgRole && !ORG_ROLES.includes(form.orgRole)
-    ? [form.orgRole, ...ORG_ROLES]
-    : ORG_ROLES;
+  // Options from the API (value = role code). Include the user's current role
+  // even if it's outside the catalog so the prefilled value still shows.
+  const roleOptions = (() => {
+    const opts = roles.map((r) => ({ value: r.code, label: r.name.replace(/_/g, ' ') }));
+    if (form.orgRole && !opts.some((o) => o.value === form.orgRole)) {
+      opts.unshift({ value: form.orgRole, label: String(form.orgRole).replace(/_/g, ' ') });
+    }
+    return opts;
+  })();
 
-  const toggleProject = (id) =>
-    setProjectIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+  useEffect(() => {
+    let alive = true;
+    listRoles()
+      .then((r) => { if (alive) setRoles(r); })
+      .catch(() => { if (alive) setRoles([]); });
+    return () => { alive = false; };
+  }, []);
+
+  // The loaded org_role may be a role *name*; normalise it to the role code
+  // so the dropdown matches and the saved payload carries the code.
+  useEffect(() => {
+    if (!roles.length || !form.orgRole) return;
+    if (roles.some((r) => r.code === form.orgRole)) return;
+    const byName = roles.find((r) => r.name === form.orgRole);
+    if (byName) setForm((f) => ({ ...f, orgRole: byName.code }));
+  }, [roles, form.orgRole]);
 
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    Promise.all([getUser(userId), listProjects().catch(() => [])])
-      .then(([u, projs]) => {
+    getUser(userId)
+      .then((u) => {
         if (!alive) return;
-        setProjects(Array.isArray(projs) ? projs : []);
         if (u) {
           const status = typeof u.status === 'string'
             ? u.status
@@ -73,8 +78,6 @@ export default function EditUserPage() {
             twoFactorEnabled: (u.two_factor_enabled ?? u.twoFactorEnabled) === true,
             status,
           });
-          const ids = u.project_ids ?? u.projectIds ?? (Array.isArray(u.projects) ? u.projects.map((p) => p.id) : []);
-          setProjectIds(Array.isArray(ids) ? ids : []);
         }
         setLoading(false);
       })
@@ -101,7 +104,6 @@ export default function EditUserPage() {
         admin: form.admin,
         twoFactorEnabled: form.twoFactorEnabled,
         status: form.status,
-        projectIds,
       });
       navigate('/dashboard/users');
     } catch (err) {
@@ -147,10 +149,10 @@ export default function EditUserPage() {
 
                 <div className="xd-field-row3">
                   <div className="xd-conn-field">
-                    <label className="xd-conn-label">Org Role</label>
+                    <label className="xd-conn-label">Role</label>
                     <select className="xd-conn-input" value={form.orgRole} onChange={(e) => set('orgRole', e.target.value)}>
                       <option value="">— None —</option>
-                      {roleOptions.map((r) => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
+                      {roleOptions.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
                     </select>
                   </div>
 
@@ -158,37 +160,6 @@ export default function EditUserPage() {
                     <label className="xd-conn-label">Phone Number</label>
                     <input className="xd-conn-input" value={form.phoneNumber}
                       placeholder="optional" onChange={(e) => set('phoneNumber', e.target.value)} />
-                  </div>
-
-                  <div className="xd-conn-field">
-                    <label className="xd-conn-label">Projects</label>
-                    {projects.length === 0 ? (
-                      <div className="xd-muted">No projects available.</div>
-                    ) : (
-                      <div className="xd-ms" ref={projRef}>
-                        <button type="button" className="xd-conn-input xd-ms-toggle"
-                          onClick={() => setProjOpen((o) => !o)}>
-                          <span className={projectIds.length ? '' : 'xd-ms-ph'}>
-                            {projectIds.length ? `${projectIds.length} selected` : '— Select projects —'}
-                          </span>
-                          <FiChevronDown />
-                        </button>
-                        {projOpen && (
-                          <div className="xd-ms-menu">
-                            {projects.map((p) => {
-                              const on = projectIds.includes(p.id);
-                              return (
-                                <label key={p.id} className="xd-ms-opt">
-                                  <input type="checkbox" checked={on} onChange={() => toggleProject(p.id)} />
-                                  <span>{p.name}</span>
-                                  {on && <FiCheck className="xd-ms-tick" />}
-                                </label>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
                 </div>
               </section>
