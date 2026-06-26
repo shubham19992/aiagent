@@ -73,7 +73,12 @@ function normalize(p = {}) {
     startDate: dateOnly(p.start_date),
     endDate: dateOnly(p.end_date),
     observabilities: Array.isArray(p.observabilities) ? p.observabilities : [],
-    connectionIds: Array.isArray(p.connection_ids) ? p.connection_ids : [],
+    // Backend returns full connection objects under `connections`; older
+    // payloads may use a flat `connection_ids` list. Expose both.
+    connections: Array.isArray(p.connections) ? p.connections : [],
+    connectionIds: Array.isArray(p.connections)
+      ? p.connections.map((c) => c.id).filter(Boolean)
+      : (Array.isArray(p.connection_ids) ? p.connection_ids : []),
     image: p.has_image ? (p.image_url || '') : '',
     imageUrl: p.image_url || '',
     hasImage: !!p.has_image,
