@@ -4,7 +4,7 @@ import { FiArrowLeft } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import ConnectionsSelect from './_ConnSelect';
 import { listConnectionParams } from '../../api/observability';
-import { createCredential, patchCredential } from '../../api/credentials';
+import { createCredential, patchCredential, getCredential } from '../../api/credentials';
 import { listProjects } from '../../api/projects';
 
 const ENV_NAME = { aws: 'AWS', azure: 'Azure', gcp: 'GCP' };
@@ -21,8 +21,9 @@ export default function ConnectPage() {
   const op = ops.find((o) => o.code === opCode);
 
   const location = useLocation();
-  const editCred = location.state?.credential || null;
-  const editing = !!editCred;
+  const stateCred = location.state?.credential || null;
+  const editId = stateCred?.id || location.state?.credentialId || null;
+  const editing = !!editId;
 
   const [params, setParams] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -32,9 +33,12 @@ export default function ConnectPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({});
   const [reveal, setReveal] = useState({});
-  const [connName, setConnName] = useState(editCred?.name || '');
+  // Authoritative credential being edited — starts from nav state, then is
+  // refreshed from GET /credentials/{id} so the prefill reflects the backend.
+  const [cred, setCred] = useState(stateCred);
+  const [connName, setConnName] = useState(stateCred?.name || '');
   const [assocProjects, setAssocProjects] = useState(
-    editCred?.project_ids || (editCred?.project_id ? [editCred.project_id] : []),
+    stateCred?.project_ids || (stateCred?.project_id ? [stateCred.project_id] : []),
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -48,16 +52,24 @@ export default function ConnectPage() {
     Promise.all([
       listConnectionParams(opCode, envCode),
       listProjects().catch(() => []),
-    ]).then(([p, projs]) => {
+      // Fetch the credential fresh by id so edit prefills from the API.
+      editId ? getCredential(editId).catch(() => stateCred) : Promise.resolve(null),
+    ]).then(([p, projs, fresh]) => {
       if (!alive) return;
+      const c = fresh || stateCred;
       setParams(p.items);
       setProjects(Array.isArray(projs) ? projs : []);
       setSource('api');
+      if (c) {
+        setCred(c);
+        setConnName(c.name || '');
+        setAssocProjects(c.project_ids || (c.project_id ? [c.project_id] : []));
+      }
       // In edit mode, prefill all fields from the credential. Secrets come
       // back masked ("••••••"); we keep that masked value as-is and only
       // resend a secret if the user actually changes it (see onSubmit).
       setForm(Object.fromEntries(p.items.map((x) => {
-        if (editCred) return [x.param_key, editCred.values?.[x.param_key] ?? ''];
+        if (c) return [x.param_key, c.values?.[x.param_key] ?? ''];
         return [x.param_key, x.default_value || ''];
       })));
       setLoading(false);
@@ -68,7 +80,7 @@ export default function ConnectPage() {
       setLoading(false);
     });
     return () => { alive = false; };
-  }, [opCode, envCode, editCred]);
+  }, [opCode, envCode, editId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const envName = ENV_NAME[envCode] || envCode.toUpperCase();
   const opName = op?.name || opCode;
@@ -105,14 +117,14 @@ export default function ConnectPage() {
           if (isSecretParam(p)) {
             // Only send a secret when the user typed a new non-empty value
             // (not the prefilled mask, not a cleared-but-untouched field).
-            const orig = String(editCred.values?.[p.param_key] ?? '');
+            const orig = String(cred?.values?.[p.param_key] ?? '');
             if (val.trim() && val !== orig) values[p.param_key] = val;
           } else {
             values[p.param_key] = val;
           }
         });
-        await patchCredential(editCred.id, {
-          name: connName.trim() || editCred.name,
+        await patchCredential(cred.id, {
+          name: connName.trim() || cred.name,
           values,
           secret_keys: secretKeys,
           project_ids: assocProjects,
@@ -200,7 +212,7 @@ export default function ConnectPage() {
                         onFocus={() => {
                           // Clear the prefilled masked secret on first focus so the
                           // user can type a fresh value and Show/Hide works on it.
-                          if (editing && isSecret && (form[p.param_key] ?? '') === (editCred.values?.[p.param_key] ?? '')) {
+                          if (editing && isSecret && (form[p.param_key] ?? '') === (cred?.values?.[p.param_key] ?? '')) {
                             setField(p.param_key, '');
                           }
                         }}

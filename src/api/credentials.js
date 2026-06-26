@@ -38,6 +38,12 @@ async function call(path, { method = 'GET', body } = {}) {
   return json;
 }
 
+// GET /api/v3/credentials/{id} — full credential (secret values masked).
+export async function getCredential(id) {
+  const json = await call(`/api/v3/credentials/${enc(id)}`);
+  return json?.data || null;
+}
+
 export async function listCredentials({ includeInactive = false, offset = 0, limit = 100 } = {}) {
   const json = await call(
     `/api/v3/credentials?include_inactive=${includeInactive}&offset=${offset}&limit=${limit}`,
