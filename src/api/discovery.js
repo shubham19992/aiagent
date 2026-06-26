@@ -33,7 +33,13 @@ export async function runDiscovery({ agentNames, cloudProvider, userId, projectI
       `HTTP ${res.status}`;
     throw new Error(msg);
   }
-  return json?.data || {};
+  // The agents service may return the discovery envelope either wrapped
+  // ({ data: { results: [...] } }) or directly ({ results: [...] }).
+  if (json && typeof json === 'object') {
+    if (Array.isArray(json.results)) return json;
+    if (json.data && typeof json.data === 'object') return json.data;
+  }
+  return {};
 }
 
 // Insights can come back either as plain strings or as a ```json fenced
