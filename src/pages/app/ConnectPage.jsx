@@ -63,7 +63,12 @@ export default function ConnectPage() {
       if (c) {
         setCred(c);
         setConnName(c.name || '');
-        setAssocProjects(c.project_ids || (c.project_id ? [c.project_id] : []));
+        // Associations come back as `projects: [{ project_id, project_name }]`;
+        // fall back to a flat project_ids list for older payloads.
+        const projIds = Array.isArray(c.projects)
+          ? c.projects.map((x) => x.project_id).filter(Boolean)
+          : (c.project_ids || (c.project_id ? [c.project_id] : []));
+        setAssocProjects(projIds);
       }
       // In edit mode, prefill all fields from the credential. Secrets come
       // back masked ("••••••"); we keep that masked value as-is and only
