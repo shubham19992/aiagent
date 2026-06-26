@@ -185,9 +185,13 @@ export default function DiscoveryPage() {
     })
       .then((res) => {
         if (!alive) return;
-        const hasData = res && Array.isArray(res.results) && res.results.length > 0;
-        setResult(hasData ? res : DISCOVERY_SAMPLE);
-        setUsingSample(!hasData);
+        // Treat the response as real only if it actually carries discovered
+        // accounts; otherwise preview the sample so the tree is never blank.
+        const hasAccounts =
+          res && Array.isArray(res.results) &&
+          res.results.some((a) => (a?.data?.recommendations?.accounts || []).length > 0);
+        setResult(hasAccounts ? res : DISCOVERY_SAMPLE);
+        setUsingSample(!hasAccounts);
         setLoading(false);
       })
       .catch(() => {
