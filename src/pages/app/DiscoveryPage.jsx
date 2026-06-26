@@ -185,18 +185,18 @@ export default function DiscoveryPage() {
     })
       .then((res) => {
         if (!alive) return;
-        // Treat the response as real only if it actually carries discovered
-        // accounts; otherwise preview the sample so the tree is never blank.
+        // Keep the real API response for the left-side cards exactly as
+        // before. The right-side tree falls back to the sample only when the
+        // response carries no discovered accounts, so it's never blank.
         const hasAccounts =
           res && Array.isArray(res.results) &&
           res.results.some((a) => (a?.data?.recommendations?.accounts || []).length > 0);
-        setResult(hasAccounts ? res : DISCOVERY_SAMPLE);
+        setResult(res || {});
         setUsingSample(!hasAccounts);
         setLoading(false);
       })
       .catch(() => {
-        // Fall back to the sample payload so the discovery layout is still
-        // previewable when the agents service is unreachable.
+        // Service unreachable: preview the sample so the layout still renders.
         if (!alive) return;
         setResult(DISCOVERY_SAMPLE);
         setUsingSample(true);
@@ -245,7 +245,7 @@ export default function DiscoveryPage() {
 
             {usingSample && (
               <div className="xd-disc-sample-note">
-                <FiAlertTriangle /> Showing sample discovery data — the live agents service returned no results.
+                <FiAlertTriangle /> Resource Explorer is showing sample data — the discovery response had no resource tree.
               </div>
             )}
 
@@ -339,7 +339,7 @@ export default function DiscoveryPage() {
                 <span className="xd-disc-tree-title"><FiShare2 /> Resource Explorer</span>
                 <span className="xd-disc-tree-date"><FiClock /> {fmtDateTime(result.executionTime)}</span>
               </div>
-              <DiscoveryTree result={result} cloudIcon={CLOUD_ICON[envCode] || <FiCloud />} />
+              <DiscoveryTree result={usingSample ? DISCOVERY_SAMPLE : result} cloudIcon={CLOUD_ICON[envCode] || <FiCloud />} />
             </aside>
             </div>
           </>
