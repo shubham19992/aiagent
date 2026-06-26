@@ -3,6 +3,7 @@ import { useParams, useLocation, useOutletContext, Link } from 'react-router-dom
 import {
   FiAlertTriangle, FiArrowLeft, FiCpu, FiDatabase, FiHardDrive,
   FiShare2, FiBox, FiActivity, FiZap, FiCloud, FiLoader,
+  FiChevronRight, FiChevronDown, FiClock, FiFolder, FiServer, FiMapPin,
 } from 'react-icons/fi';
 import { FaAws } from 'react-icons/fa';
 import { VscAzure } from 'react-icons/vsc';
@@ -62,6 +63,90 @@ function StatGroup({ icon, title, stats }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** One expandable row in the resource-explorer tree. Drills down through
+ *  account → category → resource → properties; leaves have no chevron. */
+function TreeRow({ icon, label, sub, count, defaultOpen = false, children }) {
+  const [open, setOpen] = useState(defaultOpen);
+  const hasChildren = React.Children.count(children) > 0;
+  return (
+    <div className="xd-tree-node">
+      <button
+        type="button"
+        className={`xd-tree-row${hasChildren ? '' : ' xd-tree-row-leaf'}`}
+        onClick={() => hasChildren && setOpen((o) => !o)}
+        disabled={!hasChildren}
+      >
+        <span className="xd-tree-caret">
+          {hasChildren ? (open ? <FiChevronDown /> : <FiChevronRight />) : null}
+        </span>
+        {icon && <span className="xd-tree-ico">{icon}</span>}
+        <span className="xd-tree-label" title={label}>{label}</span>
+        {sub && <span className="xd-tree-sub" title={sub}>{sub}</span>}
+        {count != null && <span className="xd-tree-count">{count}</span>}
+      </button>
+      {open && hasChildren && <div className="xd-tree-children">{children}</div>}
+    </div>
+  );
+}
+
+/** Drill-down tree for the discovery response:
+ *  agent → account → category → resource → properties. */
+function DiscoveryTree({ result, cloudIcon }) {
+  const accounts = [];
+  (result.results || []).forEach((agent) => {
+    if (agent.status !== 'SUCCESS') return;
+    (agent.data?.recommendations?.accounts || []).forEach((a) => accounts.push(a));
+  });
+
+  if (accounts.length === 0) {
+    return <div className="xd-tree-empty">No resources discovered.</div>;
+  }
+
+  return (
+    <div className="xd-tree">
+      {accounts.map((acc, ai) => (
+        <TreeRow
+          key={acc.id || ai}
+          icon={cloudIcon}
+          label={acc.name || acc.id}
+          sub={acc.type}
+          count={acc.summary?.totalResources}
+          defaultOpen={accounts.length === 1}
+        >
+          {(acc.categories || []).map((cat) => (
+            <TreeRow
+              key={cat.id}
+              icon={<FiFolder />}
+              label={cat.name || cat.id}
+              count={cat.count ?? (cat.resources || []).length}
+            >
+              {(cat.resources || []).map((r, ri) => (
+                <TreeRow
+                  key={r.id || ri}
+                  icon={<FiServer />}
+                  label={r.name}
+                  sub={r.resourceType}
+                >
+                  {Object.entries(r.properties || {})
+                    .filter(([, v]) => v !== '' && v != null)
+                    .map(([k, v]) => (
+                      <TreeRow
+                        key={k}
+                        icon={k === 'region' ? <FiMapPin /> : null}
+                        label={k}
+                        sub={String(v)}
+                      />
+                    ))}
+                </TreeRow>
+              ))}
+            </TreeRow>
+          ))}
+        </TreeRow>
+      ))}
     </div>
   );
 }
@@ -138,6 +223,8 @@ export default function DiscoveryPage() {
               </div>
             </div>
 
+            <div className="xd-disc-layout">
+            <div className="xd-disc-main-col">
             {/* per-agent → per-subscription */}
             {(result.results || []).map((agent) => {
               const subs = agent.data?.recommendations?.subscriptions || [];
@@ -218,6 +305,17 @@ export default function DiscoveryPage() {
                 </div>
               );
             })}
+            </div>
+
+            {/* right-side drill-down resource explorer */}
+            <aside className="xd-disc-tree-panel xd-card">
+              <div className="xd-disc-tree-head">
+                <span className="xd-disc-tree-title"><FiShare2 /> Resource Explorer</span>
+                <span className="xd-disc-tree-date"><FiClock /> {fmtDateTime(result.executionTime)}</span>
+              </div>
+              <DiscoveryTree result={result} cloudIcon={CLOUD_ICON[envCode] || <FiCloud />} />
+            </aside>
+            </div>
           </>
         ) : null}
       </main>
