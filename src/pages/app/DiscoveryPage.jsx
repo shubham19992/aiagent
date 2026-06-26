@@ -10,6 +10,7 @@ import { VscAzure } from 'react-icons/vsc';
 import { SiGooglecloud } from 'react-icons/si';
 import { PageHeader } from './_parts';
 import { runDiscovery, parseInsights } from '../../api/discovery';
+import { DISCOVERY_SAMPLE } from '../../api/discoverySample';
 import { tokenStore } from '../../api/client';
 
 const ENV_NAME = { aws: 'AWS', azure: 'Azure', gcp: 'GCP' };
@@ -168,11 +169,13 @@ export default function DiscoveryPage() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [usingSample, setUsingSample] = useState(false);
 
   useEffect(() => {
     let alive = true;
     setLoading(true);
     setError('');
+    setUsingSample(false);
     const me = tokenStore.getUser() || {};
     runDiscovery({
       agentNames: [`${envCode}_discovery`],
@@ -180,8 +183,21 @@ export default function DiscoveryPage() {
       userId: me.id || me.user_id || me.uuid || '',
       projectId: connection?.id || '',
     })
-      .then((res) => { if (alive) { setResult(res); setLoading(false); } })
-      .catch((err) => { if (alive) { setError(err?.message || 'Discovery failed.'); setLoading(false); } });
+      .then((res) => {
+        if (!alive) return;
+        const hasData = res && Array.isArray(res.results) && res.results.length > 0;
+        setResult(hasData ? res : DISCOVERY_SAMPLE);
+        setUsingSample(!hasData);
+        setLoading(false);
+      })
+      .catch(() => {
+        // Fall back to the sample payload so the discovery layout is still
+        // previewable when the agents service is unreachable.
+        if (!alive) return;
+        setResult(DISCOVERY_SAMPLE);
+        setUsingSample(true);
+        setLoading(false);
+      });
     return () => { alive = false; };
   }, [envCode, connection]);
 
@@ -222,6 +238,12 @@ export default function DiscoveryPage() {
                 </div>
               </div>
             </div>
+
+            {usingSample && (
+              <div className="xd-disc-sample-note">
+                <FiAlertTriangle /> Showing sample discovery data — the live agents service returned no results.
+              </div>
+            )}
 
             <div className="xd-disc-layout">
             <div className="xd-disc-main-col">
