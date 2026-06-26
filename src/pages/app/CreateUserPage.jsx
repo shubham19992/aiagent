@@ -3,12 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { PageHeader } from './_parts';
 import { createUser } from '../../api/users';
 import { listRoles } from '../../api/rbac';
+import { useAccess } from '../../lib/access';
 
 export default function CreateUserPage() {
   const navigate = useNavigate();
+  const access = useAccess();
 
   // Roles for the Role select — full list loaded from the roles API.
   const [orgRoles, setOrgRoles] = useState([]);
+  // A Product_Admin cannot create a SuperAdmin, so hide that role unless the
+  // current user is a SuperAdmin.
+  const roleOptions = orgRoles.filter(
+    (r) => access.canCreateSuperAdmin || String(r.code).toLowerCase() !== 'superadmin',
+  );
 
   const [form, setForm] = useState({
     login: '', email: '', password: '', fullName: '', phoneNumber: '',
@@ -97,7 +104,7 @@ export default function CreateUserPage() {
                   <label className="xd-conn-label">Role</label>
                   <select className="xd-conn-input" value={form.orgRole} onChange={(e) => set('orgRole', e.target.value)}>
                     <option value="">— None —</option>
-                    {orgRoles.map((r) => <option key={r.code} value={r.code}>{r.name.replace(/_/g, ' ')}</option>)}
+                    {roleOptions.map((r) => <option key={r.code} value={r.code}>{r.name.replace(/_/g, ' ')}</option>)}
                   </select>
                 </div>
 

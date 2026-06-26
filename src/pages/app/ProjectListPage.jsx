@@ -4,6 +4,7 @@ import { FiCalendar, FiTrash2, FiPlus, FiFolder, FiBarChart2, FiSearch, FiMoreVe
 import { PageHeader, Spinner } from './_parts';
 import { listProjects, deleteProject } from '../../api/projects';
 import { projectMembers, isDemoProject, isMine, clearMembership } from '../../store/projectsStore';
+import { useAccess } from '../../lib/access';
 
 const fmtDate = (d) => {
   if (!d) return '—';
@@ -19,6 +20,7 @@ const coverGradient = (seed = '') => {
 };
 
 export default function ProjectListPage() {
+  const access = useAccess();
   const currentUser = sessionStorage.getItem('uidai_user') || 'You';
   const [scope, setScope] = useState('all');     // 'mine' | 'all'
   const [version, setVersion] = useState(0);     // bump to re-read after delete
@@ -114,7 +116,9 @@ export default function ProjectListPage() {
               <button className={`xd-role-btn ${scope === 'mine' ? 'active' : ''}`} onClick={() => setScope('mine')} type="button">Mine</button>
               <button className={`xd-role-btn ${scope === 'all' ? 'active' : ''}`} onClick={() => setScope('all')} type="button">All</button>
             </div>
-            <Link to="/dashboard/projects/new" className="xd-btn xd-btn-sm"><FiPlus /> New Project</Link>
+            {access.canManage && (
+              <Link to="/dashboard/projects/new" className="xd-btn xd-btn-sm"><FiPlus /> New Project</Link>
+            )}
           </div>
         </div>
 
@@ -137,7 +141,9 @@ export default function ProjectListPage() {
             <div className="xd-empty">
               <FiFolder />
               <p>{scope === 'mine' ? 'No projects assigned to you yet.' : 'No projects created yet.'}</p>
-              <Link to="/dashboard/projects/new" className="xd-btn xd-btn-sm"><FiPlus /> Create your first project</Link>
+              {access.canManage && (
+                <Link to="/dashboard/projects/new" className="xd-btn xd-btn-sm"><FiPlus /> Create your first project</Link>
+              )}
             </div>
           )
         ) : (
@@ -147,7 +153,8 @@ export default function ProjectListPage() {
               const obs = p.observabilities || [];
               return (
                 <div className="xd-pcard" key={p.id}>
-                  {/* ⋯ menu — quick actions even if Assign Members was skipped */}
+                  {/* ⋯ menu — management actions, admins only */}
+                  {access.canManage && (
                   <div className="xd-pcard-menu" data-pcard-menu>
                     <button type="button" className="xd-pcard-menu-btn" title="More actions"
                       aria-haspopup="menu" aria-expanded={openMenu === p.id}
@@ -169,6 +176,7 @@ export default function ProjectListPage() {
                       </div>
                     )}
                   </div>
+                  )}
 
                   {/* cover: uploaded image or a generated gradient with the initial */}
                   <Link to={`/dashboard/projects/${p.id}`} className="xd-pcard-cover"

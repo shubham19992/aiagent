@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { PageHeader, Spinner } from './_parts';
 import { getUser, updateUser } from '../../api/users';
 import { listRoles } from '../../api/rbac';
+import { useAccess } from '../../lib/access';
 
 // org_role can be a string, or an array of { role_name } objects.
 const roleNames = (u) => {
@@ -16,6 +17,7 @@ const roleNames = (u) => {
 export default function EditUserPage() {
   const navigate = useNavigate();
   const { userId } = useParams();
+  const access = useAccess();
 
   const [loading, setLoading] = useState(true);
   // Roles for the Role select — full list loaded from the roles API.
@@ -31,10 +33,13 @@ export default function EditUserPage() {
 
   const set = (k, v) => { setForm((f) => ({ ...f, [k]: v })); setError(''); };
 
-  // Options from the API (value = role code). Include the user's current role
-  // even if it's outside the catalog so the prefilled value still shows.
+  // Options from the API (value = role code). A Product_Admin cannot grant
+  // SuperAdmin, so hide it unless the current user is a SuperAdmin. Include the
+  // user's current role even if it's outside the catalog so the prefill shows.
   const roleOptions = (() => {
-    const opts = roles.map((r) => ({ value: r.code, label: r.name.replace(/_/g, ' ') }));
+    const opts = roles
+      .filter((r) => access.canCreateSuperAdmin || String(r.code).toLowerCase() !== 'superadmin')
+      .map((r) => ({ value: r.code, label: r.name.replace(/_/g, ' ') }));
     if (form.orgRole && !opts.some((o) => o.value === form.orgRole)) {
       opts.unshift({ value: form.orgRole, label: String(form.orgRole).replace(/_/g, ' ') });
     }

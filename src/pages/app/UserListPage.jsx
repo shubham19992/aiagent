@@ -4,6 +4,7 @@ import { FiSearch, FiUserPlus, FiUsers, FiEdit2, FiTrash2, FiX } from 'react-ico
 import { PageHeader, Spinner } from './_parts';
 import { listUsers, deleteUser } from '../../api/users';
 import { uiStore } from '../../store/project/uiStore';
+import { useAccess } from '../../lib/access';
 
 // Defensive field accessors — the users API may use snake_case or camelCase.
 const uName = (u) => u.full_name || u.fullName || u.name || u.login || u.email || '—';
@@ -30,6 +31,7 @@ const uActive = (u) => {
 
 export default function UserListPage() {
   const navigate = useNavigate();
+  const access = useAccess();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -100,7 +102,9 @@ export default function UserListPage() {
                 onChange={(e) => setQuery(e.target.value)}
               />
             </div>
-            <Link to="/dashboard/users/new" className="xd-btn xd-btn-sm"><FiUserPlus /> New User</Link>
+            {access.canManage && (
+              <Link to="/dashboard/users/new" className="xd-btn xd-btn-sm"><FiUserPlus /> New User</Link>
+            )}
           </div>
         </div>
 
@@ -118,7 +122,7 @@ export default function UserListPage() {
             <p>{query.trim() ? `No users match “${query.trim()}”.` : 'No users yet.'}</p>
             {query.trim()
               ? <button className="xd-btn xd-btn-sm" type="button" onClick={() => setQuery('')}>Clear search</button>
-              : <Link to="/dashboard/users/new" className="xd-btn xd-btn-sm"><FiUserPlus /> Create your first user</Link>}
+              : (access.canManage && <Link to="/dashboard/users/new" className="xd-btn xd-btn-sm"><FiUserPlus /> Create your first user</Link>)}
           </div>
         ) : (
           <div className="xd-card xd-conn-table-card">
@@ -152,12 +156,14 @@ export default function UserListPage() {
                       </span>
                     </td>
                     <td>
-                      <div className="xd-row-actions">
-                        <button type="button" className="xd-icon-btn" title="Edit"
-                          onClick={() => navigate(`/dashboard/users/${u.id}/edit`)}><FiEdit2 /></button>
-                        <button type="button" className="xd-icon-btn xd-icon-btn-danger" title="Delete"
-                          onClick={() => setDeleteTarget(u)}><FiTrash2 /></button>
-                      </div>
+                      {access.canManage ? (
+                        <div className="xd-row-actions">
+                          <button type="button" className="xd-icon-btn" title="Edit"
+                            onClick={() => navigate(`/dashboard/users/${u.id}/edit`)}><FiEdit2 /></button>
+                          <button type="button" className="xd-icon-btn xd-icon-btn-danger" title="Delete"
+                            onClick={() => setDeleteTarget(u)}><FiTrash2 /></button>
+                        </div>
+                      ) : <span className="xd-muted">—</span>}
                     </td>
                   </tr>
                 ))}

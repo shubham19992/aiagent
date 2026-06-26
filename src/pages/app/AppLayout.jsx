@@ -7,6 +7,7 @@ import * as auth from '../../api/auth';
 import { listMenu } from '../../api/observability';
 import { useTheme } from '../../lib/theme';
 import { useSidebar } from '../../lib/sidebar';
+import { useAccess } from '../../lib/access';
 
 /**
  * Persistent app shell shown after login. The left sidebar lists the
@@ -18,6 +19,7 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const [theme] = useTheme();
   const [collapsed, toggleSidebar] = useSidebar();
+  const access = useAccess();
   const userName = sessionStorage.getItem('uidai_user') || 'User';
   const [ops, setOps] = useState([]);
   const [source, setSource] = useState('api');
@@ -124,13 +126,15 @@ export default function AppLayout() {
 
             {open.project && (
               <ul className="xd-nav-items">
-                <li>
-                  <NavLink to="/dashboard/projects/new"
-                    className={({ isActive }) => `xd-nav-item ${isActive ? 'active' : ''}`}>
-                    <span className="xd-nav-item-icon"><FiPlusCircle /></span>
-                    <span className="xd-nav-item-text">Create Project</span>
-                  </NavLink>
-                </li>
+                {access.canManage && (
+                  <li>
+                    <NavLink to="/dashboard/projects/new"
+                      className={({ isActive }) => `xd-nav-item ${isActive ? 'active' : ''}`}>
+                      <span className="xd-nav-item-icon"><FiPlusCircle /></span>
+                      <span className="xd-nav-item-text">Create Project</span>
+                    </NavLink>
+                  </li>
+                )}
                 <li>
                   <NavLink to="/dashboard/projects" end
                     className={({ isActive }) => `xd-nav-item ${isActive ? 'active' : ''}`}>
@@ -157,13 +161,15 @@ export default function AppLayout() {
 
             {open.users && (
               <ul className="xd-nav-items">
-                <li>
-                  <NavLink to="/dashboard/users/new"
-                    className={({ isActive }) => `xd-nav-item ${isActive ? 'active' : ''}`}>
-                    <span className="xd-nav-item-icon"><FiUserPlus /></span>
-                    <span className="xd-nav-item-text">Create User</span>
-                  </NavLink>
-                </li>
+                {access.canManage && (
+                  <li>
+                    <NavLink to="/dashboard/users/new"
+                      className={({ isActive }) => `xd-nav-item ${isActive ? 'active' : ''}`}>
+                      <span className="xd-nav-item-icon"><FiUserPlus /></span>
+                      <span className="xd-nav-item-text">Create User</span>
+                    </NavLink>
+                  </li>
+                )}
                 <li>
                   <NavLink to="/dashboard/users" end
                     className={({ isActive }) => `xd-nav-item ${isActive ? 'active' : ''}`}>
