@@ -460,6 +460,8 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
   display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start;
 }
 .xd-disc-main-col { min-width: 0; }
+/* Align the first left-column heading with the top of the right-side card. */
+.xd-disc-main-col > div:first-child .xd-disc-agenthead { margin-top: 0; }
 .xd-disc-tree-panel { position: sticky; top: 16px; padding: 0; overflow: hidden; }
 .xd-disc-tree-head {
   display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
