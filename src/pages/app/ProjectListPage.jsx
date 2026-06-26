@@ -3,8 +3,19 @@ import { Link } from 'react-router-dom';
 import { FiCalendar, FiTrash2, FiPlus, FiFolder, FiBarChart2, FiSearch, FiMoreVertical, FiUserPlus, FiEdit2 } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listProjects, deleteProject } from '../../api/projects';
+import { getRoleAssignments } from '../../api/rbac';
 import { projectMembers, isDemoProject, isMine, clearMembership } from '../../store/projectsStore';
 import { useAccess } from '../../lib/access';
+
+// Unique assigned member names across both scopes of a role-assignments payload.
+function membersFromAssignments(data) {
+  const names = new Set();
+  const collect = (list) => (list || []).forEach((u) => u.userName && names.add(u.userName));
+  Object.values(data?.project || {}).forEach(collect);
+  Object.values(data?.observability || {}).forEach((roleMap) =>
+    Object.values(roleMap || {}).forEach(collect));
+  return [...names];
+}
 
 const fmtDate = (d) => {
   if (!d) return '—';
@@ -27,6 +38,7 @@ export default function ProjectListPage() {
   const [query, setQuery] = useState('');
   const [openMenu, setOpenMenu] = useState(null); // project id of the open ⋯ menu
   const [all, setAll] = useState([]);            // all projects from the API
+  const [membersByProject, setMembersByProject] = useState({}); // id -> [names]
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -47,6 +59,22 @@ export default function ProjectListPage() {
     });
     return () => { alive = false; };
   }, [version]);
+
+  // Fetch assigned members per real project (role-assignments API) so the
+  // cards show who's assigned — the local overlay is no longer written.
+  useEffect(() => {
+    let alive = true;
+    const real = all.filter((p) => !isDemoProject(p));
+    if (real.length === 0) { setMembersByProject({}); return undefined; }
+    Promise.all(real.map((p) =>
+      getRoleAssignments(p.id)
+        .then((d) => [p.id, membersFromAssignments(d)])
+        .catch(() => [p.id, []]),
+    )).then((entries) => {
+      if (alive) setMembersByProject(Object.fromEntries(entries));
+    });
+    return () => { alive = false; };
+  }, [all]);
 
   // Close the open card menu on outside click / Escape.
   useEffect(() => {
@@ -149,7 +177,7 @@ export default function ProjectListPage() {
         ) : (
           <div className="xd-proj-grid">
             {projects.map((p) => {
-              const members = projectMembers(p);
+              const members = membersByProject[p.id] ?? projectMembers(p);
               const obs = p.observabilities || [];
               return (
                 <div className="xd-pcard" key={p.id}>
