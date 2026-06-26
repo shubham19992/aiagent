@@ -334,12 +334,17 @@ export default function DiscoveryPage() {
             </div>
 
             {/* right-side drill-down resource explorer */}
-            <aside className="xd-disc-tree-panel xd-card">
-              <div className="xd-disc-tree-head">
-                <span className="xd-disc-tree-title"><FiShare2 /> Resource Explorer</span>
-                <span className="xd-disc-tree-date"><FiClock /> {fmtDateTime(result.executionTime)}</span>
+            <aside className="xd-disc-tree-col">
+              <h3 className="xd-subhead xd-disc-agenthead">
+                <FiShare2 /> Resource Explorer
+              </h3>
+              <div className="xd-disc-tree-panel xd-card">
+                <div className="xd-disc-tree-head">
+                  <span className="xd-disc-tree-title">Resources</span>
+                  <span className="xd-disc-tree-date"><FiClock /> {fmtDateTime(result.executionTime)}</span>
+                </div>
+                <DiscoveryTree result={usingSample ? DISCOVERY_SAMPLE : result} cloudIcon={CLOUD_ICON[envCode] || <FiCloud />} />
               </div>
-              <DiscoveryTree result={usingSample ? DISCOVERY_SAMPLE : result} cloudIcon={CLOUD_ICON[envCode] || <FiCloud />} />
             </aside>
             </div>
           </>

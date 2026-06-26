@@ -460,9 +460,12 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
   display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start;
 }
 .xd-disc-main-col { min-width: 0; }
-/* Align the first left-column heading with the top of the right-side card. */
-.xd-disc-main-col > div:first-child .xd-disc-agenthead { margin-top: 0; }
-.xd-disc-tree-panel { position: sticky; top: 16px; padding: 0; overflow: hidden; }
+/* Both columns start with a heading; zero the top margin so the cards
+   underneath line up across the left and right columns. */
+.xd-disc-main-col > div:first-child .xd-disc-agenthead,
+.xd-disc-tree-col > .xd-disc-agenthead { margin-top: 0; }
+.xd-disc-tree-col { position: sticky; top: 16px; min-width: 0; }
+.xd-disc-tree-panel { padding: 0; overflow: hidden; }
 .xd-disc-tree-head {
   display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
   padding: 14px 16px; border-bottom: 1px solid var(--xd-line);
