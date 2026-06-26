@@ -87,6 +87,20 @@ export default function ConnectPage() {
     return () => { alive = false; };
   }, [opCode, envCode, editId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Project options = all projects + any the credential is already linked to
+  // (so an association survives even if that project isn't in the list, e.g.
+  // it's inactive or outside the default page).
+  const projectOptions = useMemo(() => {
+    const map = new Map();
+    projects.forEach((p) => map.set(p.id, { id: p.id, name: p.name }));
+    (cred?.projects || []).forEach((p) => {
+      if (p.project_id && !map.has(p.project_id)) {
+        map.set(p.project_id, { id: p.project_id, name: p.project_name || p.project_id });
+      }
+    });
+    return [...map.values()];
+  }, [projects, cred]);
+
   const envName = ENV_NAME[envCode] || envCode.toUpperCase();
   const opName = op?.name || opCode;
   const envPath = `/dashboard/observability/${opCode}/${envCode}`;
@@ -191,7 +205,7 @@ export default function ConnectPage() {
               <div className="xd-conn-field">
                 <label className="xd-conn-label">Associate with projects <span className="xd-muted">(optional)</span></label>
                 <ConnectionsSelect
-                  options={projects}
+                  options={projectOptions}
                   selected={assocProjects}
                   onToggle={toggleAssoc}
                   placeholder="— Select projects —"
