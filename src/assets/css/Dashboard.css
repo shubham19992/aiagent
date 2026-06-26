@@ -613,6 +613,25 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 .xd-col-title { font-size: 15px; font-weight: 800; margin: 0; }
 .xd-col-hint { font-size: 12.5px; color: var(--xd-soft); margin: -6px 0 4px; }
 .xd-col-connfield { margin-top: 16px; }
+
+/* selected records shown as chips below a ConnectionsSelect dropdown */
+.xd-ms-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.xd-ms-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--xd-card-2); border: 1px solid var(--xd-line);
+  color: var(--xd-ink); border-radius: 999px; padding: 4px 8px 4px 11px;
+  font-size: 12px; font-weight: 600;
+}
+.xd-ms-chip-env {
+  font-size: 9.5px; font-weight: 800; letter-spacing: .04em;
+  padding: 1px 6px; border-radius: 999px; color: var(--xd-soft);
+  background: rgba(204, 204, 220, .12); border: 1px solid var(--xd-line);
+}
+.xd-ms-chip-x {
+  border: none; background: transparent; color: var(--xd-soft); cursor: pointer;
+  display: inline-flex; align-items: center; padding: 0; font-size: 12px;
+}
+.xd-ms-chip-x:hover { color: #f2495c; }
 .xd-field-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .xd-field-row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: start; }
 @media (max-width: 900px) { .xd-field-row3 { grid-template-columns: 1fr; } }
