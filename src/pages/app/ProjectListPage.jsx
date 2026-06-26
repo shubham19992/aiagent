@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiCalendar, FiTrash2, FiPlus, FiFolder, FiBarChart2, FiSearch, FiMoreVertical, FiUserPlus, FiEdit2 } from 'react-icons/fi';
+import { FiCalendar, FiTrash2, FiPlus, FiFolder, FiBarChart2, FiSearch, FiMoreVertical, FiUserPlus, FiEdit2, FiEye } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import { listProjects, deleteProject } from '../../api/projects';
 import { getRoleAssignments } from '../../api/rbac';
@@ -181,30 +181,39 @@ export default function ProjectListPage() {
               const obs = p.observabilities || [];
               return (
                 <div className="xd-pcard" key={p.id}>
-                  {/* ⋯ menu — management actions, admins only */}
-                  {access.canManage && (
+                  {/* top-right: management ⋯ menu for admins, else a view icon */}
                   <div className="xd-pcard-menu" data-pcard-menu>
-                    <button type="button" className="xd-pcard-menu-btn" title="More actions"
-                      aria-haspopup="menu" aria-expanded={openMenu === p.id}
-                      onClick={() => setOpenMenu((id) => (id === p.id ? null : p.id))}>
-                      <FiMoreVertical />
-                    </button>
-                    {openMenu === p.id && (
-                      <div className="xd-pcard-menu-list" role="menu">
-                        <Link to={`/dashboard/projects/${p.id}/assign`} className="xd-pcard-menu-item" role="menuitem"
-                          onClick={() => setOpenMenu(null)}>
-                          <FiUserPlus /> Manage Users
-                        </Link>
-                        {!isDemoProject(p) && (
-                          <Link to={`/dashboard/projects/${p.id}/edit`} className="xd-pcard-menu-item" role="menuitem"
-                            onClick={() => setOpenMenu(null)}>
-                            <FiEdit2 /> Edit Project
-                          </Link>
+                    {access.canManage ? (
+                      <>
+                        <button type="button" className="xd-pcard-menu-btn" title="More actions"
+                          aria-haspopup="menu" aria-expanded={openMenu === p.id}
+                          onClick={() => setOpenMenu((id) => (id === p.id ? null : p.id))}>
+                          <FiMoreVertical />
+                        </button>
+                        {openMenu === p.id && (
+                          <div className="xd-pcard-menu-list" role="menu">
+                            <Link to={`/dashboard/projects/${p.id}/assign`} className="xd-pcard-menu-item" role="menuitem"
+                              onClick={() => setOpenMenu(null)}>
+                              <FiUserPlus /> Manage Users
+                            </Link>
+                            {!isDemoProject(p) && (
+                              <Link to={`/dashboard/projects/${p.id}/edit`} className="xd-pcard-menu-item" role="menuitem"
+                                onClick={() => setOpenMenu(null)}>
+                                <FiEdit2 /> Edit Project
+                              </Link>
+                            )}
+                          </div>
                         )}
-                      </div>
+                      </>
+                    ) : (
+                      !isDemoProject(p) && (
+                        <Link to={`/dashboard/projects/${p.id}/edit?view=1`} className="xd-pcard-menu-btn"
+                          title="View project details">
+                          <FiEye />
+                        </Link>
+                      )
                     )}
                   </div>
-                  )}
 
                   {/* cover: uploaded image or a generated gradient with the initial */}
                   <Link to={`/dashboard/projects/${p.id}`} className="xd-pcard-cover"

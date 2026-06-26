@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { FiCheck, FiX, FiImage } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import ConnectionsSelect from './_ConnSelect';
@@ -24,6 +24,8 @@ const coverGradient = (seed = '') => {
 export default function EditProjectPage() {
   const navigate = useNavigate();
   const { projectId } = useParams();
+  const [searchParams] = useSearchParams();
+  const viewOnly = searchParams.get('view') === '1'; // read-only "View project"
   const currentUser = sessionStorage.getItem('uidai_user') || 'You';
   const me = tokenStore.getUser() || {};
   const myId = me.id || me.user_id || me.uuid || 'me';
@@ -155,7 +157,7 @@ export default function EditProjectPage() {
   if (notFound) {
     return (
       <>
-        <PageHeader crumbs={[{ label: 'Manage Project', to: '/dashboard/projects' }, { label: 'Edit Project' }]} />
+        <PageHeader crumbs={[{ label: 'Manage Project', to: '/dashboard/projects' }, { label: viewOnly ? 'View Project' : 'Edit Project' }]} />
         <main className="xd-main">
           <div className="xd-empty">
             <p>Project not found.</p>
@@ -172,13 +174,13 @@ export default function EditProjectPage() {
         crumbs={[
           { label: 'Manage Project', to: '/dashboard/projects' },
           ...(project ? [{ label: project.name, to: `/dashboard/projects/${project.id}` }] : []),
-          { label: 'Edit Project' },
+          { label: viewOnly ? 'View Project' : 'Edit Project' },
         ]}
         source={source}
       />
       <main className="xd-main">
         <div className="xd-pagelead">
-          <h1>Edit Project</h1>
+          <h1>{viewOnly ? 'View Project' : 'Edit Project'}</h1>
         </div>
 
         {loading ? (
@@ -194,6 +196,7 @@ export default function EditProjectPage() {
                 <div className="xd-conn-field">
                   <label className="xd-conn-label">Project Name<span className="xd-req">*</span></label>
                   <input className="xd-conn-input" value={name} placeholder="e.g. Cloud Migration FY26"
+                    disabled={viewOnly}
                     onChange={(e) => { setName(e.target.value); setError(''); }} />
                 </div>
 
@@ -201,9 +204,13 @@ export default function EditProjectPage() {
                   <label className="xd-conn-label">Project Image</label>
                   {image ? (
                     <div className="xd-img-preview" style={{ backgroundImage: `url(${image})` }}>
-                      <button type="button" className="xd-img-remove" title="Remove image"
-                        onClick={() => setImage('')}><FiX /></button>
+                      {!viewOnly && (
+                        <button type="button" className="xd-img-remove" title="Remove image"
+                          onClick={() => setImage('')}><FiX /></button>
+                      )}
                     </div>
+                  ) : viewOnly ? (
+                    <div className="xd-muted">No image</div>
                   ) : (
                     <label className="xd-img-drop">
                       <FiImage />
@@ -217,13 +224,13 @@ export default function EditProjectPage() {
                 <div className="xd-conn-field">
                   <label className="xd-conn-label">Description</label>
                   <textarea className="xd-conn-input xd-textarea" rows={3} value={description}
-                    placeholder="What is this project about?"
+                    placeholder="What is this project about?" disabled={viewOnly}
                     onChange={(e) => setDescription(e.target.value)} />
                 </div>
 
                 <div className="xd-conn-field">
                   <label className="xd-conn-label">Status</label>
-                  <select className="xd-conn-input" value={status} onChange={(e) => setStatus(e.target.value)}>
+                  <select className="xd-conn-input" value={status} disabled={viewOnly} onChange={(e) => setStatus(e.target.value)}>
                     {STATUSES.map((s) => <option key={s}>{s}</option>)}
                   </select>
                 </div>
@@ -231,12 +238,12 @@ export default function EditProjectPage() {
                 <div className="xd-field-row2">
                   <div className="xd-conn-field">
                     <label className="xd-conn-label">Start Date<span className="xd-req">*</span></label>
-                    <input className="xd-conn-input" type="date" value={startDate}
+                    <input className="xd-conn-input" type="date" value={startDate} disabled={viewOnly}
                       onChange={(e) => { setStartDate(e.target.value); setError(''); }} />
                   </div>
                   <div className="xd-conn-field">
                     <label className="xd-conn-label">End Date<span className="xd-req">*</span></label>
-                    <input className="xd-conn-input" type="date" value={endDate}
+                    <input className="xd-conn-input" type="date" value={endDate} disabled={viewOnly}
                       onChange={(e) => { setEndDate(e.target.value); setError(''); }} />
                   </div>
                 </div>
@@ -245,13 +252,14 @@ export default function EditProjectPage() {
               {/* ── Column 2: what to observe ── */}
               <section className="xd-create-col">
                 <h3 className="xd-col-title">What do you want to observe?<span className="xd-req">*</span></h3>
-                <p className="xd-col-hint">Select the observability domains this project will monitor.</p>
+                {!viewOnly && <p className="xd-col-hint">Select the observability domains this project will monitor.</p>}
                 <div className="xd-obs-grid">
                   {ops.map((op) => {
                     const on = selected.includes(op.code);
                     return (
                       <button key={op.code} type="button"
                         className={`xd-obs-card ${on ? 'on' : ''}`}
+                        disabled={viewOnly}
                         onClick={() => toggleOp(op.code)}>
                         <span className="xd-obs-cover" style={{ background: coverGradient(op.name) }}>
                           <span className="xd-obs-mark">{opBadge(op.name)}</span>
@@ -268,8 +276,8 @@ export default function EditProjectPage() {
 
                 {selected.length > 0 && (
                   <div className="xd-conn-field xd-col-connfield">
-                    <label className="xd-conn-label">Connections <span className="xd-muted">(optional)</span></label>
-                    <ConnectionsSelect options={credsForSelectedOps} selected={connIds} onToggle={toggleConn} />
+                    <label className="xd-conn-label">Connections {!viewOnly && <span className="xd-muted">(optional)</span>}</label>
+                    <ConnectionsSelect options={credsForSelectedOps} selected={connIds} onToggle={toggleConn} readOnly={viewOnly} />
                   </div>
                 )}
               </section>
@@ -279,8 +287,10 @@ export default function EditProjectPage() {
             <div className="xd-form-footer">
               {error && <div className="xd-form-error">{error}</div>}
               <div className="xd-conn-actions">
-                <button type="button" className="xd-btn-ghost" onClick={() => navigate(`/dashboard/projects/${projectId}`)}>Cancel</button>
-                <button type="submit" className="xd-btn">Save Changes</button>
+                <button type="button" className="xd-btn-ghost" onClick={() => navigate('/dashboard/projects')}>
+                  {viewOnly ? 'Back' : 'Cancel'}
+                </button>
+                {!viewOnly && <button type="submit" className="xd-btn">Save Changes</button>}
               </div>
             </div>
           </form>

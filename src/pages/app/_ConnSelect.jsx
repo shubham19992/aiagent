@@ -10,7 +10,7 @@ import { FiCheck, FiChevronDown, FiX } from 'react-icons/fi';
  *   onToggle: (id) => void
  */
 export default function ConnectionsSelect({
-  options, selected, onToggle,
+  options, selected, onToggle, readOnly = false,
   placeholder = '— Select connections —',
   emptyText = 'No connections available.',
 }) {
@@ -25,6 +25,21 @@ export default function ConnectionsSelect({
   if (options.length === 0) return <div className="xd-muted">{emptyText}</div>;
 
   const chosen = selected.map((id) => options.find((o) => o.id === id)).filter(Boolean);
+
+  // Read-only: show just the selected chips (no dropdown, no remove).
+  if (readOnly) {
+    if (chosen.length === 0) return <div className="xd-muted">None</div>;
+    return (
+      <div className="xd-ms-chips">
+        {chosen.map((o) => (
+          <span className="xd-ms-chip" key={o.id}>
+            {o.name}
+            {o.env_code && <span className="xd-ms-chip-env">{String(o.env_code).toUpperCase()}</span>}
+          </span>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <>
