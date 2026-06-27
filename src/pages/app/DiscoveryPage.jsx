@@ -260,16 +260,18 @@ export default function DiscoveryPage() {
                     const unhealthy = acc.health?.unhealthy ?? 0;
                     return (
                       <div className="xd-card xd-disc-sub" key={acc.id}>
-                        <h3 className="xd-subhead xd-disc-agenthead xd-disc-agenthead-incard">
-                          <FiZap /> {agent.agentId}
-                        </h3>
-                        <div className="xd-disc-summ">
-                          <span className="xd-disc-summ-cloud">{CLOUD_ICON[envCode] || <FiCloud />}{view.cloudProvider}</span>
-                          <span className="xd-disc-summ-date"><FiClock /> {fmtDateTime(view.executionTime)}</span>
+                        <div className="xd-disc-top">
+                          <div className="xd-disc-top-cloud">
+                            <span className="xd-disc-cloud-badge">{CLOUD_ICON[envCode] || <FiCloud />}</span>
+                            <div>
+                              <div className="xd-disc-cloud-name">{view.cloudProvider}</div>
+                              <div className="xd-disc-cloud-date"><FiClock /> {fmtDateTime(view.executionTime)}</div>
+                            </div>
+                          </div>
+                          <span className="xd-disc-agent-pill"><FiZap /> {agent.agentId}</span>
                         </div>
                         <div className="xd-disc-sub-head">
                           <div className="xd-disc-sub-head-l">
-                            <span className="xd-disc-sub-icon">{CLOUD_ICON[envCode] || <FiCloud />}</span>
                             <div>
                               <div className="xd-disc-sub-name">{acc.name}</div>
                               <div className="xd-disc-sub-id">{acc.id}</div>

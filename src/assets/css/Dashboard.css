@@ -455,24 +455,30 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 /* Drawer collapsed: dashboard goes full width, explorer hidden behind a tab. */
 .xd-disc-layout-collapsed { grid-template-columns: minmax(0, 1fr); }
 
-/* Inline cloud + run-date line (replaces the old hero card). */
-.xd-disc-summ {
-  display: flex; align-items: center; gap: 8px 18px; flex-wrap: wrap; margin-bottom: 4px;
+/* Card top row: cloud + date on the left, agent id on the right. */
+.xd-disc-top {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--xd-line);
 }
-.xd-disc-summ-cloud {
-  display: inline-flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800;
+.xd-disc-top-cloud { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.xd-disc-cloud-badge {
+  display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  width: 42px; height: 42px; border-radius: 11px; font-size: 22px;
+  background: rgba(245,112,28,.12); color: var(--xd-emerald);
 }
-.xd-disc-summ-cloud svg { font-size: 22px; color: var(--xd-emerald); }
-.xd-disc-summ-date {
-  display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--xd-soft);
+.xd-disc-cloud-badge svg { width: 24px; height: 24px; }
+.xd-disc-cloud-name { font-size: 18px; font-weight: 800; line-height: 1.1; }
+.xd-disc-cloud-date {
+  display: inline-flex; align-items: center; gap: 5px; margin-top: 4px;
+  font-size: 12px; color: var(--xd-soft);
 }
-/* When the line lives inside an account card, divide it from the header. */
-.xd-disc-sub > .xd-disc-summ {
-  justify-content: space-between; margin: 0 0 12px; padding-bottom: 12px;
-  border-bottom: 1px solid var(--xd-line);
+.xd-disc-agent-pill {
+  display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto;
+  font-size: 12px; font-weight: 700; color: var(--xd-soft);
+  background: var(--xd-card-2); border: 1px solid var(--xd-line);
+  border-radius: 999px; padding: 5px 12px;
 }
-/* Agent id heading rendered inside the account card. */
-.xd-disc-agenthead-incard { margin: 0 0 12px; }
+.xd-disc-agent-pill svg { color: var(--xd-emerald); }
 /* Clickable summary cards (open a resource-list detail page). */
 .xd-disc-group-click { cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .05s; }
 .xd-disc-group-click:hover { border-color: var(--xd-emerald); box-shadow: 0 2px 12px rgba(0,0,0,.18); }
