@@ -10,7 +10,6 @@ import { VscAzure } from 'react-icons/vsc';
 import { SiGooglecloud } from 'react-icons/si';
 import { PageHeader } from './_parts';
 import { runDiscovery, parseInsights } from '../../api/discovery';
-import { DISCOVERY_SAMPLE } from '../../api/discoverySample';
 import { tokenStore } from '../../api/client';
 
 const ENV_NAME = { aws: 'AWS', azure: 'Azure', gcp: 'GCP' };
@@ -184,20 +183,14 @@ export default function DiscoveryPage() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [usingSample, setUsingSample] = useState(false);
 
   useEffect(() => {
     let alive = true;
     setError('');
-    setUsingSample(false);
-    const hasAccounts = (res) =>
-      res && Array.isArray(res.results) &&
-      res.results.some((a) => (a?.data?.recommendations?.accounts || []).length > 0);
 
     // Discovery already came back with the connect call — render it directly.
     if (preloaded) {
       setResult(preloaded);
-      setUsingSample(!hasAccounts(preloaded));
       setLoading(false);
       return () => { alive = false; };
     }
@@ -210,27 +203,13 @@ export default function DiscoveryPage() {
       userId: me.id || me.user_id || me.uuid || '',
       projectId: connection?.id || '',
     })
-      .then((res) => {
-        if (!alive) return;
-        // Keep the real API response for the left-side cards exactly as
-        // before. The right-side tree falls back to the sample only when the
-        // response carries no discovered accounts, so it's never blank.
-        setResult(res || {});
-        setUsingSample(!hasAccounts(res));
-        setLoading(false);
-      })
-      .catch(() => {
-        // Service unreachable: preview the sample so the layout still renders.
-        if (!alive) return;
-        setResult(DISCOVERY_SAMPLE);
-        setUsingSample(true);
-        setLoading(false);
-      });
+      .then((res) => { if (alive) { setResult(res || {}); setLoading(false); } })
+      .catch((err) => { if (alive) { setError(err?.message || 'Discovery failed.'); setLoading(false); } });
     return () => { alive = false; };
   }, [envCode, connection, preloaded]);
 
-  // What to render: the real response, or the sample when there's nothing.
-  const view = usingSample ? DISCOVERY_SAMPLE : (result || {});
+  // What to render.
+  const view = result || {};
 
   // Open a resource-list detail page for a category (or all resources of an
   // account). The resources are carried in nav state — no refetch needed.
@@ -277,12 +256,6 @@ export default function DiscoveryPage() {
                 </div>
               </div>
             </div>
-
-            {usingSample && (
-              <div className="xd-disc-sample-note">
-                <FiAlertTriangle /> Showing sample discovery data — the live response had no resources.
-              </div>
-            )}
 
             <div className="xd-disc-layout">
             <div className="xd-disc-main-col">
