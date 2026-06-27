@@ -4,6 +4,10 @@ import {
   FiArrowLeft, FiAlertTriangle, FiClock, FiMapPin, FiLayers, FiActivity, FiBox,
   FiRefreshCw, FiGrid,
 } from 'react-icons/fi';
+import {
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell,
+  AreaChart, Area, PieChart, Pie, Legend,
+} from 'recharts';
 import { PageHeader } from './_parts';
 
 const ENV_NAME = { aws: 'AWS', azure: 'Azure', gcp: 'GCP' };
@@ -17,10 +21,17 @@ const fmtDateTime = (d) => {
 // Grafana-ish categorical palette.
 const COLORS = ['#7eb26d', '#eab839', '#6ed0e0', '#ef843c', '#e24d42', '#1f78c1', '#ba43a9', '#705da0', '#508642', '#cca300'];
 
+// Shared dark tooltip styling for all recharts panels.
+const TT = {
+  contentStyle: { background: '#181b1f', border: '1px solid #2e3338', borderRadius: 6, color: '#d8d9da', fontSize: 12 },
+  itemStyle: { color: '#d8d9da' },
+  labelStyle: { color: '#9fa7b3' },
+};
+
 /** Panel shell — Grafana panel: header + body. */
-function Panel({ title, icon, className = '', children }) {
+function Panel({ title, icon, children }) {
   return (
-    <div className={`xg-panel ${className}`}>
+    <div className="xg-panel">
       <div className="xg-panel-head">{icon}<span>{title}</span></div>
       <div className="xg-panel-body">{children}</div>
     </div>
@@ -36,90 +47,93 @@ function StatPanel({ label, value, tone }) {
   );
 }
 
-/** Horizontal bar-gauge list (Grafana "Bar gauge"). */
-function BarGauge({ data, unit = '' }) {
-  const max = Math.max(1, ...data.map((d) => d.count));
-  if (!data.length) return <div className="xg-empty">No data</div>;
+const Empty = () => <div className="xg-empty">No data</div>;
+
+/** Horizontal bar chart (recharts). */
+function CategoryBars({ data }) {
+  if (!data.length) return <Empty />;
   return (
-    <div className="xg-bars">
-      {data.map((d, i) => (
-        <div className="xg-bar-row" key={d.name}>
-          <span className="xg-bar-label" title={d.name}>{d.name}</span>
-          <span className="xg-bar-track">
-            <span className="xg-bar-fill" style={{ width: `${(d.count / max) * 100}%`, background: COLORS[i % COLORS.length] }} />
-          </span>
-          <span className="xg-bar-val">{d.count}{unit}</span>
-        </div>
-      ))}
-    </div>
+    <ResponsiveContainer width="100%" height={Math.max(170, data.length * 38)}>
+      <BarChart layout="vertical" data={data} margin={{ top: 4, right: 18, left: 4, bottom: 4 }}>
+        <CartesianGrid horizontal={false} stroke="#23272e" />
+        <XAxis type="number" tick={{ fill: '#9fa7b3', fontSize: 11 }} stroke="#3a3f44" allowDecimals={false} />
+        <YAxis type="category" dataKey="name" width={120} tick={{ fill: '#c7ccd1', fontSize: 11 }} stroke="#3a3f44" />
+        <Tooltip {...TT} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
+        <Bar dataKey="count" radius={[0, 3, 3, 0]} maxBarSize={26}>
+          {data.map((d, i) => <Cell key={d.name} fill={COLORS[i % COLORS.length]} />)}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
   );
 }
 
-/** SVG area/line chart (Grafana "Time series" look) over a categorical axis. */
-function AreaChart({ data }) {
-  if (!data.length) return <div className="xg-empty">No data</div>;
-  const W = 100, H = 42, pad = 4;
-  const max = Math.max(1, ...data.map((d) => d.count));
-  const n = data.length;
-  const x = (i) => (n === 1 ? W / 2 : pad + (i / (n - 1)) * (W - pad * 2));
-  const y = (v) => H - pad - (v / max) * (H - pad * 2);
-  const pts = data.map((d, i) => `${x(i)},${y(d.count)}`);
-  const line = `M ${pts.join(' L ')}`;
-  const area = `M ${x(0)},${H - pad} L ${pts.join(' L ')} L ${x(n - 1)},${H - pad} Z`;
+/** Area / time-series chart (recharts). */
+function RegionArea({ data }) {
+  if (!data.length) return <Empty />;
   return (
-    <div className="xg-area">
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="xg-area-svg">
+    <ResponsiveContainer width="100%" height={180}>
+      <AreaChart data={data} margin={{ top: 8, right: 14, left: -14, bottom: 0 }}>
         <defs>
           <linearGradient id="xgArea" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#6ed0e0" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="#6ed0e0" stopOpacity="0.02" />
+            <stop offset="5%" stopColor="#6ed0e0" stopOpacity={0.5} />
+            <stop offset="95%" stopColor="#6ed0e0" stopOpacity={0.04} />
           </linearGradient>
         </defs>
-        {[0.25, 0.5, 0.75].map((g) => (
-          <line key={g} x1="0" x2={W} y1={H * g} y2={H * g} stroke="#23272e" strokeWidth="0.3" />
-        ))}
-        <path d={area} fill="url(#xgArea)" />
-        <path d={line} fill="none" stroke="#6ed0e0" strokeWidth="0.7" vectorEffect="non-scaling-stroke" />
-        {data.map((d, i) => <circle key={d.name} cx={x(i)} cy={y(d.count)} r="0.8" fill="#6ed0e0" />)}
-      </svg>
-      <div className="xg-area-labels">
-        {data.map((d) => <span key={d.name} title={`${d.name}: ${d.count}`}>{d.name}</span>)}
-      </div>
-    </div>
+        <CartesianGrid strokeDasharray="3 3" stroke="#23272e" />
+        <XAxis dataKey="name" tick={{ fill: '#9fa7b3', fontSize: 10 }} stroke="#3a3f44" interval={0} />
+        <YAxis tick={{ fill: '#9fa7b3', fontSize: 11 }} stroke="#3a3f44" allowDecimals={false} />
+        <Tooltip {...TT} cursor={{ stroke: '#3a3f44' }} />
+        <Area type="monotone" dataKey="count" stroke="#6ed0e0" strokeWidth={2} fill="url(#xgArea)" dot={{ r: 2, fill: '#6ed0e0' }} />
+      </AreaChart>
+    </ResponsiveContainer>
   );
 }
 
-/** SVG-free pie via conic-gradient (Grafana "Pie chart"). */
-function PieChart({ data }) {
-  const total = data.reduce((n, d) => n + d.count, 0);
-  if (!total) return <div className="xg-empty">No data</div>;
-  let acc = 0;
-  const stops = data.map((d, i) => {
-    const start = (acc / total) * 360;
-    acc += d.count;
-    const end = (acc / total) * 360;
-    return `${COLORS[i % COLORS.length]} ${start}deg ${end}deg`;
-  }).join(', ');
+/** Donut pie chart (recharts). */
+function TypePie({ data }) {
+  if (!data.length) return <Empty />;
   return (
-    <div className="xg-pie-wrap">
-      <div className="xg-pie" style={{ background: `conic-gradient(${stops})` }} />
-      <div className="xg-pie-legend">
-        {data.map((d, i) => (
-          <span key={d.name}>
-            <i className="xg-dot" style={{ background: COLORS[i % COLORS.length] }} />
-            <span className="xg-pie-name" title={d.name}>{d.name}</span>
-            <b>{Math.round((d.count / total) * 100)}%</b>
-          </span>
-        ))}
+    <ResponsiveContainer width="100%" height={210}>
+      <PieChart>
+        <Pie data={data} dataKey="count" nameKey="name" innerRadius={48} outerRadius={78} paddingAngle={1} stroke="#181b1f">
+          {data.map((d, i) => <Cell key={d.name} fill={COLORS[i % COLORS.length]} />)}
+        </Pie>
+        <Tooltip {...TT} />
+        <Legend wrapperStyle={{ fontSize: 11, color: '#c7ccd1' }} />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+}
+
+/** Health donut (recharts) with a centered % label. */
+function HealthDonut({ healthy, unhealthy, pct }) {
+  const data = [{ name: 'Healthy', value: healthy }, { name: 'Unhealthy', value: unhealthy }];
+  return (
+    <div className="xg-gauge-wrap">
+      <div className="xg-donut-rc">
+        <ResponsiveContainer width={130} height={130}>
+          <PieChart>
+            <Pie data={data} dataKey="value" innerRadius={42} outerRadius={62} startAngle={90} endAngle={-270} stroke="none">
+              <Cell fill="#73bf69" />
+              <Cell fill="#f2495c" />
+            </Pie>
+            <Tooltip {...TT} />
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="xg-donut-center"><span className="xg-donut-pct">{pct}%</span><span className="xg-donut-sub">healthy</span></div>
+      </div>
+      <div className="xg-gauge-legend">
+        <span><i className="xg-dot xg-dot-ok" /> Healthy {healthy}</span>
+        <span><i className="xg-dot xg-dot-bad" /> Unhealthy {unhealthy}</span>
       </div>
     </div>
   );
 }
 
-/** Table panel (Grafana "Table"). */
+/** Table panel. */
 function TablePanel({ rows }) {
   const max = Math.max(1, ...rows.map((r) => r.count));
-  if (!rows.length) return <div className="xg-empty">No data</div>;
+  if (!rows.length) return <Empty />;
   return (
     <table className="xg-table">
       <thead><tr><th>Resource Type</th><th className="xg-table-num">Count</th><th>Share</th></tr></thead>
@@ -226,23 +240,11 @@ export default function DiscoveryExplorePage() {
             <StatPanel label="Healthy" value={healthy} tone="ok" />
             <StatPanel label="Unhealthy" value={unhealthy} tone={unhealthy ? 'bad' : undefined} />
 
-            <div className="xg-w2">
-              <Panel title="Health" icon={<FiActivity />}>
-                <div className="xg-gauge-wrap">
-                  <div className="xg-donut" style={{ '--p': `${healthPct}%` }}>
-                    <div className="xg-donut-hole"><span className="xg-donut-pct">{healthPct}%</span><span className="xg-donut-sub">healthy</span></div>
-                  </div>
-                  <div className="xg-gauge-legend">
-                    <span><i className="xg-dot xg-dot-ok" /> Healthy {healthy}</span>
-                    <span><i className="xg-dot xg-dot-bad" /> Unhealthy {unhealthy}</span>
-                  </div>
-                </div>
-              </Panel>
-            </div>
-            <div className="xg-w4"><Panel title="Resources by Category" icon={<FiBox />}><BarGauge data={byCategory} /></Panel></div>
+            <div className="xg-w2"><Panel title="Health" icon={<FiActivity />}><HealthDonut healthy={healthy} unhealthy={unhealthy} pct={healthPct} /></Panel></div>
+            <div className="xg-w4"><Panel title="Resources by Category" icon={<FiBox />}><CategoryBars data={byCategory} /></Panel></div>
 
-            <div className="xg-w3"><Panel title="Resources by Region" icon={<FiMapPin />}><AreaChart data={byRegion} /></Panel></div>
-            <div className="xg-w3"><Panel title="Resource Type Distribution" icon={<FiLayers />}><PieChart data={byType} /></Panel></div>
+            <div className="xg-w3"><Panel title="Resources by Region" icon={<FiMapPin />}><RegionArea data={byRegion} /></Panel></div>
+            <div className="xg-w3"><Panel title="Resource Type Distribution" icon={<FiLayers />}><TypePie data={byType} /></Panel></div>
 
             <div className="xg-w6"><Panel title="Top Resource Types" icon={<FiLayers />}><TablePanel rows={byType} /></Panel></div>
           </div>
