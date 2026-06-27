@@ -254,16 +254,15 @@ export default function DiscoveryPage() {
               const accounts = agent.data?.recommendations?.accounts || [];
               return (
                 <div key={agent.agentId}>
-                  <h3 className="xd-subhead xd-disc-agenthead">
-                    <FiZap /> {agent.agentId}
-                  </h3>
-
                   {accounts.map((acc) => {
                     const cats = acc.categories || [];
                     const insights = parseInsights(acc.insights);
                     const unhealthy = acc.health?.unhealthy ?? 0;
                     return (
                       <div className="xd-card xd-disc-sub" key={acc.id}>
+                        <h3 className="xd-subhead xd-disc-agenthead xd-disc-agenthead-incard">
+                          <FiZap /> {agent.agentId}
+                        </h3>
                         <div className="xd-disc-summ">
                           <span className="xd-disc-summ-cloud">{CLOUD_ICON[envCode] || <FiCloud />}{view.cloudProvider}</span>
                           <span className="xd-disc-summ-date"><FiClock /> {fmtDateTime(view.executionTime)}</span>

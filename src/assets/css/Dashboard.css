@@ -471,6 +471,8 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
   justify-content: space-between; margin: 0 0 12px; padding-bottom: 12px;
   border-bottom: 1px solid var(--xd-line);
 }
+/* Agent id heading rendered inside the account card. */
+.xd-disc-agenthead-incard { margin: 0 0 12px; }
 /* Clickable summary cards (open a resource-list detail page). */
 .xd-disc-group-click { cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .05s; }
 .xd-disc-group-click:hover { border-color: var(--xd-emerald); box-shadow: 0 2px 12px rgba(0,0,0,.18); }
