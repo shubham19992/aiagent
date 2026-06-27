@@ -249,17 +249,10 @@ export default function DiscoveryPage() {
           <>
             <div className={`xd-disc-layout${treeOpen ? '' : ' xd-disc-layout-collapsed'}`}>
             <div className="xd-disc-main-col">
-            {/* hero (left-column width only) */}
-            <div className="xd-card xd-disc-hero">
-              <span className="xd-disc-hero-cloud">{CLOUD_ICON[envCode] || <FiCloud />}</span>
-              <div className="xd-disc-hero-main">
-                <div className="xd-disc-hero-top">
-                  <span className="xd-disc-hero-cloudname">{view.cloudProvider}</span>
-                </div>
-                <div className="xd-disc-meta">
-                  <span className="xd-disc-meta-item">Executed<b>{fmtDateTime(view.executionTime)}</b></span>
-                </div>
-              </div>
+            {/* cloud + run date — shown inline above the agent section */}
+            <div className="xd-disc-summ">
+              <span className="xd-disc-summ-cloud">{CLOUD_ICON[envCode] || <FiCloud />}{view.cloudProvider}</span>
+              <span className="xd-disc-summ-date"><FiClock /> {fmtDateTime(view.executionTime)}</span>
             </div>
 
             {/* per-agent → per-account */}

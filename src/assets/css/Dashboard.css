@@ -454,6 +454,18 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 }
 /* Drawer collapsed: dashboard goes full width, explorer hidden behind a tab. */
 .xd-disc-layout-collapsed { grid-template-columns: minmax(0, 1fr); }
+
+/* Inline cloud + run-date line (replaces the old hero card). */
+.xd-disc-summ {
+  display: flex; align-items: center; gap: 8px 18px; flex-wrap: wrap; margin-bottom: 4px;
+}
+.xd-disc-summ-cloud {
+  display: inline-flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800;
+}
+.xd-disc-summ-cloud svg { font-size: 22px; color: var(--xd-emerald); }
+.xd-disc-summ-date {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--xd-soft);
+}
 /* Clickable summary cards (open a resource-list detail page). */
 .xd-disc-group-click { cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .05s; }
 .xd-disc-group-click:hover { border-color: var(--xd-emerald); box-shadow: 0 2px 12px rgba(0,0,0,.18); }
