@@ -16,6 +16,11 @@ import { tokenStore } from '../../api/client';
 const ENV_NAME = { aws: 'AWS', azure: 'Azure', gcp: 'GCP' };
 const CLOUD = { aws: 'AWS', azure: 'AZURE', gcp: 'GCP' };
 const CLOUD_ICON = { aws: <FaAws />, azure: <VscAzure />, gcp: <SiGooglecloud /> };
+// Icon per discovery category id (compute/storage/database/network/...).
+const CAT_ICON = {
+  compute: <FiCpu />, storage: <FiHardDrive />, database: <FiDatabase />,
+  network: <FiShare2 />, containers: <FiBox />, other: <FiBox />,
+};
 
 const fmtDateTime = (d) => {
   if (!d) return '—';
@@ -217,6 +222,9 @@ export default function DiscoveryPage() {
     return () => { alive = false; };
   }, [envCode, connection, preloaded]);
 
+  // What to render: the real response, or the sample when there's nothing.
+  const view = usingSample ? DISCOVERY_SAMPLE : (result || {});
+
   return (
     <>
       <PageHeader
@@ -247,79 +255,62 @@ export default function DiscoveryPage() {
               <span className="xd-disc-hero-cloud">{CLOUD_ICON[envCode] || <FiCloud />}</span>
               <div className="xd-disc-hero-main">
                 <div className="xd-disc-hero-top">
-                  <span className="xd-disc-hero-cloudname">{result.cloudProvider}</span>
+                  <span className="xd-disc-hero-cloudname">{view.cloudProvider}</span>
                 </div>
                 <div className="xd-disc-meta">
-                  <span className="xd-disc-meta-item">Executed<b>{fmtDateTime(result.executionTime)}</b></span>
+                  <span className="xd-disc-meta-item">Executed<b>{fmtDateTime(view.executionTime)}</b></span>
                 </div>
               </div>
             </div>
 
             {usingSample && (
               <div className="xd-disc-sample-note">
-                <FiAlertTriangle /> Resource Explorer is showing sample data — the discovery response had no resource tree.
+                <FiAlertTriangle /> Showing sample discovery data — the live response had no resources.
               </div>
             )}
 
             <div className="xd-disc-layout">
             <div className="xd-disc-main-col">
-            {/* per-agent → per-subscription */}
-            {(result.results || []).map((agent) => {
-              const subs = agent.data?.recommendations?.subscriptions || [];
+            {/* per-agent → per-account */}
+            {(view.results || []).filter((a) => a.status === 'SUCCESS').map((agent) => {
+              const accounts = agent.data?.recommendations?.accounts || [];
               return (
                 <div key={agent.agentId}>
                   <h3 className="xd-subhead xd-disc-agenthead">
                     <FiZap /> {agent.agentId}
                   </h3>
 
-                  {subs.map((sub) => {
-                    const insights = parseInsights(sub.insights);
-                    const unhealthy = sub.health?.unhealthyResources ?? 0;
+                  {accounts.map((acc) => {
+                    const cats = acc.categories || [];
+                    const insights = parseInsights(acc.insights);
+                    const unhealthy = acc.health?.unhealthy ?? 0;
                     return (
-                      <div className="xd-card xd-disc-sub" key={sub.subscriptionId}>
+                      <div className="xd-card xd-disc-sub" key={acc.id}>
                         <div className="xd-disc-sub-head">
                           <div className="xd-disc-sub-head-l">
                             <span className="xd-disc-sub-icon">{CLOUD_ICON[envCode] || <FiCloud />}</span>
                             <div>
-                              <div className="xd-disc-sub-name">{sub.subscriptionName}</div>
-                              <div className="xd-disc-sub-id">{sub.subscriptionId}</div>
+                              <div className="xd-disc-sub-name">{acc.name}</div>
+                              <div className="xd-disc-sub-id">{acc.id}</div>
                             </div>
                           </div>
-                          <span className={`xd-status ${sub.state === 'Enabled' ? 'xd-status-active' : 'xd-status-onhold'}`}>{sub.state}</span>
+                          {acc.type && <span className="xd-status xd-status-active">{acc.type}</span>}
                         </div>
 
                         <StatGroup icon={<FiBox />} title="Overview" stats={[
-                          { label: 'Total Resources', value: sub.summary?.totalResources ?? 0 },
-                          { label: 'Resource Groups', value: sub.summary?.resourceGroups ?? 0 },
-                          { label: 'Regions Used', value: sub.summary?.regionsUsed ?? 0 },
-                          { label: 'Resource Types', value: sub.summary?.resourceTypes ?? 0 },
+                          { label: 'Total Resources', value: acc.summary?.totalResources ?? 0 },
+                          { label: 'Resource Groups', value: acc.summary?.resourceGroups ?? 0 },
+                          { label: 'Regions', value: acc.summary?.regions ?? 0 },
                         ]} />
 
                         <div className="xd-disc-cols">
-                          <StatGroup icon={<FiCpu />} title="Compute" stats={[
-                            { label: 'Total VMs', value: sub.compute?.totalVMs ?? 0 },
-                            { label: 'Linux', value: sub.compute?.linuxVMs ?? 0 },
-                            { label: 'Windows', value: sub.compute?.windowsVMs ?? 0 },
-                          ]} />
-                          <StatGroup icon={<FiHardDrive />} title="Storage" stats={[
-                            { label: 'Storage Accounts', value: sub.storage?.storageAccounts ?? 0 },
-                          ]} />
-                          <StatGroup icon={<FiDatabase />} title="Databases" stats={[
-                            { label: 'SQL', value: sub.databases?.sqlDatabases ?? 0 },
-                            { label: 'MySQL', value: sub.databases?.mysqlServers ?? 0 },
-                            { label: 'Postgres', value: sub.databases?.postgresServers ?? 0 },
-                          ]} />
-                          <StatGroup icon={<FiShare2 />} title="Networking" stats={[
-                            { label: 'VNets', value: sub.networking?.vnets ?? 0 },
-                            { label: 'Public IPs', value: sub.networking?.publicIps ?? 0 },
-                            { label: 'NSGs', value: sub.networking?.nsgs ?? 0 },
-                            { label: 'Load Balancers', value: sub.networking?.loadBalancers ?? 0 },
-                          ]} />
-                          <StatGroup icon={<FiBox />} title="Containers" stats={[
-                            { label: 'AKS Clusters', value: sub.containers?.aksClusters ?? 0 },
-                          ]} />
+                          {cats.map((c) => (
+                            <StatGroup key={c.id} icon={CAT_ICON[c.id] || <FiBox />} title={c.name} stats={[
+                              { label: 'Resources', value: c.count ?? (c.resources || []).length },
+                            ]} />
+                          ))}
                           <StatGroup icon={<FiActivity />} title="Health" stats={[
-                            { label: 'Healthy', value: sub.health?.healthyResources ?? 0, tone: 'ok' },
+                            { label: 'Healthy', value: acc.health?.healthy ?? 0, tone: 'ok' },
                             { label: 'Unhealthy', value: unhealthy, tone: unhealthy ? 'bad' : undefined },
                           ]} />
                         </div>
@@ -353,9 +344,9 @@ export default function DiscoveryPage() {
               <div className="xd-disc-tree-panel xd-card">
                 <div className="xd-disc-tree-head">
                   <span className="xd-disc-tree-title">Resources</span>
-                  <span className="xd-disc-tree-date"><FiClock /> {fmtDateTime(result.executionTime)}</span>
+                  <span className="xd-disc-tree-date"><FiClock /> {fmtDateTime(view.executionTime)}</span>
                 </div>
-                <DiscoveryTree result={usingSample ? DISCOVERY_SAMPLE : result} cloudIcon={CLOUD_ICON[envCode] || <FiCloud />} />
+                <DiscoveryTree result={view} cloudIcon={CLOUD_ICON[envCode] || <FiCloud />} />
               </div>
             </aside>
             </div>
