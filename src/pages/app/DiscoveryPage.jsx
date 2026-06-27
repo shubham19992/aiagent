@@ -4,6 +4,7 @@ import {
   FiAlertTriangle, FiArrowLeft, FiCpu, FiDatabase, FiHardDrive,
   FiShare2, FiBox, FiActivity, FiZap, FiCloud, FiLoader,
   FiChevronRight, FiChevronDown, FiClock, FiFolder, FiServer, FiMapPin,
+  FiChevronsRight, FiChevronsLeft,
 } from 'react-icons/fi';
 import { FaAws } from 'react-icons/fa';
 import { VscAzure } from 'react-icons/vsc';
@@ -183,6 +184,8 @@ export default function DiscoveryPage() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  // Resource Explorer is a collapsible right-side drawer.
+  const [treeOpen, setTreeOpen] = useState(true);
 
   useEffect(() => {
     let alive = true;
@@ -244,7 +247,9 @@ export default function DiscoveryPage() {
           <div className="xd-empty"><FiAlertTriangle /><p>{error}</p></div>
         ) : result ? (
           <>
-            {/* hero */}
+            <div className={`xd-disc-layout${treeOpen ? '' : ' xd-disc-layout-collapsed'}`}>
+            <div className="xd-disc-main-col">
+            {/* hero (left-column width only) */}
             <div className="xd-card xd-disc-hero">
               <span className="xd-disc-hero-cloud">{CLOUD_ICON[envCode] || <FiCloud />}</span>
               <div className="xd-disc-hero-main">
@@ -257,8 +262,6 @@ export default function DiscoveryPage() {
               </div>
             </div>
 
-            <div className="xd-disc-layout">
-            <div className="xd-disc-main-col">
             {/* per-agent → per-account */}
             {(view.results || []).filter((a) => a.status === 'SUCCESS').map((agent) => {
               const accounts = agent.data?.recommendations?.accounts || [];
@@ -335,19 +338,37 @@ export default function DiscoveryPage() {
             })}
             </div>
 
-            {/* right-side drill-down resource explorer */}
-            <aside className="xd-disc-tree-col">
-              <h3 className="xd-subhead xd-disc-agenthead">
-                <FiShare2 /> Resource Explorer
-              </h3>
-              <div className="xd-disc-tree-panel xd-card">
-                <div className="xd-disc-tree-head">
-                  <span className="xd-disc-tree-title">Resources</span>
-                  <span className="xd-disc-tree-date"><FiClock /> {fmtDateTime(view.executionTime)}</span>
+            {/* right-side drill-down resource explorer (collapsible drawer) */}
+            {treeOpen ? (
+              <aside className="xd-disc-tree-col">
+                <div className="xd-disc-tree-panel xd-card">
+                  <div className="xd-disc-tree-head">
+                    <span className="xd-disc-tree-title"><FiShare2 /> Resource Explorer</span>
+                    <button
+                      type="button"
+                      className="xd-disc-tree-toggle"
+                      onClick={() => setTreeOpen(false)}
+                      title="Collapse"
+                      aria-label="Collapse Resource Explorer"
+                    >
+                      <FiChevronsRight />
+                    </button>
+                  </div>
+                  <div className="xd-disc-tree-date"><FiClock /> {fmtDateTime(view.executionTime)}</div>
+                  <DiscoveryTree result={view} cloudIcon={CLOUD_ICON[envCode] || <FiCloud />} />
                 </div>
-                <DiscoveryTree result={view} cloudIcon={CLOUD_ICON[envCode] || <FiCloud />} />
-              </div>
-            </aside>
+              </aside>
+            ) : (
+              <button
+                type="button"
+                className="xd-disc-tree-reopen"
+                onClick={() => setTreeOpen(true)}
+                title="Open Resource Explorer"
+                aria-label="Open Resource Explorer"
+              >
+                <FiChevronsLeft /><FiShare2 />
+              </button>
+            )}
             </div>
           </>
         ) : null}

@@ -450,8 +450,10 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 /* ── discovery: two-column layout + right-side resource tree ── */
 .xd-disc-layout {
   display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start;
-  margin-top: 18px;
+  margin-top: 18px; position: relative;
 }
+/* Drawer collapsed: dashboard goes full width, explorer hidden behind a tab. */
+.xd-disc-layout-collapsed { grid-template-columns: minmax(0, 1fr); }
 /* Clickable summary cards (open a resource-list detail page). */
 .xd-disc-group-click { cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .05s; }
 .xd-disc-group-click:hover { border-color: var(--xd-emerald); box-shadow: 0 2px 12px rgba(0,0,0,.18); }
@@ -486,23 +488,35 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 }
 .xd-disc-res-id { font-size: 10.5px; color: var(--xd-soft); word-break: break-all; opacity: .8; }
 .xd-disc-main-col { min-width: 0; }
-/* Both columns start with a heading; zero the top margin so the cards
-   underneath line up across the left and right columns. */
-.xd-disc-main-col > div:first-child .xd-disc-agenthead,
-.xd-disc-tree-col > .xd-disc-agenthead { margin-top: 0; }
 .xd-disc-tree-col { position: sticky; top: 16px; min-width: 0; }
 .xd-disc-tree-panel { padding: 0; overflow: hidden; }
 .xd-disc-tree-head {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
   padding: 14px 16px; border-bottom: 1px solid var(--xd-line);
 }
 .xd-disc-tree-title {
   display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800;
 }
 .xd-disc-tree-title svg { color: var(--xd-emerald); }
-.xd-disc-tree-date {
-  display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--xd-soft);
+.xd-disc-tree-toggle {
+  display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  background: transparent; border: 0; cursor: pointer; color: var(--xd-soft);
+  font-size: 17px; padding: 2px; border-radius: 6px;
 }
+.xd-disc-tree-toggle:hover { color: var(--xd-emerald); background: var(--xd-card-2); }
+.xd-disc-tree-date {
+  display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--xd-soft);
+  padding: 10px 16px; border-bottom: 1px solid var(--xd-line);
+}
+/* Collapsed-drawer reopen tab, pinned to the top-right of the dashboard. */
+.xd-disc-tree-reopen {
+  position: absolute; top: 0; right: 0;
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--xd-card); border: 1px solid var(--xd-line); border-radius: 10px;
+  padding: 9px 12px; cursor: pointer; color: var(--xd-ink); font-size: 15px;
+}
+.xd-disc-tree-reopen:hover { border-color: var(--xd-emerald); color: var(--xd-emerald); }
+.xd-disc-tree-reopen svg:first-child { color: var(--xd-emerald); }
 .xd-tree { padding: 8px; max-height: calc(100vh - 180px); overflow: auto; }
 .xd-tree-empty { padding: 24px 16px; text-align: center; font-size: 13px; color: var(--xd-soft); }
 .xd-tree-node { display: flex; flex-direction: column; }
@@ -532,8 +546,8 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 }
 
 @media (max-width: 1100px) {
-  .xd-disc-layout { grid-template-columns: 1fr; }
-  .xd-disc-tree-panel { position: static; }
+  .xd-disc-layout:not(.xd-disc-layout-collapsed) { grid-template-columns: 1fr; }
+  .xd-disc-tree-col { position: static; }
   .xd-tree { max-height: 460px; }
 }
 
