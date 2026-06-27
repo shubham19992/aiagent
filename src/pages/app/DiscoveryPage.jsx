@@ -249,12 +249,6 @@ export default function DiscoveryPage() {
           <>
             <div className={`xd-disc-layout${treeOpen ? '' : ' xd-disc-layout-collapsed'}`}>
             <div className="xd-disc-main-col">
-            {/* cloud + run date — shown inline above the agent section */}
-            <div className="xd-disc-summ">
-              <span className="xd-disc-summ-cloud">{CLOUD_ICON[envCode] || <FiCloud />}{view.cloudProvider}</span>
-              <span className="xd-disc-summ-date"><FiClock /> {fmtDateTime(view.executionTime)}</span>
-            </div>
-
             {/* per-agent → per-account */}
             {(view.results || []).filter((a) => a.status === 'SUCCESS').map((agent) => {
               const accounts = agent.data?.recommendations?.accounts || [];
@@ -270,6 +264,10 @@ export default function DiscoveryPage() {
                     const unhealthy = acc.health?.unhealthy ?? 0;
                     return (
                       <div className="xd-card xd-disc-sub" key={acc.id}>
+                        <div className="xd-disc-summ">
+                          <span className="xd-disc-summ-cloud">{CLOUD_ICON[envCode] || <FiCloud />}{view.cloudProvider}</span>
+                          <span className="xd-disc-summ-date"><FiClock /> {fmtDateTime(view.executionTime)}</span>
+                        </div>
                         <div className="xd-disc-sub-head">
                           <div className="xd-disc-sub-head-l">
                             <span className="xd-disc-sub-icon">{CLOUD_ICON[envCode] || <FiCloud />}</span>
