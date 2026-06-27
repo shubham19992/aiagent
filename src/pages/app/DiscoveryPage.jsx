@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useLocation, useOutletContext, Link } from 'react-router-dom';
+import { useParams, useLocation, useOutletContext, useNavigate, Link } from 'react-router-dom';
 import {
   FiAlertTriangle, FiArrowLeft, FiCpu, FiDatabase, FiHardDrive,
   FiShare2, FiBox, FiActivity, FiZap, FiCloud, FiLoader,
@@ -57,9 +57,15 @@ function DiscoveryLoading() {
   );
 }
 
-function StatGroup({ icon, title, stats }) {
+function StatGroup({ icon, title, stats, onClick }) {
   return (
-    <div className="xd-disc-group">
+    <div
+      className={`xd-disc-group${onClick ? ' xd-disc-group-click' : ''}`}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
+    >
       <div className="xd-disc-group-head">{icon}<span>{title}</span></div>
       <div className="xd-stat-grid">
         {stats.map((s) => (
@@ -162,6 +168,7 @@ function DiscoveryTree({ result, cloudIcon }) {
 export default function DiscoveryPage() {
   const { opCode, envCode } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const { ops } = useOutletContext();
   const connection = location.state?.connection || null;
   // Save & Connect already ran discovery in one call and passes the result
@@ -224,6 +231,14 @@ export default function DiscoveryPage() {
 
   // What to render: the real response, or the sample when there's nothing.
   const view = usingSample ? DISCOVERY_SAMPLE : (result || {});
+
+  // Open a resource-list detail page for a category (or all resources of an
+  // account). The resources are carried in nav state — no refetch needed.
+  const openResources = (slug, title, resources) => {
+    navigate(`/dashboard/observability/${opCode}/${envCode}/discovery/${slug}`, {
+      state: { title, resources, cloudProvider: view.cloudProvider, executionTime: view.executionTime, envCode },
+    });
+  };
 
   return (
     <>
@@ -297,17 +312,28 @@ export default function DiscoveryPage() {
                           {acc.type && <span className="xd-status xd-status-active">{acc.type}</span>}
                         </div>
 
-                        <StatGroup icon={<FiBox />} title="Overview" stats={[
-                          { label: 'Total Resources', value: acc.summary?.totalResources ?? 0 },
-                          { label: 'Resource Groups', value: acc.summary?.resourceGroups ?? 0 },
-                          { label: 'Regions', value: acc.summary?.regions ?? 0 },
-                        ]} />
+                        <StatGroup
+                          icon={<FiBox />}
+                          title="Overview"
+                          onClick={() => openResources('all', `${acc.name} · All Resources`, cats.flatMap((c) => c.resources || []))}
+                          stats={[
+                            { label: 'Total Resources', value: acc.summary?.totalResources ?? 0 },
+                            { label: 'Resource Groups', value: acc.summary?.resourceGroups ?? 0 },
+                            { label: 'Regions', value: acc.summary?.regions ?? 0 },
+                          ]}
+                        />
 
                         <div className="xd-disc-cols">
                           {cats.map((c) => (
-                            <StatGroup key={c.id} icon={CAT_ICON[c.id] || <FiBox />} title={c.name} stats={[
-                              { label: 'Resources', value: c.count ?? (c.resources || []).length },
-                            ]} />
+                            <StatGroup
+                              key={c.id}
+                              icon={CAT_ICON[c.id] || <FiBox />}
+                              title={c.name}
+                              onClick={() => openResources(c.id, `${acc.name} · ${c.name}`, c.resources || [])}
+                              stats={[
+                                { label: 'Resources', value: c.count ?? (c.resources || []).length },
+                              ]}
+                            />
                           ))}
                           <StatGroup icon={<FiActivity />} title="Health" stats={[
                             { label: 'Healthy', value: acc.health?.healthy ?? 0, tone: 'ok' },

@@ -458,7 +458,41 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 /* ── discovery: two-column layout + right-side resource tree ── */
 .xd-disc-layout {
   display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start;
+  margin-top: 18px;
 }
+/* Clickable summary cards (open a resource-list detail page). */
+.xd-disc-group-click { cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .05s; }
+.xd-disc-group-click:hover { border-color: var(--xd-emerald); box-shadow: 0 2px 12px rgba(0,0,0,.18); }
+.xd-disc-group-click:active { transform: translateY(1px); }
+.xd-disc-group-click:focus-visible { outline: 2px solid var(--xd-emerald); outline-offset: 2px; }
+
+/* ── discovery: resource-list detail page ── */
+.xd-disc-inline-ico { vertical-align: -2px; }
+.xd-disc-res-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.xd-disc-res-card { display: flex; flex-direction: column; gap: 12px; }
+.xd-disc-res-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.xd-disc-res-ico {
+  display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  width: 38px; height: 38px; border-radius: 10px; font-size: 18px;
+  background: rgba(245,112,28,.1); color: var(--xd-emerald);
+}
+.xd-disc-res-titles { min-width: 0; }
+.xd-disc-res-name { font-size: 15px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xd-disc-res-type {
+  display: inline-block; margin-top: 3px; font-size: 11px; font-weight: 700; color: var(--xd-soft);
+  background: var(--xd-card-2); border: 1px solid var(--xd-line); border-radius: 999px; padding: 1px 9px;
+}
+.xd-disc-res-props {
+  display: grid; grid-template-columns: 1fr; gap: 7px;
+  border-top: 1px solid var(--xd-line); padding-top: 12px;
+}
+.xd-disc-res-prop { display: flex; justify-content: space-between; gap: 12px; font-size: 12.5px; }
+.xd-disc-res-prop-k { color: var(--xd-soft); flex: 0 0 auto; }
+.xd-disc-res-prop-v {
+  color: var(--xd-ink); font-weight: 600; text-align: right;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.xd-disc-res-id { font-size: 10.5px; color: var(--xd-soft); word-break: break-all; opacity: .8; }
 .xd-disc-main-col { min-width: 0; }
 /* Both columns start with a heading; zero the top margin so the cards
    underneath line up across the left and right columns. */

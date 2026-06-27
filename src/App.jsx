@@ -18,6 +18,7 @@ import OpPage from "./pages/app/OpPage";
 import EnvPage from "./pages/app/EnvPage";
 import ConnectPage from "./pages/app/ConnectPage";
 import DiscoveryPage from "./pages/app/DiscoveryPage";
+import DiscoveryResourcesPage from "./pages/app/DiscoveryResourcesPage";
 import CreateProjectPage from "./pages/app/CreateProjectPage";
 import EditProjectPage from "./pages/app/EditProjectPage";
 import ProjectListPage from "./pages/app/ProjectListPage";
@@ -71,6 +72,7 @@ export default function App() {
           <Route path="observability/:opCode/:envCode" element={<EnvPage />} />
           <Route path="observability/:opCode/:envCode/connect" element={<ConnectPage />} />
           <Route path="observability/:opCode/:envCode/discovery" element={<DiscoveryPage />} />
+          <Route path="observability/:opCode/:envCode/discovery/:categoryId" element={<DiscoveryResourcesPage />} />
           <Route path="projects" element={<ProjectListPage />} />
           <Route path="projects/new" element={<CreateProjectPage />} />
           <Route path="projects/:projectId/edit" element={<EditProjectPage />} />
