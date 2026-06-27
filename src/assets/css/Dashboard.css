@@ -451,9 +451,15 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 
 /* ── discovery Explore: Grafana-style dashboard ── */
 .xg-main { background: #0e1116; }
-.xg-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
-.xg-col-2 { grid-column: span 3; }
-.xg-col-3 { grid-column: span 6; }
+.xg-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; align-items: stretch; }
+/* Width helpers — spans add up to 6 per row so there are no blank gaps. */
+.xg-w2 { grid-column: span 2; }
+.xg-w3 { grid-column: span 3; }
+.xg-w4 { grid-column: span 4; }
+.xg-w6 { grid-column: span 6; }
+/* These wrappers stretch their single panel to fill the row height. */
+.xg-w2, .xg-w3, .xg-w4, .xg-w6 { display: flex; min-width: 0; }
+.xg-w2 > *, .xg-w3 > *, .xg-w4 > *, .xg-w6 > * { flex: 1 1 auto; min-width: 0; }
 .xg-panel {
   grid-column: span 1; background: #181b1f; border: 1px solid #23272e; border-radius: 6px;
   padding: 14px; color: #d8d9da; min-width: 0;
@@ -496,7 +502,7 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 
 @media (max-width: 1000px) {
   .xg-grid { grid-template-columns: repeat(2, 1fr); }
-  .xg-col-2, .xg-col-3, .xg-gauge-panel { grid-column: span 2; }
+  .xg-w2, .xg-w3, .xg-w4, .xg-w6 { grid-column: span 2; }
   .xg-panel { grid-column: span 1; }
 }
 @media (max-width: 560px) {

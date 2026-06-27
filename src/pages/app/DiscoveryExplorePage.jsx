@@ -122,22 +122,24 @@ export default function DiscoveryExplorePage() {
             <StatPanel label="Healthy" value={healthy} tone="ok" />
             <StatPanel label="Unhealthy" value={unhealthy} tone={unhealthy ? 'bad' : undefined} />
 
-            <div className="xg-panel xg-gauge-panel">
-              <div className="xg-panel-head"><FiActivity /><span>Health</span></div>
-              <div className="xg-gauge-wrap">
-                <div className="xg-donut" style={{ '--p': `${healthPct}%` }}>
-                  <div className="xg-donut-hole"><span className="xg-donut-pct">{healthPct}%</span><span className="xg-donut-sub">healthy</span></div>
-                </div>
-                <div className="xg-gauge-legend">
-                  <span><i className="xg-dot xg-dot-ok" /> Healthy {healthy}</span>
-                  <span><i className="xg-dot xg-dot-bad" /> Unhealthy {unhealthy}</span>
+            <div className="xg-w2">
+              <div className="xg-panel xg-gauge-panel">
+                <div className="xg-panel-head"><FiActivity /><span>Health</span></div>
+                <div className="xg-gauge-wrap">
+                  <div className="xg-donut" style={{ '--p': `${healthPct}%` }}>
+                    <div className="xg-donut-hole"><span className="xg-donut-pct">{healthPct}%</span><span className="xg-donut-sub">healthy</span></div>
+                  </div>
+                  <div className="xg-gauge-legend">
+                    <span><i className="xg-dot xg-dot-ok" /> Healthy {healthy}</span>
+                    <span><i className="xg-dot xg-dot-bad" /> Unhealthy {unhealthy}</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="xg-col-2"><BarPanel title="Resources by Category" icon={<FiBox />} data={byCategory} /></div>
-            <div className="xg-col-2"><BarPanel title="Resources by Region" icon={<FiMapPin />} data={byRegion} /></div>
-            <div className="xg-col-3"><BarPanel title="Top Resource Types" icon={<FiLayers />} data={byType} /></div>
+            <div className="xg-w4"><BarPanel title="Resources by Category" icon={<FiBox />} data={byCategory} /></div>
+            <div className="xg-w3"><BarPanel title="Resources by Region" icon={<FiMapPin />} data={byRegion} /></div>
+            <div className="xg-w3"><BarPanel title="Top Resource Types" icon={<FiLayers />} data={byType} /></div>
           </div>
         )}
       </main>
