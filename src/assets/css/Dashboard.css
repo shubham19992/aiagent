@@ -451,6 +451,31 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 
 /* ── discovery Explore: Grafana-style dashboard ── */
 .xg-main { background: #0e1116; }
+
+/* Dashboard toolbar */
+.xg-toolbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  background: #181b1f; border: 1px solid #23272e; border-radius: 6px;
+  padding: 12px 16px; margin-bottom: 12px;
+}
+.xg-toolbar-l { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.xg-toolbar-ico { font-size: 22px; color: #ff9830; flex: 0 0 auto; }
+.xg-toolbar-title { font-size: 16px; font-weight: 800; color: #fff; }
+.xg-toolbar-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 5px; }
+.xg-tag {
+  font-size: 11px; font-weight: 600; color: #c7ccd1; background: #0e1116;
+  border: 1px solid #23272e; border-radius: 4px; padding: 1px 8px;
+}
+.xg-toolbar-r { display: flex; align-items: center; gap: 8px; }
+.xg-toolbar-time { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #9fa7b3; }
+.xg-toolbar-btn {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  background: #0e1116; border: 1px solid #2e3338; color: #d8d9da;
+  border-radius: 5px; padding: 6px 10px; font-size: 12.5px; font-weight: 600;
+}
+.xg-toolbar-btn:hover { border-color: #ff9830; color: #fff; }
+
+.xg-panel-body { min-width: 0; }
 .xg-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; align-items: stretch; }
 /* Width helpers — spans add up to 6 per row so there are no blank gaps. */
 .xg-w2 { grid-column: span 2; }
@@ -496,9 +521,38 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 .xg-donut-pct { font-size: 24px; font-weight: 800; color: #fff; }
 .xg-donut-sub { font-size: 10.5px; color: #9fa7b3; text-transform: uppercase; }
 .xg-gauge-legend { display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; color: #c7ccd1; }
-.xg-dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 7px; }
+.xg-dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 7px; flex: 0 0 auto; }
 .xg-dot-ok { background: #73bf69; }
 .xg-dot-bad { background: #f2495c; }
+
+/* Area / time-series chart */
+.xg-area { display: flex; flex-direction: column; gap: 6px; }
+.xg-area-svg { width: 100%; height: 150px; display: block; }
+.xg-area-labels {
+  display: flex; justify-content: space-between; gap: 6px;
+  font-size: 10.5px; color: #9fa7b3;
+}
+.xg-area-labels span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1 1 0; text-align: center; }
+
+/* Pie chart */
+.xg-pie-wrap { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.xg-pie { width: 130px; height: 130px; border-radius: 50%; flex: 0 0 auto; }
+.xg-pie-legend { display: flex; flex-direction: column; gap: 7px; font-size: 12px; color: #c7ccd1; min-width: 0; flex: 1 1 auto; }
+.xg-pie-legend span { display: flex; align-items: center; gap: 4px; }
+.xg-pie-name { flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.xg-pie-legend b { color: #fff; }
+
+/* Table panel */
+.xg-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.xg-table th {
+  text-align: left; color: #9fa7b3; font-weight: 700; font-size: 11px; text-transform: uppercase;
+  letter-spacing: .03em; padding: 6px 10px; border-bottom: 1px solid #23272e;
+}
+.xg-table td { padding: 7px 10px; color: #d8d9da; border-bottom: 1px solid #1c2026; }
+.xg-table tr:last-child td { border-bottom: 0; }
+.xg-table-num { text-align: right; font-weight: 700; color: #fff; width: 80px; }
+.xg-table-bar { display: block; height: 10px; background: #0e1116; border-radius: 3px; overflow: hidden; }
+.xg-table-bar > span { display: block; height: 100%; border-radius: 3px; }
 
 @media (max-width: 1000px) {
   .xg-grid { grid-template-columns: repeat(2, 1fr); }
