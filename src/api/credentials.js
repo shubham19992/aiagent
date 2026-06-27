@@ -58,6 +58,15 @@ export async function createCredential(data) {
   return json?.data || null;
 }
 
+// data: { name, op_code, env_code, env_id, values, secret_keys, projects }
+// POST /credentials/connect — creates the credential AND runs discovery in a
+// single call. Returns { credential, validated, discovery } where `discovery`
+// is the agent-execution result (cloudProvider, executionTime, results[…]).
+export async function connectCredential(data) {
+  const json = await call('/api/v3/credentials/connect', { method: 'POST', body: data });
+  return json?.data || null;
+}
+
 export async function patchCredential(id, partial) {
   const json = await call(`/api/v3/credentials/${enc(id)}`, { method: 'PATCH', body: partial });
   return json?.data || null;

@@ -4,7 +4,7 @@ import { FiArrowLeft } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
 import ConnectionsSelect from './_ConnSelect';
 import { listConnectionParams } from '../../api/observability';
-import { createCredential, patchCredential, getCredential } from '../../api/credentials';
+import { connectCredential, patchCredential, getCredential } from '../../api/credentials';
 import { listProjects } from '../../api/projects';
 
 const ENV_NAME = { aws: 'AWS', azure: 'Azure', gcp: 'GCP' };
@@ -153,17 +153,21 @@ export default function ConnectPage() {
       } else {
         const values = {};
         params.forEach((p) => { values[p.param_key] = String(form[p.param_key] ?? ''); });
-        const created = await createCredential({
+        // Single call: creates the credential AND runs discovery, so we don't
+        // make a second agents/execute request on the discovery screen.
+        const result = await connectCredential({
           name: connName.trim() || `${opName} · ${envName}`,
           op_code: opCode,
           env_code: envCode,
           env_id: params[0]?.env_id ?? null,
           values,
           secret_keys: secretKeys,
-          ...(assocProjects.length ? { project_ids: assocProjects } : {}),
+          projects: assocProjects,
         });
-        // Save & Connect kicks off discovery — show the result screen.
-        navigate(`/dashboard/observability/${opCode}/${envCode}/discovery`, { state: { connection: created } });
+        const created = result?.credential || null;
+        const discovery = result?.discovery || null;
+        // Pass the discovery payload through so the screen renders it directly.
+        navigate(`/dashboard/observability/${opCode}/${envCode}/discovery`, { state: { connection: created, discovery } });
       }
     } catch (err) {
       setError(err?.message || (editing ? 'Failed to update connection.' : 'Failed to create connection.'));

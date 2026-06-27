@@ -159,6 +159,9 @@ export default function DiscoveryPage() {
   const location = useLocation();
   const { ops } = useOutletContext();
   const connection = location.state?.connection || null;
+  // Save & Connect already ran discovery in one call and passes the result
+  // here, so we render it directly instead of calling agents/execute again.
+  const preloaded = location.state?.discovery || null;
 
   const op = ops.find((o) => o.code === opCode);
   const opName = op?.name || opCode;
@@ -173,9 +176,21 @@ export default function DiscoveryPage() {
 
   useEffect(() => {
     let alive = true;
-    setLoading(true);
     setError('');
     setUsingSample(false);
+    const hasAccounts = (res) =>
+      res && Array.isArray(res.results) &&
+      res.results.some((a) => (a?.data?.recommendations?.accounts || []).length > 0);
+
+    // Discovery already came back with the connect call — render it directly.
+    if (preloaded) {
+      setResult(preloaded);
+      setUsingSample(!hasAccounts(preloaded));
+      setLoading(false);
+      return () => { alive = false; };
+    }
+
+    setLoading(true);
     const me = tokenStore.getUser() || {};
     runDiscovery({
       agentNames: [`${envCode}_discovery`],
@@ -188,11 +203,8 @@ export default function DiscoveryPage() {
         // Keep the real API response for the left-side cards exactly as
         // before. The right-side tree falls back to the sample only when the
         // response carries no discovered accounts, so it's never blank.
-        const hasAccounts =
-          res && Array.isArray(res.results) &&
-          res.results.some((a) => (a?.data?.recommendations?.accounts || []).length > 0);
         setResult(res || {});
-        setUsingSample(!hasAccounts);
+        setUsingSample(!hasAccounts(res));
         setLoading(false);
       })
       .catch(() => {
@@ -203,7 +215,7 @@ export default function DiscoveryPage() {
         setLoading(false);
       });
     return () => { alive = false; };
-  }, [envCode, connection]);
+  }, [envCode, connection, preloaded]);
 
   return (
     <>
