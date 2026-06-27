@@ -4,7 +4,7 @@ import {
   FiAlertTriangle, FiArrowLeft, FiCpu, FiDatabase, FiHardDrive,
   FiShare2, FiBox, FiActivity, FiZap, FiCloud, FiLoader,
   FiChevronRight, FiChevronDown, FiClock, FiFolder, FiServer, FiMapPin,
-  FiChevronsRight, FiChevronsLeft,
+  FiChevronsRight, FiChevronsLeft, FiBarChart2,
 } from 'react-icons/fi';
 import { FaAws } from 'react-icons/fa';
 import { VscAzure } from 'react-icons/vsc';
@@ -238,7 +238,18 @@ export default function DiscoveryPage() {
             <h1>Cloud Discovery</h1>
             <p>{connection ? `${connection.name} · ` : ''}{opName} · {envName}</p>
           </div>
-          <Link to={opPath} className="xd-btn-ghost xd-btn-sm"><FiArrowLeft /> Back</Link>
+          <div className="xd-disc-lead-actions">
+            {result && !loading && !error && (
+              <button
+                type="button"
+                className="xd-btn xd-btn-sm"
+                onClick={() => navigate(`/dashboard/observability/${opCode}/${envCode}/discovery/explore`, { state: { discovery: view, envCode } })}
+              >
+                <FiBarChart2 /> Explore
+              </button>
+            )}
+            <Link to={opPath} className="xd-btn-ghost xd-btn-sm"><FiArrowLeft /> Back</Link>
+          </div>
         </div>
 
         {loading ? (
