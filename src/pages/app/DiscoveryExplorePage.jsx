@@ -30,6 +30,25 @@ const CHART_TYPES = [
   { id: 'bar', label: 'Bar' },
   { id: 'stackedbar', label: 'Stacked Bar' },
 ];
+const ALL_TYPE_IDS = CHART_TYPES.map((c) => c.id);
+
+/**
+ * Chart types that make sense for a given metric, ordered best-first:
+ *  • status (0/1 state)  → stepped/bar
+ *  • errors / counts     → bar/line
+ *  • bytes (io, capacity)→ area/stacked (good for receive+transmit)
+ *  • utilization (%)     → line/area
+ */
+function allowedCharts(name) {
+  const multi = name.includes('.io'); // metrics that commonly have >1 series
+  if (name.includes('status')) return ['step', 'bar', 'line'];
+  if (name.includes('errors')) return ['bar', 'line', 'step'];
+  if (name.includes('.io') || name.includes('capacity')) {
+    return multi ? ['area', 'stacked', 'line', 'smooth', 'bar', 'stackedbar'] : ['area', 'line', 'smooth', 'bar'];
+  }
+  if (name.includes('utilization')) return ['line', 'smooth', 'area', 'bar', 'step'];
+  return ['line', 'smooth', 'area', 'bar', 'step'];
+}
 
 const TT = {
   contentStyle: { background: '#181b1f', border: '1px solid #2e3338', borderRadius: 6, color: '#d8d9da', fontSize: 12 },
@@ -247,6 +266,16 @@ export default function DiscoveryExplorePage() {
   // Active filter window passed to the charts (null = no filtering).
   const range = from != null && to != null ? { from: Math.min(from, to), to: Math.max(from, to) } : null;
 
+  // Chart types available for the selected metric (all when "All" is chosen).
+  const allowedIds = metric === 'all' ? ALL_TYPE_IDS : allowedCharts(metric);
+  const typeOptions = allowedIds.map((id) => CHART_TYPES.find((c) => c.id === id)).filter(Boolean);
+
+  // Keep the chosen chart type valid for the selected metric.
+  useEffect(() => {
+    if (!allowedIds.includes(chartType)) setChartType(allowedIds[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [metric]);
+
   const cloud = discovery?.cloudProvider || result[0]?.metric?.['cloud.provider']?.toUpperCase() || envName;
   const stats = [
     { name: 'system.cpu.utilization', label: 'CPU', unit: '%', tone: 'warnHigh' },
@@ -314,7 +343,7 @@ export default function DiscoveryExplorePage() {
             <label className="xg-select-wrap" title="Chart type">
               <FiBarChart2 />
               <select className="xg-select" value={chartType} onChange={(e) => setChartType(e.target.value)}>
-                {CHART_TYPES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+                {typeOptions.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
               </select>
             </label>
             <button type="button" className="xg-toolbar-btn" onClick={() => navigate(0)} title="Refresh"><FiRefreshCw /></button>
