@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import {
   FiArrowLeft, FiAlertTriangle, FiClock, FiRefreshCw, FiGrid,
-  FiCpu, FiHardDrive, FiDatabase, FiShare2, FiBox, FiActivity, FiServer, FiLoader,
+  FiCpu, FiHardDrive, FiDatabase, FiShare2, FiBox, FiActivity, FiServer, FiLoader, FiLayers,
 } from 'react-icons/fi';
+import { FaAws } from 'react-icons/fa';
+import { VscAzure } from 'react-icons/vsc';
+import { SiGooglecloud } from 'react-icons/si';
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from 'recharts';
@@ -11,6 +14,7 @@ import { PageHeader } from './_parts';
 import { queryMetrics } from '../../api/metrics';
 
 const ENV_NAME = { aws: 'AWS', azure: 'Azure', gcp: 'GCP' };
+const CLOUD_ICON = { aws: <FaAws />, azure: <VscAzure />, gcp: <SiGooglecloud /> };
 
 // Grafana-ish categorical palette.
 const COLORS = ['#7eb26d', '#eab839', '#6ed0e0', '#ef843c', '#e24d42', '#1f78c1', '#ba43a9', '#705da0', '#508642', '#cca300'];
@@ -161,6 +165,12 @@ export default function DiscoveryExplorePage() {
   });
   const names = Object.keys(groups);
 
+  // Time window covered by the data (for the toolbar range pill).
+  const allTs = result.flatMap((s) => (s.values || []).map((v) => v[0]));
+  const tMin = allTs.length ? Math.min(...allTs) : null;
+  const tMax = allTs.length ? Math.max(...allTs) : null;
+  const rangeLabel = tMin ? `${fmtTime(tMin)} – ${fmtTime(tMax)}` : '';
+
   const cloud = discovery?.cloudProvider || result[0]?.metric?.['cloud.provider']?.toUpperCase() || envName;
   const stats = [
     { name: 'system.cpu.utilization', label: 'CPU', unit: '%', tone: 'warnHigh' },
@@ -184,17 +194,24 @@ export default function DiscoveryExplorePage() {
       <main className="xd-main xg-main">
         <div className="xg-toolbar">
           <div className="xg-toolbar-l">
-            <FiGrid className="xg-toolbar-ico" />
-            <div>
-              <div className="xg-toolbar-title">{cloud} · Metrics</div>
+            <span className="xg-cloud-badge">{CLOUD_ICON[envCode] || <FiGrid />}</span>
+            <div className="xg-toolbar-info">
+              <div className="xg-toolbar-title">
+                {cloud} Metrics
+                {!loading && !error && names.length > 0 && (
+                  <span className="xg-live"><i /> live</span>
+                )}
+              </div>
               <div className="xg-toolbar-tags">
+                <span className="xg-tag"><FiServer /> {opCode}</span>
                 <span className="xg-tag">{envName}</span>
-                <span className="xg-tag">{opCode}</span>
-                <span className="xg-tag">{names.length} metrics</span>
+                <span className="xg-tag"><FiGrid /> {names.length} metrics</span>
+                <span className="xg-tag"><FiLayers /> {result.length} series</span>
               </div>
             </div>
           </div>
           <div className="xg-toolbar-r">
+            {rangeLabel && <span className="xg-range"><FiClock /> {rangeLabel}</span>}
             <button type="button" className="xg-toolbar-btn" onClick={() => navigate(0)} title="Refresh"><FiRefreshCw /></button>
             <button type="button" className="xg-toolbar-btn xg-toolbar-back" onClick={() => navigate(-1)}><FiArrowLeft /> Back</button>
           </div>
