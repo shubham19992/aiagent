@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
-import { FiArrowLeft, FiAlertTriangle, FiClock, FiServer } from 'react-icons/fi';
+import { FiArrowLeft, FiAlertTriangle, FiClock, FiServer, FiChevronRight, FiChevronDown } from 'react-icons/fi';
 import { FaAws } from 'react-icons/fa';
 import { VscAzure } from 'react-icons/vsc';
 import { SiGooglecloud } from 'react-icons/si';
@@ -16,6 +16,52 @@ const fmtDateTime = (d) => {
 };
 const prettyKey = (k) => k.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
 
+/** One resource card (name, type badge, properties). */
+function ResourceCard({ r, envCode }) {
+  return (
+    <div className="xd-card xd-disc-res-card">
+      <div className="xd-disc-res-head">
+        <span className="xd-disc-res-ico">{CLOUD_ICON[envCode] || <FiServer />}</span>
+        <div className="xd-disc-res-titles">
+          <div className="xd-disc-res-name" title={r.name}>{r.name}</div>
+          {r.resourceType && <span className="xd-disc-res-type">{r.resourceType}</span>}
+        </div>
+      </div>
+      <div className="xd-disc-res-props">
+        {Object.entries(r.properties || {})
+          .filter(([, v]) => v !== '' && v != null)
+          .map(([k, v]) => (
+            <div className="xd-disc-res-prop" key={k}>
+              <span className="xd-disc-res-prop-k">{prettyKey(k)}</span>
+              <span className="xd-disc-res-prop-v" title={String(v)}>{String(v)}</span>
+            </div>
+          ))}
+      </div>
+    </div>
+  );
+}
+
+/** A collapsible group of resources of the same type — header shows the count,
+ *  clicking it reveals the resource details below. */
+function ResourceGroup({ name, items, envCode, defaultOpen }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="xd-disc-grp">
+      <button type="button" className="xd-disc-grp-head" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+        <span className="xd-disc-grp-caret">{open ? <FiChevronDown /> : <FiChevronRight />}</span>
+        <span className="xd-disc-grp-ico">{CLOUD_ICON[envCode] || <FiServer />}</span>
+        <span className="xd-disc-grp-name" title={name}>{name}</span>
+        <span className="xd-disc-grp-count">{items.length}</span>
+      </button>
+      {open && (
+        <div className="xd-disc-res-grid xd-disc-grp-body">
+          {items.map((r, i) => <ResourceCard key={r.id || i} r={r} envCode={envCode} />)}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Detail page for a discovery category — lists each resource with its full
  *  set of properties. Reached by clicking a card on the discovery page; the
  *  resources are passed via nav state (no refetch). */
@@ -29,6 +75,13 @@ export default function DiscoveryResourcesPage() {
   const envName = ENV_NAME[envCode] || (envCode || '').toUpperCase();
   const discoveryPath = `/dashboard/observability/${opCode}/${envCode}/discovery`;
   const opPath = `/dashboard/observability/${opCode}`;
+
+  // Group resources by type, largest group first.
+  const groups = useMemo(() => {
+    const m = {};
+    list.forEach((r) => { const k = r.resourceType || 'Other'; (m[k] = m[k] || []).push(r); });
+    return Object.entries(m).map(([name, items]) => ({ name, items })).sort((a, b) => b.items.length - a.items.length);
+  }, [list]);
 
   return (
     <>
@@ -64,27 +117,9 @@ export default function DiscoveryResourcesPage() {
         ) : list.length === 0 ? (
           <div className="xd-empty"><FiAlertTriangle /><p>No resources in this category.</p></div>
         ) : (
-          <div className="xd-disc-res-grid">
-            {list.map((r, i) => (
-              <div className="xd-card xd-disc-res-card" key={r.id || i}>
-                <div className="xd-disc-res-head">
-                  <span className="xd-disc-res-ico">{CLOUD_ICON[envCode] || <FiServer />}</span>
-                  <div className="xd-disc-res-titles">
-                    <div className="xd-disc-res-name" title={r.name}>{r.name}</div>
-                    {r.resourceType && <span className="xd-disc-res-type">{r.resourceType}</span>}
-                  </div>
-                </div>
-                <div className="xd-disc-res-props">
-                  {Object.entries(r.properties || {})
-                    .filter(([, v]) => v !== '' && v != null)
-                    .map(([k, v]) => (
-                      <div className="xd-disc-res-prop" key={k}>
-                        <span className="xd-disc-res-prop-k">{prettyKey(k)}</span>
-                        <span className="xd-disc-res-prop-v" title={String(v)}>{String(v)}</span>
-                      </div>
-                    ))}
-                </div>
-              </div>
+          <div className="xd-disc-grps">
+            {groups.map((g, i) => (
+              <ResourceGroup key={g.name} name={g.name} items={g.items} envCode={envCode} defaultOpen={groups.length === 1 || i === 0} />
             ))}
           </div>
         )}
