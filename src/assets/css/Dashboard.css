@@ -494,11 +494,19 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
   text-transform: uppercase; letter-spacing: .04em; color: #9fa7b3; margin-bottom: 14px;
 }
 .xg-panel-head svg { color: #6ed0e0; font-size: 14px; }
+.xg-panel-sub {
+  margin-left: auto; font-size: 10.5px; color: #6c737c; font-weight: 600;
+  text-transform: none; letter-spacing: 0; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; max-width: 50%;
+}
 .xg-stat { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
 .xg-stat-val { font-size: 32px; font-weight: 800; line-height: 1; color: #fff; }
+.xg-stat-unit { font-size: 16px; font-weight: 700; color: #9fa7b3; margin-left: 3px; }
 .xg-stat-label { font-size: 11.5px; color: #9fa7b3; margin-top: 8px; text-transform: uppercase; letter-spacing: .04em; }
 .xg-stat-ok .xg-stat-val { color: #73bf69; }
 .xg-stat-bad .xg-stat-val { color: #f2495c; }
+.xg-stat-warn .xg-stat-val { color: #eab839; }
+.xg-loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 60px 0; color: #9fa7b3; font-size: 14px; }
 
 .xg-empty { font-size: 12.5px; color: #9fa7b3; padding: 8px 0; }
 
