@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
-import { FiArrowLeft, FiAlertTriangle, FiClock, FiServer, FiChevronRight, FiChevronDown } from 'react-icons/fi';
+import { FiArrowLeft, FiAlertTriangle, FiClock, FiServer, FiChevronDown, FiLayers, FiX } from 'react-icons/fi';
 import { FaAws } from 'react-icons/fa';
 import { VscAzure } from 'react-icons/vsc';
 import { SiGooglecloud } from 'react-icons/si';
@@ -41,24 +41,18 @@ function ResourceCard({ r, envCode }) {
   );
 }
 
-/** A collapsible group of resources of the same type — header shows the count,
- *  clicking it reveals the resource details below. */
-function ResourceGroup({ name, items, envCode, defaultOpen }) {
-  const [open, setOpen] = useState(defaultOpen);
+/** A clickable group summary card (resource type + count). */
+function GroupCard({ name, count, active, onClick }) {
   return (
-    <div className="xd-disc-grp">
-      <button type="button" className="xd-disc-grp-head" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
-        <span className="xd-disc-grp-caret">{open ? <FiChevronDown /> : <FiChevronRight />}</span>
-        <span className="xd-disc-grp-ico">{CLOUD_ICON[envCode] || <FiServer />}</span>
-        <span className="xd-disc-grp-name" title={name}>{name}</span>
-        <span className="xd-disc-grp-count">{items.length}</span>
-      </button>
-      {open && (
-        <div className="xd-disc-res-grid xd-disc-grp-body">
-          {items.map((r, i) => <ResourceCard key={r.id || i} r={r} envCode={envCode} />)}
-        </div>
-      )}
-    </div>
+    <button type="button" className={`xd-rg-card${active ? ' on' : ''}`} onClick={onClick} aria-expanded={active}>
+      <span className="xd-rg-card-ico"><FiLayers /></span>
+      <span className="xd-rg-card-info">
+        <span className="xd-rg-card-name" title={name}>{name}</span>
+        <span className="xd-rg-card-sub">{count} resource{count === 1 ? '' : 's'}</span>
+      </span>
+      <span className="xd-rg-card-count">{count}</span>
+      <span className={`xd-rg-card-caret${active ? ' open' : ''}`}><FiChevronDown /></span>
+    </button>
   );
 }
 
@@ -82,6 +76,10 @@ export default function DiscoveryResourcesPage() {
     list.forEach((r) => { const k = r.resourceType || 'Other'; (m[k] = m[k] || []).push(r); });
     return Object.entries(m).map(([name, items]) => ({ name, items })).sort((a, b) => b.items.length - a.items.length);
   }, [list]);
+
+  // Selected group card whose resources are shown below.
+  const [selected, setSelected] = useState(null);
+  const active = groups.find((g) => g.name === selected) || null;
 
   return (
     <>
@@ -117,11 +115,35 @@ export default function DiscoveryResourcesPage() {
         ) : list.length === 0 ? (
           <div className="xd-empty"><FiAlertTriangle /><p>No resources in this category.</p></div>
         ) : (
-          <div className="xd-disc-grps">
-            {groups.map((g, i) => (
-              <ResourceGroup key={g.name} name={g.name} items={g.items} envCode={envCode} defaultOpen={groups.length === 1 || i === 0} />
-            ))}
-          </div>
+          <>
+            <div className="xd-rg-cards">
+              {groups.map((g) => (
+                <GroupCard
+                  key={g.name}
+                  name={g.name}
+                  count={g.items.length}
+                  active={selected === g.name}
+                  onClick={() => setSelected((s) => (s === g.name ? null : g.name))}
+                />
+              ))}
+            </div>
+
+            {active && (
+              <div className="xd-rg-detail">
+                <div className="xd-rg-detail-head">
+                  <span className="xd-rg-detail-ico">{CLOUD_ICON[envCode] || <FiServer />}</span>
+                  <div className="xd-rg-detail-titles">
+                    <div className="xd-rg-detail-name">{active.name}</div>
+                    <div className="xd-rg-detail-sub">{active.items.length} resource{active.items.length === 1 ? '' : 's'}</div>
+                  </div>
+                  <button type="button" className="xd-rg-detail-close" onClick={() => setSelected(null)} title="Close"><FiX /></button>
+                </div>
+                <div className="xd-disc-res-grid">
+                  {active.items.map((r, i) => <ResourceCard key={r.id || i} r={r} envCode={envCode} />)}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </main>
     </>
