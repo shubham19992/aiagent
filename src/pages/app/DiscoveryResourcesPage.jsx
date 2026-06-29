@@ -84,7 +84,6 @@ export default function DiscoveryResourcesPage() {
                       </div>
                     ))}
                 </div>
-                {r.id && <div className="xd-disc-res-id" title={r.id}>{r.id}</div>}
               </div>
             ))}
           </div>
