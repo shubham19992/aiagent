@@ -588,16 +588,16 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 /* KPI stat row (full width, above charts + controls). */
 .xg-stats-row { margin-bottom: 14px; }
 
-/* Body: charts on the left, controls sidebar on the right. */
-.xg-body { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 16px; align-items: start; position: relative; }
-/* Collapsed: graphs reclaim the space; a thin rail holds the reopen tab. */
-.xg-body-collapsed { grid-template-columns: minmax(0, 1fr) 44px; }
+/* Charts take the full width; the controls float fixed over them on the right. */
+.xg-body { display: block; position: relative; }
 .xg-charts { min-width: 0; }
 .xg-controls {
-  position: sticky; top: 16px; display: flex; flex-direction: column; gap: 14px;
+  position: fixed; right: 22px; top: 50%; transform: translateY(-50%); z-index: 60;
+  width: 264px; max-height: 86vh; overflow: auto;
+  display: flex; flex-direction: column; gap: 14px;
   background: linear-gradient(180deg, #1b1f24 0%, #181b1f 100%);
   border: 1px solid #2a2f36; border-radius: 10px; padding: 14px;
-  box-shadow: 0 2px 12px rgba(0,0,0,.25);
+  box-shadow: 0 18px 50px rgba(0,0,0,.5);
 }
 .xg-controls-head {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
@@ -637,16 +637,16 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 .xg-controls .xg-time-input { margin-left: 0; width: 100%; min-width: 0; }
 .xg-ctl-actions { display: flex; gap: 8px; }
 .xg-ctl-actions .xg-toolbar-btn { flex: 1 1 0; justify-content: center; }
-/* Collapsed reopen tab — occupies the thin rail column (not floating). */
+/* Collapsed reopen tab — a fixed vertical tab on the right edge. */
 .xg-controls-reopen {
-  position: sticky; top: 16px; align-self: start;
+  position: fixed; right: 0; top: 50%; transform: translateY(-50%); z-index: 60;
   display: flex; flex-direction: column; align-items: center; gap: 12px;
-  width: 100%; min-height: 200px; padding: 14px 0; cursor: pointer; font-size: 17px;
+  width: 40px; min-height: 200px; padding: 16px 0; cursor: pointer; font-size: 17px;
   background: linear-gradient(180deg, #1b1f24 0%, #181b1f 100%);
-  border: 1px solid #2a2f36; border-radius: 10px; color: #6ed0e0;
-  box-shadow: 0 2px 12px rgba(0,0,0,.25);
+  border: 1px solid #2a2f36; border-right: 0; border-radius: 10px 0 0 10px; color: #6ed0e0;
+  box-shadow: -8px 0 24px rgba(0,0,0,.35);
 }
-.xg-controls-reopen:hover { border-color: #6ed0e0; }
+.xg-controls-reopen:hover { border-color: #6ed0e0; color: #fff; }
 .xg-reopen-text {
   writing-mode: vertical-rl; transform: rotate(180deg);
   font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #c7ccd1;
@@ -654,9 +654,13 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 .xg-reopen-caret { font-size: 14px; color: #8a929c; }
 
 @media (max-width: 900px) {
-  .xg-body, .xg-body-collapsed { grid-template-columns: 1fr; }
-  .xg-controls, .xg-controls-reopen { position: static; }
-  .xg-controls-reopen { flex-direction: row; min-height: 0; }
+  .xg-controls {
+    position: static; transform: none; width: 100%; max-height: none; margin-top: 14px;
+  }
+  .xg-controls-reopen {
+    position: static; transform: none; flex-direction: row; min-height: 0; width: 100%;
+    border-radius: 10px; border-right: 1px solid #2a2f36; margin-top: 14px; justify-content: center;
+  }
   .xg-reopen-text { writing-mode: horizontal-tb; transform: none; }
 }
 .xg-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; align-items: stretch; }
