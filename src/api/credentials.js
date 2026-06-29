@@ -14,7 +14,7 @@ export const CREDENTIALS_BASE = RAW.replace(/\/+$/, '');
 
 const enc = encodeURIComponent;
 
-async function call(path, { method = 'GET', body } = {}) {
+async function call(path, { method = 'GET', body, skipGlobalLoader } = {}) {
   // serviceFetch injects the token and auto-logs-out on a persistent 401.
   const res = await serviceFetch(`${CREDENTIALS_BASE}${path}`, {
     method,
@@ -23,6 +23,7 @@ async function call(path, { method = 'GET', body } = {}) {
       ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
+    ...(skipGlobalLoader ? { skipGlobalLoader: true } : {}),
   });
   const text = await res.text();
   let json = null;
@@ -63,7 +64,8 @@ export async function createCredential(data) {
 // single call. Returns { credential, validated, discovery } where `discovery`
 // is the agent-execution result (cloudProvider, executionTime, results[…]).
 export async function connectCredential(data) {
-  const json = await call('/api/v3/credentials/connect', { method: 'POST', body: data });
+  // The Connect screen shows its own discovery loader, so skip the global one.
+  const json = await call('/api/v3/credentials/connect', { method: 'POST', body: data, skipGlobalLoader: true });
   return json?.data || null;
 }
 
