@@ -11,6 +11,7 @@ import { SiGooglecloud } from 'react-icons/si';
 import {
   ResponsiveContainer, LineChart, Line, AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  RadialBarChart, RadialBar, PolarAngleAxis, PieChart, Pie, Cell,
 } from 'recharts';
 import { PageHeader } from './_parts';
 import { queryMetrics } from '../../api/metrics';
@@ -33,6 +34,8 @@ const CHART_TYPES = [
   { id: 'stacked', label: 'Stacked Area' },
   { id: 'bar', label: 'Bar' },
   { id: 'stackedbar', label: 'Stacked Bar' },
+  { id: 'gauge', label: 'Gauge' },
+  { id: 'pie', label: 'Pie' },
 ];
 const ALL_TYPE_IDS = CHART_TYPES.map((c) => c.id);
 
@@ -45,14 +48,14 @@ const ALL_TYPE_IDS = CHART_TYPES.map((c) => c.id);
  */
 function allowedCharts(name) {
   const multi = name.includes('.io'); // metrics that commonly have >1 series
-  if (name.includes('status')) return ['step', 'bar', 'line', 'points'];
+  if (name.includes('status')) return ['gauge', 'step', 'bar', 'line', 'points'];
   if (name.includes('errors')) return ['bar', 'line', 'step', 'points'];
   if (name.includes('.io') || name.includes('capacity')) {
     return multi
-      ? ['area', 'stacked', 'steparea', 'line', 'smooth', 'dashed', 'bar', 'stackedbar', 'points']
+      ? ['area', 'stacked', 'steparea', 'line', 'smooth', 'dashed', 'bar', 'stackedbar', 'points', 'pie']
       : ['area', 'steparea', 'line', 'smooth', 'dashed', 'bar', 'points'];
   }
-  if (name.includes('utilization')) return ['line', 'smooth', 'area', 'steparea', 'bar', 'step', 'dashed', 'points'];
+  if (name.includes('utilization')) return ['line', 'smooth', 'area', 'steparea', 'bar', 'step', 'dashed', 'points', 'gauge'];
   return ['line', 'smooth', 'area', 'steparea', 'bar', 'step', 'dashed', 'points'];
 }
 
@@ -209,15 +212,67 @@ function MetricChart({ data, keys, unit, type }) {
   );
 }
 
-/** One time-series chart for a metric (one or more series). */
+/** Snapshot gauge of the latest value vs a max (RadialBar). */
+function Gauge({ value, max, unit, color }) {
+  const pct = max ? Math.round((value / max) * 100) : 0;
+  return (
+    <div className="xg-gauge-wrap" style={{ justifyContent: 'center' }}>
+      <div className="xg-donut-rc" style={{ width: 170, height: 150 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <RadialBarChart innerRadius="66%" outerRadius="100%" data={[{ value }]} startAngle={210} endAngle={-30}>
+            <PolarAngleAxis type="number" domain={[0, max]} angleAxisId={0} tick={false} />
+            <RadialBar background={{ fill: '#23272e' }} dataKey="value" cornerRadius={8} fill={color} angleAxisId={0} isAnimationActive={false} />
+          </RadialBarChart>
+        </ResponsiveContainer>
+        <div className="xg-donut-center">
+          <span className="xg-donut-pct">{compact(value)}{unit}</span>
+          <span className="xg-donut-sub">{pct}% of {compact(max)}{unit}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Snapshot pie of the latest value share across series. */
+function PieSnapshot({ data, unit }) {
+  return (
+    <ResponsiveContainer width="100%" height={200}>
+      <PieChart>
+        <Pie data={data} dataKey="value" nameKey="name" innerRadius={46} outerRadius={78} paddingAngle={1} stroke="#181b1f">
+          {data.map((d, i) => <Cell key={d.name} fill={COLORS[i % COLORS.length]} />)}
+        </Pie>
+        <Tooltip {...TT} formatter={(v, n) => [`${compact(v)}${unit}`, n]} />
+        <Legend wrapperStyle={{ fontSize: 11, color: '#c7ccd1' }} />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+}
+
+/** One chart for a metric — time-series, or a snapshot gauge/pie. */
 function MetricPanel({ name, seriesList, chartType, range }) {
   const { data, keys } = buildSeries(seriesList, range);
   const unit = unitFor(name);
-  return (
-    <Panel title={prettyName(name)} subtitle={contextOf(seriesList[0]?.metric || {})} icon={iconFor(name)}>
+  const last = data[data.length - 1] || {};
+
+  let body;
+  if (chartType === 'gauge') {
+    const value = Number(last[keys[0]] ?? 0);
+    const max = unit === '%' ? 100 : name.includes('status') ? 1 : Math.max(1, ...data.map((d) => Number(d[keys[0]]) || 0));
+    body = <Gauge value={value} max={max} unit={unit} color={COLORS[0]} />;
+  } else if (chartType === 'pie') {
+    const pieData = keys.map((k) => ({ name: k, value: Number(last[k] ?? 0) }));
+    body = <PieSnapshot data={pieData} unit={unit} />;
+  } else {
+    body = (
       <ResponsiveContainer width="100%" height={200}>
         <MetricChart data={data} keys={keys} unit={unit} type={chartType} />
       </ResponsiveContainer>
+    );
+  }
+
+  return (
+    <Panel title={prettyName(name)} subtitle={contextOf(seriesList[0]?.metric || {})} icon={iconFor(name)}>
+      {body}
     </Panel>
   );
 }
