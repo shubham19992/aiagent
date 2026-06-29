@@ -78,14 +78,25 @@ const contextOf = (m) =>
   m['resource.id'] || m['host.name'] || m['k8s.pod.name'] || m['k8s.node.name'] ||
   m['container.name'] || m['storage.account'] || m['loadbalancer.name'] || m['db.name'] || '';
 
-/** Build merged {time, <seriesKey>: value} rows for a metric's series list. */
-function buildSeries(seriesList) {
+// Local datetime <-> unix-seconds helpers for the time filter inputs.
+const pad2 = (n) => String(n).padStart(2, '0');
+const toLocalInput = (ts) => {
+  if (ts == null) return '';
+  const d = new Date(ts * 1000);
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+};
+const fromLocalInput = (v) => (v ? Math.floor(new Date(v).getTime() / 1000) : null);
+
+/** Build merged {time, <seriesKey>: value} rows, optionally filtered to a
+ *  [from, to] window (unix seconds). */
+function buildSeries(seriesList, range) {
   const keys = [];
   const byTs = {};
   seriesList.forEach((s) => {
     const k = seriesKey(s.metric);
     if (!keys.includes(k)) keys.push(k);
     (s.values || []).forEach(([ts, v]) => {
+      if (range && (ts < range.from || ts > range.to)) return;
       byTs[ts] = byTs[ts] || { ts };
       byTs[ts][k] = Number(v);
     });
@@ -166,8 +177,8 @@ function MetricChart({ data, keys, unit, type }) {
 }
 
 /** One time-series chart for a metric (one or more series). */
-function MetricPanel({ name, seriesList, chartType }) {
-  const { data, keys } = buildSeries(seriesList);
+function MetricPanel({ name, seriesList, chartType, range }) {
+  const { data, keys } = buildSeries(seriesList, range);
   const unit = unitFor(name);
   return (
     <Panel title={prettyName(name)} subtitle={contextOf(seriesList[0]?.metric || {})} icon={iconFor(name)}>
@@ -200,6 +211,8 @@ export default function DiscoveryExplorePage() {
   const [error, setError] = useState('');
   const [chartType, setChartType] = useState('line');
   const [metric, setMetric] = useState('all');
+  const [from, setFrom] = useState(null);
+  const [to, setTo] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -220,11 +233,19 @@ export default function DiscoveryExplorePage() {
   });
   const names = Object.keys(groups);
 
-  // Time window covered by the data (for the toolbar range pill).
+  // Time window covered by the data.
   const allTs = result.flatMap((s) => (s.values || []).map((v) => v[0]));
   const tMin = allTs.length ? Math.min(...allTs) : null;
   const tMax = allTs.length ? Math.max(...allTs) : null;
-  const rangeLabel = tMin ? `${fmtTime(tMin)} – ${fmtTime(tMax)}` : '';
+
+  // Default the From/To filter to the full data window once it loads.
+  useEffect(() => {
+    if (tMin != null) setFrom((f) => (f == null ? tMin : f));
+    if (tMax != null) setTo((t) => (t == null ? tMax : t));
+  }, [tMin, tMax]);
+
+  // Active filter window passed to the charts (null = no filtering).
+  const range = from != null && to != null ? { from: Math.min(from, to), to: Math.max(from, to) } : null;
 
   const cloud = discovery?.cloudProvider || result[0]?.metric?.['cloud.provider']?.toUpperCase() || envName;
   const stats = [
@@ -266,7 +287,23 @@ export default function DiscoveryExplorePage() {
             </div>
           </div>
           <div className="xg-toolbar-r">
-            {rangeLabel && <span className="xg-range"><FiClock /> {rangeLabel}</span>}
+            {tMin != null && (
+              <div className="xg-timefilter">
+                <FiClock />
+                <label className="xg-time-field">
+                  <span>From</span>
+                  <input type="datetime-local" className="xg-time-input"
+                    value={toLocalInput(from)} min={toLocalInput(tMin)} max={toLocalInput(tMax)}
+                    onChange={(e) => setFrom(fromLocalInput(e.target.value) ?? tMin)} />
+                </label>
+                <label className="xg-time-field">
+                  <span>To</span>
+                  <input type="datetime-local" className="xg-time-input"
+                    value={toLocalInput(to)} min={toLocalInput(tMin)} max={toLocalInput(tMax)}
+                    onChange={(e) => setTo(fromLocalInput(e.target.value) ?? tMax)} />
+                </label>
+              </div>
+            )}
             <label className="xg-select-wrap" title="Metric">
               <FiGrid />
               <select className="xg-select" value={metric} onChange={(e) => setMetric(e.target.value)}>
@@ -302,7 +339,7 @@ export default function DiscoveryExplorePage() {
             ))}
             {(metric === 'all' ? names : names.filter((n) => n === metric)).map((name) => (
               <div className={metric === 'all' ? 'xg-w3' : 'xg-w6'} key={name}>
-                <MetricPanel name={name} seriesList={groups[name]} chartType={chartType} />
+                <MetricPanel name={name} seriesList={groups[name]} chartType={chartType} range={range} />
               </div>
             ))}
           </div>

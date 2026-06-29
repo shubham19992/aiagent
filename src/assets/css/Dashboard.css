@@ -509,6 +509,18 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
   padding: 7px 2px; cursor: pointer; outline: none;
 }
 .xg-select option { background: #181b1f; color: #d8d9da; }
+/* From/To time filter */
+.xg-timefilter {
+  display: inline-flex; align-items: center; gap: 8px; color: #8a929c;
+  background: #0e1116; border: 1px solid #2e3338; border-radius: 6px; padding: 4px 10px;
+}
+.xg-time-field { display: inline-flex; align-items: center; gap: 5px; }
+.xg-time-field > span { font-size: 11px; font-weight: 700; color: #9fa7b3; }
+.xg-time-input {
+  background: #181b1f; border: 1px solid #2e3338; border-radius: 5px; color: #d8d9da;
+  font-size: 12px; padding: 4px 6px; outline: none; color-scheme: dark;
+}
+.xg-time-input:focus { border-color: #6ed0e0; }
 .xg-toolbar-btn {
   display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
   background: #0e1116; border: 1px solid #2e3338; color: #d8d9da;
