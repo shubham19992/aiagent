@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import {
-  FiArrowLeft, FiAlertTriangle, FiClock, FiRefreshCw, FiGrid,
+  FiArrowLeft, FiAlertTriangle, FiClock, FiRefreshCw, FiGrid, FiBarChart2,
   FiCpu, FiHardDrive, FiDatabase, FiShare2, FiBox, FiActivity, FiServer, FiLoader, FiLayers,
 } from 'react-icons/fi';
 import { FaAws } from 'react-icons/fa';
 import { VscAzure } from 'react-icons/vsc';
 import { SiGooglecloud } from 'react-icons/si';
 import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  ResponsiveContainer, LineChart, Line, AreaChart, Area, BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from 'recharts';
 import { PageHeader } from './_parts';
 import { queryMetrics } from '../../api/metrics';
@@ -18,6 +19,14 @@ const CLOUD_ICON = { aws: <FaAws />, azure: <VscAzure />, gcp: <SiGooglecloud />
 
 // Grafana-ish categorical palette.
 const COLORS = ['#7eb26d', '#eab839', '#6ed0e0', '#ef843c', '#e24d42', '#1f78c1', '#ba43a9', '#705da0', '#508642', '#cca300'];
+
+// Chart types the user can switch between for the (time-series) metrics.
+const CHART_TYPES = [
+  { id: 'line', label: 'Line' },
+  { id: 'area', label: 'Area' },
+  { id: 'bar', label: 'Bar' },
+  { id: 'stacked', label: 'Stacked Area' },
+];
 
 const TT = {
   contentStyle: { background: '#181b1f', border: '1px solid #2e3338', borderRadius: 6, color: '#d8d9da', fontSize: 12 },
@@ -103,23 +112,59 @@ function StatPanel({ label, value, unit, tone }) {
   );
 }
 
-/** One time-series line chart for a metric (one or more series). */
-function MetricPanel({ name, seriesList }) {
+/** Renders the chosen chart type for a metric's merged series. */
+function MetricChart({ data, keys, unit, type }) {
+  const grid = <CartesianGrid strokeDasharray="3 3" stroke="#23272e" />;
+  const xAxis = <XAxis dataKey="time" tick={{ fill: '#9fa7b3', fontSize: 10 }} stroke="#3a3f44" minTickGap={24} />;
+  const yAxis = <YAxis tick={{ fill: '#9fa7b3', fontSize: 10 }} stroke="#3a3f44" width={46} tickFormatter={compact} />;
+  const tip = <Tooltip {...TT} formatter={(v, n) => [`${compact(v)}${unit}`, n]} cursor={type === 'bar' ? { fill: 'rgba(255,255,255,0.04)' } : { stroke: '#3a3f44' }} />;
+  const legend = keys.length > 1 ? <Legend wrapperStyle={{ fontSize: 11, color: '#c7ccd1' }} /> : null;
+  const margin = { top: 8, right: 16, left: -6, bottom: 0 };
+  const color = (i) => COLORS[i % COLORS.length];
+
+  if (type === 'bar') {
+    return (
+      <BarChart data={data} margin={margin}>
+        {grid}{xAxis}{yAxis}{tip}{legend}
+        {keys.map((k, i) => <Bar key={k} dataKey={k} name={k} fill={color(i)} maxBarSize={26} isAnimationActive={false} />)}
+      </BarChart>
+    );
+  }
+  if (type === 'area' || type === 'stacked') {
+    return (
+      <AreaChart data={data} margin={margin}>
+        <defs>
+          {keys.map((k, i) => (
+            <linearGradient key={k} id={`xgg-${k}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={color(i)} stopOpacity={0.5} />
+              <stop offset="95%" stopColor={color(i)} stopOpacity={0.05} />
+            </linearGradient>
+          ))}
+        </defs>
+        {grid}{xAxis}{yAxis}{tip}{legend}
+        {keys.map((k, i) => (
+          <Area key={k} type="monotone" dataKey={k} name={k} stackId={type === 'stacked' ? '1' : undefined}
+            stroke={color(i)} strokeWidth={2} fill={`url(#xgg-${k})`} isAnimationActive={false} />
+        ))}
+      </AreaChart>
+    );
+  }
+  return (
+    <LineChart data={data} margin={margin}>
+      {grid}{xAxis}{yAxis}{tip}{legend}
+      {keys.map((k, i) => <Line key={k} type="monotone" dataKey={k} name={k} stroke={color(i)} strokeWidth={2} dot={false} isAnimationActive={false} />)}
+    </LineChart>
+  );
+}
+
+/** One time-series chart for a metric (one or more series). */
+function MetricPanel({ name, seriesList, chartType }) {
   const { data, keys } = buildSeries(seriesList);
   const unit = unitFor(name);
   return (
     <Panel title={prettyName(name)} subtitle={contextOf(seriesList[0]?.metric || {})} icon={iconFor(name)}>
       <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data} margin={{ top: 8, right: 16, left: -6, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#23272e" />
-          <XAxis dataKey="time" tick={{ fill: '#9fa7b3', fontSize: 10 }} stroke="#3a3f44" minTickGap={24} />
-          <YAxis tick={{ fill: '#9fa7b3', fontSize: 10 }} stroke="#3a3f44" width={46} tickFormatter={compact} />
-          <Tooltip {...TT} formatter={(v, n) => [`${compact(v)}${unit}`, n]} />
-          {keys.length > 1 && <Legend wrapperStyle={{ fontSize: 11, color: '#c7ccd1' }} />}
-          {keys.map((k, i) => (
-            <Line key={k} type="monotone" dataKey={k} name={k} stroke={COLORS[i % COLORS.length]} strokeWidth={2} dot={false} isAnimationActive={false} />
-          ))}
-        </LineChart>
+        <MetricChart data={data} keys={keys} unit={unit} type={chartType} />
       </ResponsiveContainer>
     </Panel>
   );
@@ -145,6 +190,7 @@ export default function DiscoveryExplorePage() {
   const [matrix, setMatrix] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [chartType, setChartType] = useState('line');
 
   useEffect(() => {
     let alive = true;
@@ -212,6 +258,12 @@ export default function DiscoveryExplorePage() {
           </div>
           <div className="xg-toolbar-r">
             {rangeLabel && <span className="xg-range"><FiClock /> {rangeLabel}</span>}
+            <label className="xg-select-wrap" title="Chart type">
+              <FiBarChart2 />
+              <select className="xg-select" value={chartType} onChange={(e) => setChartType(e.target.value)}>
+                {CHART_TYPES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+              </select>
+            </label>
             <button type="button" className="xg-toolbar-btn" onClick={() => navigate(0)} title="Refresh"><FiRefreshCw /></button>
             <button type="button" className="xg-toolbar-btn xg-toolbar-back" onClick={() => navigate(-1)}><FiArrowLeft /> Back</button>
           </div>
@@ -233,7 +285,7 @@ export default function DiscoveryExplorePage() {
                 tone={s.unit === '%' && s.value >= 80 ? 'bad' : s.unit === '%' && s.value >= 60 ? 'warn' : undefined} />
             ))}
             {names.map((name) => (
-              <div className="xg-w3" key={name}><MetricPanel name={name} seriesList={groups[name]} /></div>
+              <div className="xg-w3" key={name}><MetricPanel name={name} seriesList={groups[name]} chartType={chartType} /></div>
             ))}
           </div>
         )}
