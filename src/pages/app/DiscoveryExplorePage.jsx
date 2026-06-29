@@ -23,9 +23,12 @@ const COLORS = ['#7eb26d', '#eab839', '#6ed0e0', '#ef843c', '#e24d42', '#1f78c1'
 // Chart types the user can switch between for the (time-series) metrics.
 const CHART_TYPES = [
   { id: 'line', label: 'Line' },
+  { id: 'smooth', label: 'Smooth Line' },
+  { id: 'step', label: 'Stepped Line' },
   { id: 'area', label: 'Area' },
-  { id: 'bar', label: 'Bar' },
   { id: 'stacked', label: 'Stacked Area' },
+  { id: 'bar', label: 'Bar' },
+  { id: 'stackedbar', label: 'Stacked Bar' },
 ];
 
 const TT = {
@@ -122,11 +125,14 @@ function MetricChart({ data, keys, unit, type }) {
   const margin = { top: 8, right: 16, left: -6, bottom: 0 };
   const color = (i) => COLORS[i % COLORS.length];
 
-  if (type === 'bar') {
+  if (type === 'bar' || type === 'stackedbar') {
     return (
       <BarChart data={data} margin={margin}>
         {grid}{xAxis}{yAxis}{tip}{legend}
-        {keys.map((k, i) => <Bar key={k} dataKey={k} name={k} fill={color(i)} maxBarSize={26} isAnimationActive={false} />)}
+        {keys.map((k, i) => (
+          <Bar key={k} dataKey={k} name={k} fill={color(i)} maxBarSize={26}
+            stackId={type === 'stackedbar' ? '1' : undefined} isAnimationActive={false} />
+        ))}
       </BarChart>
     );
   }
@@ -149,10 +155,12 @@ function MetricChart({ data, keys, unit, type }) {
       </AreaChart>
     );
   }
+  // line family — line (linear), smooth (monotone), step (stepped)
+  const lineType = type === 'step' ? 'step' : type === 'line' ? 'linear' : 'monotone';
   return (
     <LineChart data={data} margin={margin}>
       {grid}{xAxis}{yAxis}{tip}{legend}
-      {keys.map((k, i) => <Line key={k} type="monotone" dataKey={k} name={k} stroke={color(i)} strokeWidth={2} dot={false} isAnimationActive={false} />)}
+      {keys.map((k, i) => <Line key={k} type={lineType} dataKey={k} name={k} stroke={color(i)} strokeWidth={2} dot={false} isAnimationActive={false} />)}
     </LineChart>
   );
 }
@@ -191,6 +199,7 @@ export default function DiscoveryExplorePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [chartType, setChartType] = useState('line');
+  const [metric, setMetric] = useState('all');
 
   useEffect(() => {
     let alive = true;
@@ -258,6 +267,13 @@ export default function DiscoveryExplorePage() {
           </div>
           <div className="xg-toolbar-r">
             {rangeLabel && <span className="xg-range"><FiClock /> {rangeLabel}</span>}
+            <label className="xg-select-wrap" title="Metric">
+              <FiGrid />
+              <select className="xg-select" value={metric} onChange={(e) => setMetric(e.target.value)}>
+                <option value="all">All metrics</option>
+                {names.map((n) => <option key={n} value={n}>{prettyName(n)}</option>)}
+              </select>
+            </label>
             <label className="xg-select-wrap" title="Chart type">
               <FiBarChart2 />
               <select className="xg-select" value={chartType} onChange={(e) => setChartType(e.target.value)}>
@@ -284,8 +300,10 @@ export default function DiscoveryExplorePage() {
               <StatPanel key={s.name} label={s.label} value={compact(s.value)} unit={s.unit}
                 tone={s.unit === '%' && s.value >= 80 ? 'bad' : s.unit === '%' && s.value >= 60 ? 'warn' : undefined} />
             ))}
-            {names.map((name) => (
-              <div className="xg-w3" key={name}><MetricPanel name={name} seriesList={groups[name]} chartType={chartType} /></div>
+            {(metric === 'all' ? names : names.filter((n) => n === metric)).map((name) => (
+              <div className={metric === 'all' ? 'xg-w3' : 'xg-w6'} key={name}>
+                <MetricPanel name={name} seriesList={groups[name]} chartType={chartType} />
+              </div>
             ))}
           </div>
         )}
