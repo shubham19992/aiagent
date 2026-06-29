@@ -26,7 +26,10 @@ const CHART_TYPES = [
   { id: 'line', label: 'Line' },
   { id: 'smooth', label: 'Smooth Line' },
   { id: 'step', label: 'Stepped Line' },
+  { id: 'dashed', label: 'Dashed Line' },
+  { id: 'points', label: 'Points' },
   { id: 'area', label: 'Area' },
+  { id: 'steparea', label: 'Stepped Area' },
   { id: 'stacked', label: 'Stacked Area' },
   { id: 'bar', label: 'Bar' },
   { id: 'stackedbar', label: 'Stacked Bar' },
@@ -42,13 +45,15 @@ const ALL_TYPE_IDS = CHART_TYPES.map((c) => c.id);
  */
 function allowedCharts(name) {
   const multi = name.includes('.io'); // metrics that commonly have >1 series
-  if (name.includes('status')) return ['step', 'bar', 'line'];
-  if (name.includes('errors')) return ['bar', 'line', 'step'];
+  if (name.includes('status')) return ['step', 'bar', 'line', 'points'];
+  if (name.includes('errors')) return ['bar', 'line', 'step', 'points'];
   if (name.includes('.io') || name.includes('capacity')) {
-    return multi ? ['area', 'stacked', 'line', 'smooth', 'bar', 'stackedbar'] : ['area', 'line', 'smooth', 'bar'];
+    return multi
+      ? ['area', 'stacked', 'steparea', 'line', 'smooth', 'dashed', 'bar', 'stackedbar', 'points']
+      : ['area', 'steparea', 'line', 'smooth', 'dashed', 'bar', 'points'];
   }
-  if (name.includes('utilization')) return ['line', 'smooth', 'area', 'bar', 'step'];
-  return ['line', 'smooth', 'area', 'bar', 'step'];
+  if (name.includes('utilization')) return ['line', 'smooth', 'area', 'steparea', 'bar', 'step', 'dashed', 'points'];
+  return ['line', 'smooth', 'area', 'steparea', 'bar', 'step', 'dashed', 'points'];
 }
 
 const TT = {
@@ -167,7 +172,8 @@ function MetricChart({ data, keys, unit, type }) {
       </BarChart>
     );
   }
-  if (type === 'area' || type === 'stacked') {
+  if (type === 'area' || type === 'stacked' || type === 'steparea') {
+    const areaType = type === 'steparea' ? 'step' : 'monotone';
     return (
       <AreaChart data={data} margin={margin}>
         <defs>
@@ -180,18 +186,25 @@ function MetricChart({ data, keys, unit, type }) {
         </defs>
         {grid}{xAxis}{yAxis}{tip}{legend}
         {keys.map((k, i) => (
-          <Area key={k} type="monotone" dataKey={k} name={k} stackId={type === 'stacked' ? '1' : undefined}
+          <Area key={k} type={areaType} dataKey={k} name={k} stackId={type === 'stacked' ? '1' : undefined}
             stroke={color(i)} strokeWidth={2} fill={`url(#xgg-${k})`} isAnimationActive={false} />
         ))}
       </AreaChart>
     );
   }
-  // line family — line (linear), smooth (monotone), step (stepped)
-  const lineType = type === 'step' ? 'step' : type === 'line' ? 'linear' : 'monotone';
+  // line family — line, smooth (monotone), step, dashed, points (dots only)
+  const lineType = type === 'step' ? 'step' : type === 'line' || type === 'dashed' || type === 'points' ? 'linear' : 'monotone';
+  const isPoints = type === 'points';
   return (
     <LineChart data={data} margin={margin}>
       {grid}{xAxis}{yAxis}{tip}{legend}
-      {keys.map((k, i) => <Line key={k} type={lineType} dataKey={k} name={k} stroke={color(i)} strokeWidth={2} dot={false} isAnimationActive={false} />)}
+      {keys.map((k, i) => (
+        <Line key={k} type={lineType} dataKey={k} name={k} stroke={color(i)}
+          strokeWidth={isPoints ? 0 : 2}
+          strokeDasharray={type === 'dashed' ? '5 4' : undefined}
+          dot={isPoints ? { r: 2.5, fill: color(i) } : false}
+          isAnimationActive={false} />
+      ))}
     </LineChart>
   );
 }
