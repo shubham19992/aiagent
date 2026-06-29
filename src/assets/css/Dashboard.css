@@ -569,9 +569,9 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 .xg-ctl-label svg { color: #6ed0e0; font-size: 13px; }
 .xg-controls .xg-select-wrap { display: flex; width: 100%; }
 .xg-controls .xg-select { flex: 1 1 auto; }
-.xg-controls .xg-timefilter { flex-direction: column; align-items: stretch; gap: 8px; width: 100%; }
-.xg-controls .xg-time-field { justify-content: space-between; }
-.xg-controls .xg-time-input { flex: 1 1 auto; margin-left: 8px; }
+.xg-controls .xg-timefilter { flex-direction: row; align-items: stretch; gap: 8px; width: 100%; }
+.xg-controls .xg-time-field { flex-direction: column; align-items: stretch; gap: 4px; flex: 1 1 0; min-width: 0; }
+.xg-controls .xg-time-input { flex: 1 1 auto; margin-left: 0; width: 100%; min-width: 0; }
 .xg-ctl-actions { display: flex; gap: 8px; }
 .xg-ctl-actions .xg-toolbar-btn { flex: 1 1 0; justify-content: center; }
 /* Reopen tab when the controls are collapsed. */
