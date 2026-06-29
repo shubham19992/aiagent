@@ -58,6 +58,23 @@ export function getAccess() {
   };
 }
 
+/** Current logged-in user's id (matches the userId in role-assignments). */
+export function currentUserId() {
+  const claims = decodeJwt(tokenStore.get());
+  const user = tokenStore.getUser() || {};
+  return user.id || user.user_id || user.uuid || claims.user_id || claims.sub || null;
+}
+
+/**
+ * Is the given user a project-level admin in a role-assignments payload?
+ * Shape: { project: { project_admin: [{ userId, ... }], ... }, ... }.
+ */
+export function isProjectAdminAssignment(assignments, userId = currentUserId()) {
+  if (!assignments || userId == null) return false;
+  const list = assignments.project?.project_admin;
+  return Array.isArray(list) && list.some((u) => String(u.userId) === String(userId));
+}
+
 /** Reactive variant — recomputes when the stored user changes. */
 export function useAccess() {
   const [access, setAccess] = useState(getAccess);

@@ -5,7 +5,7 @@ import { PageHeader, Spinner } from './_parts';
 import { listProjects, deleteProject } from '../../api/projects';
 import { getRoleAssignments } from '../../api/rbac';
 import { projectMembers, isDemoProject, isMine, clearMembership } from '../../store/projectsStore';
-import { useAccess } from '../../lib/access';
+import { useAccess, currentUserId, isProjectAdminAssignment } from '../../lib/access';
 
 // Unique assigned member names across both scopes of a role-assignments payload.
 function membersFromAssignments(data) {
@@ -39,8 +39,13 @@ export default function ProjectListPage() {
   const [openMenu, setOpenMenu] = useState(null); // project id of the open ⋯ menu
   const [all, setAll] = useState([]);            // all projects from the API
   const [membersByProject, setMembersByProject] = useState({}); // id -> [names]
+  const [adminProjectIds, setAdminProjectIds] = useState(() => new Set()); // ids the user admins
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Product admins manage everything; a project admin manages just their own
+  // projects (edit details + manage members).
+  const canManageProject = (p) => access.canManage || adminProjectIds.has(p.id);
 
   // Load projects from the backend (re-runs after a delete).
   useEffect(() => {
@@ -65,13 +70,16 @@ export default function ProjectListPage() {
   useEffect(() => {
     let alive = true;
     const real = all.filter((p) => !isDemoProject(p));
-    if (real.length === 0) { setMembersByProject({}); return undefined; }
+    if (real.length === 0) { setMembersByProject({}); setAdminProjectIds(new Set()); return undefined; }
+    const uid = currentUserId();
     Promise.all(real.map((p) =>
       getRoleAssignments(p.id)
-        .then((d) => [p.id, membersFromAssignments(d)])
-        .catch(() => [p.id, []]),
+        .then((d) => [p.id, membersFromAssignments(d), isProjectAdminAssignment(d, uid)])
+        .catch(() => [p.id, [], false]),
     )).then((entries) => {
-      if (alive) setMembersByProject(Object.fromEntries(entries));
+      if (!alive) return;
+      setMembersByProject(Object.fromEntries(entries.map(([id, names]) => [id, names])));
+      setAdminProjectIds(new Set(entries.filter(([, , admin]) => admin).map(([id]) => id)));
     });
     return () => { alive = false; };
   }, [all]);
@@ -183,7 +191,7 @@ export default function ProjectListPage() {
                 <div className="xd-pcard" key={p.id}>
                   {/* top-right: management ⋯ menu for admins, else a view icon */}
                   <div className="xd-pcard-menu" data-pcard-menu>
-                    {access.canManage ? (
+                    {canManageProject(p) ? (
                       <>
                         <button type="button" className="xd-pcard-menu-btn" title="More actions"
                           aria-haspopup="menu" aria-expanded={openMenu === p.id}
