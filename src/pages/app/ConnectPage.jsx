@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useOutletContext, useNavigate, useLocation, Link } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
 import { PageHeader, Spinner } from './_parts';
+import { DiscoveryLoading } from './DiscoveryPage';
 import ConnectionsSelect from './_ConnSelect';
 import { listConnectionParams } from '../../api/observability';
 import { connectCredential, patchCredential, getCredential } from '../../api/credentials';
@@ -194,6 +195,10 @@ export default function ConnectPage() {
 
         {loading ? (
           <Spinner label="Loading parameters…" />
+        ) : saving && !editing ? (
+          // Save & Connect runs discovery — show the same loader as the
+          // discovery screen while we wait for the connect call to finish.
+          <DiscoveryLoading />
         ) : (
           <form className="xd-card xd-conn-form" onSubmit={onSubmit}>
             <div className="xd-conn-grid">

@@ -39,7 +39,7 @@ const DISCOVERY_TIPS = [
 
 /** Loader shown while discovery runs; cycles a status message so the
  *  user knows it's still working during the longer API wait. */
-function DiscoveryLoading() {
+export function DiscoveryLoading() {
   const [i, setI] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setI((n) => (n + 1) % DISCOVERY_TIPS.length), 2500);
