@@ -315,64 +315,79 @@ export default function DiscoveryExplorePage() {
               </div>
             </div>
           </div>
-          <div className="xg-toolbar-r">
-            {tMin != null && (
-              <div className="xg-timefilter">
-                <FiClock />
-                <label className="xg-time-field">
-                  <span>From</span>
-                  <input type="datetime-local" className="xg-time-input"
-                    value={toLocalInput(from)} min={toLocalInput(tMin)} max={toLocalInput(tMax)}
-                    onChange={(e) => setFrom(fromLocalInput(e.target.value) ?? tMin)} />
-                </label>
-                <label className="xg-time-field">
-                  <span>To</span>
-                  <input type="datetime-local" className="xg-time-input"
-                    value={toLocalInput(to)} min={toLocalInput(tMin)} max={toLocalInput(tMax)}
-                    onChange={(e) => setTo(fromLocalInput(e.target.value) ?? tMax)} />
-                </label>
-              </div>
-            )}
-            <label className="xg-select-wrap" title="Metric">
-              <FiGrid />
-              <select className="xg-select" value={metric} onChange={(e) => setMetric(e.target.value)}>
-                <option value="all">All metrics</option>
-                {names.map((n) => <option key={n} value={n}>{prettyName(n)}</option>)}
-              </select>
-            </label>
-            <label className="xg-select-wrap" title="Chart type">
-              <FiBarChart2 />
-              <select className="xg-select" value={chartType} onChange={(e) => setChartType(e.target.value)}>
-                {typeOptions.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-              </select>
-            </label>
-            <button type="button" className="xg-toolbar-btn" onClick={() => navigate(0)} title="Refresh"><FiRefreshCw /></button>
-            <button type="button" className="xg-toolbar-btn xg-toolbar-back" onClick={() => navigate(-1)}><FiArrowLeft /> Back</button>
-          </div>
         </div>
 
-        {loading ? (
-          <div className="xg-loading"><FiLoader className="xd-spin" /> Loading metrics…</div>
-        ) : error ? (
-          <div className="xd-empty"><FiAlertTriangle /><p>{error}</p></div>
-        ) : names.length === 0 ? (
-          <div className="xd-empty">
-            <FiAlertTriangle /><p>No metrics returned.</p>
-            <Link to={discoveryPath} className="xd-btn xd-btn-sm">Back to Discovery</Link>
-          </div>
-        ) : (
-          <div className="xg-grid">
-            {stats.map((s) => (
-              <StatPanel key={s.name} label={s.label} value={compact(s.value)} unit={s.unit}
-                tone={s.unit === '%' && s.value >= 80 ? 'bad' : s.unit === '%' && s.value >= 60 ? 'warn' : undefined} />
-            ))}
-            {(metric === 'all' ? names : names.filter((n) => n === metric)).map((name) => (
-              <div className={metric === 'all' ? 'xg-w3' : 'xg-w6'} key={name}>
-                <MetricPanel name={name} seriesList={groups[name]} chartType={chartType} range={range} />
+        <div className="xg-body">
+          {/* left — charts */}
+          <div className="xg-charts">
+            {loading ? (
+              <div className="xg-loading"><FiLoader className="xd-spin" /> Loading metrics…</div>
+            ) : error ? (
+              <div className="xd-empty"><FiAlertTriangle /><p>{error}</p></div>
+            ) : names.length === 0 ? (
+              <div className="xd-empty">
+                <FiAlertTriangle /><p>No metrics returned.</p>
+                <Link to={discoveryPath} className="xd-btn xd-btn-sm">Back to Discovery</Link>
               </div>
-            ))}
+            ) : (
+              <div className="xg-grid">
+                {stats.map((s) => (
+                  <StatPanel key={s.name} label={s.label} value={compact(s.value)} unit={s.unit}
+                    tone={s.unit === '%' && s.value >= 80 ? 'bad' : s.unit === '%' && s.value >= 60 ? 'warn' : undefined} />
+                ))}
+                {(metric === 'all' ? names : names.filter((n) => n === metric)).map((name) => (
+                  <div className={metric === 'all' ? 'xg-w3' : 'xg-w6'} key={name}>
+                    <MetricPanel name={name} seriesList={groups[name]} chartType={chartType} range={range} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+
+          {/* right — controls */}
+          <aside className="xg-controls">
+            {tMin != null && (
+              <div className="xg-ctl">
+                <span className="xg-ctl-label"><FiClock /> Time range</span>
+                <div className="xg-timefilter">
+                  <label className="xg-time-field">
+                    <span>From</span>
+                    <input type="datetime-local" className="xg-time-input"
+                      value={toLocalInput(from)} min={toLocalInput(tMin)} max={toLocalInput(tMax)}
+                      onChange={(e) => setFrom(fromLocalInput(e.target.value) ?? tMin)} />
+                  </label>
+                  <label className="xg-time-field">
+                    <span>To</span>
+                    <input type="datetime-local" className="xg-time-input"
+                      value={toLocalInput(to)} min={toLocalInput(tMin)} max={toLocalInput(tMax)}
+                      onChange={(e) => setTo(fromLocalInput(e.target.value) ?? tMax)} />
+                  </label>
+                </div>
+              </div>
+            )}
+            <div className="xg-ctl">
+              <span className="xg-ctl-label"><FiGrid /> Metric</span>
+              <label className="xg-select-wrap">
+                <select className="xg-select" value={metric} onChange={(e) => setMetric(e.target.value)}>
+                  <option value="all">All metrics</option>
+                  {names.map((n) => <option key={n} value={n}>{prettyName(n)}</option>)}
+                </select>
+              </label>
+            </div>
+            <div className="xg-ctl">
+              <span className="xg-ctl-label"><FiBarChart2 /> Chart type</span>
+              <label className="xg-select-wrap">
+                <select className="xg-select" value={chartType} onChange={(e) => setChartType(e.target.value)}>
+                  {typeOptions.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+                </select>
+              </label>
+            </div>
+            <div className="xg-ctl-actions">
+              <button type="button" className="xg-toolbar-btn" onClick={() => navigate(0)}><FiRefreshCw /> Refresh</button>
+              <button type="button" className="xg-toolbar-btn" onClick={() => navigate(-1)}><FiArrowLeft /> Back</button>
+            </div>
+          </aside>
+        </div>
       </main>
     </>
   );

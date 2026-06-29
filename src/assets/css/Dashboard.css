@@ -530,6 +530,34 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 .xg-toolbar-btn:hover { border-color: #6ed0e0; color: #fff; background: #14181d; }
 
 .xg-panel-body { min-width: 0; }
+
+/* Body: charts on the left, controls sidebar on the right. */
+.xg-body { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 16px; align-items: start; }
+.xg-charts { min-width: 0; }
+.xg-controls {
+  position: sticky; top: 16px; display: flex; flex-direction: column; gap: 14px;
+  background: #181b1f; border: 1px solid #2a2f36; border-radius: 8px; padding: 14px;
+}
+.xg-ctl { display: flex; flex-direction: column; gap: 7px; }
+.xg-ctl-label {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .04em; color: #9fa7b3;
+}
+.xg-ctl-label svg { color: #6ed0e0; font-size: 13px; }
+.xg-controls .xg-select-wrap { display: flex; width: 100%; }
+.xg-controls .xg-select { flex: 1 1 auto; }
+.xg-controls .xg-timefilter { flex-direction: column; align-items: stretch; gap: 8px; width: 100%; }
+.xg-controls .xg-time-field { justify-content: space-between; }
+.xg-controls .xg-time-input { flex: 1 1 auto; margin-left: 8px; }
+.xg-ctl-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
+.xg-ctl-actions .xg-toolbar-btn { justify-content: center; }
+
+@media (max-width: 900px) {
+  .xg-body { grid-template-columns: 1fr; }
+  .xg-controls { position: static; flex-direction: row; flex-wrap: wrap; }
+  .xg-ctl { flex: 1 1 180px; }
+  .xg-ctl-actions { flex-direction: row; }
+}
 .xg-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; align-items: stretch; }
 /* Width helpers — spans add up to 6 per row so there are no blank gaps. */
 .xg-w2 { grid-column: span 2; }
