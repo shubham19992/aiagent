@@ -531,13 +531,33 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 
 .xg-panel-body { min-width: 0; }
 
+/* KPI stat row (full width, above charts + controls). */
+.xg-stats-row { margin-bottom: 14px; }
+
 /* Body: charts on the left, controls sidebar on the right. */
-.xg-body { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 16px; align-items: start; }
+.xg-body { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 16px; align-items: start; position: relative; }
+.xg-body-collapsed { grid-template-columns: minmax(0, 1fr); }
 .xg-charts { min-width: 0; }
 .xg-controls {
   position: sticky; top: 16px; display: flex; flex-direction: column; gap: 14px;
-  background: #181b1f; border: 1px solid #2a2f36; border-radius: 8px; padding: 14px;
+  background: linear-gradient(180deg, #1b1f24 0%, #181b1f 100%);
+  border: 1px solid #2a2f36; border-radius: 10px; padding: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.25);
 }
+.xg-controls-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding-bottom: 12px; border-bottom: 1px solid #2a2f36;
+}
+.xg-controls-title {
+  display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: #fff;
+}
+.xg-controls-title svg { color: #ff9830; }
+.xg-controls-close {
+  display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  width: 28px; height: 28px; border-radius: 7px; cursor: pointer;
+  background: #0e1116; border: 1px solid #2e3338; color: #9fa7b3; font-size: 15px;
+}
+.xg-controls-close:hover { border-color: #e24d42; color: #f2495c; }
 .xg-ctl { display: flex; flex-direction: column; gap: 7px; }
 .xg-ctl-label {
   display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700;
@@ -549,14 +569,19 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 .xg-controls .xg-timefilter { flex-direction: column; align-items: stretch; gap: 8px; width: 100%; }
 .xg-controls .xg-time-field { justify-content: space-between; }
 .xg-controls .xg-time-input { flex: 1 1 auto; margin-left: 8px; }
-.xg-ctl-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
-.xg-ctl-actions .xg-toolbar-btn { justify-content: center; }
+.xg-ctl-actions { display: flex; gap: 8px; }
+.xg-ctl-actions .xg-toolbar-btn { flex: 1 1 0; justify-content: center; }
+/* Reopen tab when the controls are collapsed. */
+.xg-controls-reopen {
+  position: absolute; top: 0; right: 0; display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 18px;
+  background: #181b1f; border: 1px solid #2e3338; color: #6ed0e0;
+}
+.xg-controls-reopen:hover { border-color: #6ed0e0; }
 
 @media (max-width: 900px) {
   .xg-body { grid-template-columns: 1fr; }
-  .xg-controls { position: static; flex-direction: row; flex-wrap: wrap; }
-  .xg-ctl { flex: 1 1 180px; }
-  .xg-ctl-actions { flex-direction: row; }
+  .xg-controls { position: static; }
 }
 .xg-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; align-items: stretch; }
 /* Width helpers — spans add up to 6 per row so there are no blank gaps. */
