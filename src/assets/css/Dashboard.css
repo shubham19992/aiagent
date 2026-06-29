@@ -528,6 +528,7 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
   transition: border-color .15s, color .15s, background .15s;
 }
 .xg-toolbar-btn:hover { border-color: #6ed0e0; color: #fff; background: #14181d; }
+.xg-back { align-self: flex-start; flex: 0 0 auto; }
 
 .xg-panel-body { min-width: 0; }
 
@@ -552,11 +553,13 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
   display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: #fff;
 }
 .xg-controls-title svg { color: #ff9830; }
-.xg-controls-close {
+.xg-controls-head-actions { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.xg-controls-icon, .xg-controls-close {
   display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
   width: 28px; height: 28px; border-radius: 7px; cursor: pointer;
   background: #0e1116; border: 1px solid #2e3338; color: #9fa7b3; font-size: 15px;
 }
+.xg-controls-icon:hover { border-color: #6ed0e0; color: #6ed0e0; }
 .xg-controls-close:hover { border-color: #e24d42; color: #f2495c; }
 .xg-ctl { display: flex; flex-direction: column; gap: 7px; }
 .xg-ctl-label {

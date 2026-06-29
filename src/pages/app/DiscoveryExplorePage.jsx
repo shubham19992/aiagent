@@ -317,6 +317,9 @@ export default function DiscoveryExplorePage() {
               </div>
             </div>
           </div>
+          <button type="button" className="xg-toolbar-btn xg-back" onClick={() => navigate(-1)}>
+            <FiArrowLeft /> Back
+          </button>
         </div>
 
         {/* KPI stat row — full width, above the charts/controls */}
@@ -357,14 +360,14 @@ export default function DiscoveryExplorePage() {
             <aside className="xg-controls">
               <div className="xg-controls-head">
                 <span className="xg-controls-title"><FiSliders /> Controls</span>
-                <button type="button" className="xg-controls-close" onClick={() => setControlsOpen(false)} title="Close" aria-label="Close controls">
-                  <FiX />
-                </button>
-              </div>
-
-              <div className="xg-ctl-actions">
-                <button type="button" className="xg-toolbar-btn" onClick={() => navigate(0)}><FiRefreshCw /> Refresh</button>
-                <button type="button" className="xg-toolbar-btn" onClick={() => navigate(-1)}><FiArrowLeft /> Back</button>
+                <div className="xg-controls-head-actions">
+                  <button type="button" className="xg-controls-icon" onClick={() => navigate(0)} title="Refresh" aria-label="Refresh">
+                    <FiRefreshCw />
+                  </button>
+                  <button type="button" className="xg-controls-close" onClick={() => setControlsOpen(false)} title="Close" aria-label="Close controls">
+                    <FiX />
+                  </button>
+                </div>
               </div>
 
               {tMin != null && (
