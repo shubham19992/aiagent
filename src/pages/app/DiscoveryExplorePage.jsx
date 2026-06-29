@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import {
   FiArrowLeft, FiAlertTriangle, FiClock, FiRefreshCw, FiGrid, FiBarChart2,
   FiCpu, FiHardDrive, FiDatabase, FiShare2, FiBox, FiActivity, FiServer, FiLoader, FiLayers,
-  FiSliders, FiX,
+  FiSliders, FiX, FiMoreVertical, FiMaximize2, FiChevronRight, FiCheck,
 } from 'react-icons/fi';
 import { FaAws } from 'react-icons/fa';
 import { VscAzure } from 'react-icons/vsc';
@@ -133,14 +133,58 @@ function buildSeries(seriesList, range) {
   return { data, keys };
 }
 
-function Panel({ title, subtitle, icon, children }) {
+function Panel({ title, subtitle, icon, action, children }) {
   return (
     <div className="xg-panel">
       <div className="xg-panel-head">
         {icon}<span>{title}</span>
         {subtitle ? <span className="xg-panel-sub">{subtitle}</span> : null}
+        {action}
       </div>
       <div className="xg-panel-body">{children}</div>
+    </div>
+  );
+}
+
+/** Per-graph kebab menu: View (fullscreen) + a chart-type submenu. */
+function PanelMenu({ allowed, current, onSelectType, onView }) {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDown = (e) => { if (!e.target.closest('[data-xg-menu]')) setOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
+  }, [open]);
+  return (
+    <div className="xg-pmenu" data-xg-menu>
+      <button type="button" className="xg-pmenu-btn" title="Options" aria-haspopup="menu" aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}>
+        <FiMoreVertical />
+      </button>
+      {open && (
+        <div className="xg-pmenu-list" role="menu">
+          <button type="button" className="xg-pmenu-item" role="menuitem"
+            onClick={() => { setOpen(false); onView(); }}>
+            <FiMaximize2 /> View
+          </button>
+          <div className="xg-pmenu-sub">
+            <div className="xg-pmenu-item xg-pmenu-item-parent">
+              <span><FiBarChart2 /> Graph</span><FiChevronRight className="xg-pmenu-arrow" />
+            </div>
+            <div className="xg-pmenu-flyout" role="menu">
+              {allowed.map((c) => (
+                <button type="button" key={c.id} role="menuitemradio" aria-checked={c.id === current}
+                  className={`xg-pmenu-item${c.id === current ? ' active' : ''}`}
+                  onClick={() => { setOpen(false); onSelectType(c.id); }}>
+                  {c.label}{c.id === current ? <FiCheck className="xg-pmenu-check" /> : null}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -213,11 +257,11 @@ function MetricChart({ data, keys, unit, type }) {
 }
 
 /** Snapshot gauge of the latest value vs a max (RadialBar). */
-function Gauge({ value, max, unit, color }) {
+function Gauge({ value, max, unit, color, size = 170 }) {
   const pct = max ? Math.round((value / max) * 100) : 0;
   return (
     <div className="xg-gauge-wrap" style={{ justifyContent: 'center' }}>
-      <div className="xg-donut-rc" style={{ width: 170, height: 150 }}>
+      <div className="xg-donut-rc" style={{ width: size, height: size * 0.88 }}>
         <ResponsiveContainer width="100%" height="100%">
           <RadialBarChart innerRadius="66%" outerRadius="100%" data={[{ value }]} startAngle={210} endAngle={-30}>
             <PolarAngleAxis type="number" domain={[0, max]} angleAxisId={0} tick={false} />
@@ -234,11 +278,12 @@ function Gauge({ value, max, unit, color }) {
 }
 
 /** Snapshot pie of the latest value share across series. */
-function PieSnapshot({ data, unit }) {
+function PieSnapshot({ data, unit, height = 200 }) {
+  const outer = Math.min(140, Math.max(70, height * 0.36));
   return (
-    <ResponsiveContainer width="100%" height={200}>
+    <ResponsiveContainer width="100%" height={height}>
       <PieChart>
-        <Pie data={data} dataKey="value" nameKey="name" innerRadius={46} outerRadius={78} paddingAngle={1} stroke="#181b1f">
+        <Pie data={data} dataKey="value" nameKey="name" innerRadius={outer * 0.58} outerRadius={outer} paddingAngle={1} stroke="#181b1f">
           {data.map((d, i) => <Cell key={d.name} fill={COLORS[i % COLORS.length]} />)}
         </Pie>
         <Tooltip {...TT} formatter={(v, n) => [`${compact(v)}${unit}`, n]} />
@@ -248,31 +293,38 @@ function PieSnapshot({ data, unit }) {
   );
 }
 
-/** One chart for a metric — time-series, or a snapshot gauge/pie. */
-function MetricPanel({ name, seriesList, chartType, range }) {
+/** Renders a metric's body for the chosen type — time-series, gauge, or pie. */
+function MetricBody({ name, seriesList, type, range, height = 200 }) {
   const { data, keys } = buildSeries(seriesList, range);
   const unit = unitFor(name);
   const last = data[data.length - 1] || {};
 
-  let body;
-  if (chartType === 'gauge') {
+  if (type === 'gauge') {
     const value = Number(last[keys[0]] ?? 0);
     const max = unit === '%' ? 100 : name.includes('status') ? 1 : Math.max(1, ...data.map((d) => Number(d[keys[0]]) || 0));
-    body = <Gauge value={value} max={max} unit={unit} color={COLORS[0]} />;
-  } else if (chartType === 'pie') {
-    const pieData = keys.map((k) => ({ name: k, value: Number(last[k] ?? 0) }));
-    body = <PieSnapshot data={pieData} unit={unit} />;
-  } else {
-    body = (
-      <ResponsiveContainer width="100%" height={200}>
-        <MetricChart data={data} keys={keys} unit={unit} type={chartType} />
-      </ResponsiveContainer>
-    );
+    return <Gauge value={value} max={max} unit={unit} color={COLORS[0]} size={height >= 300 ? 240 : 170} />;
   }
-
+  if (type === 'pie') {
+    const pieData = keys.map((k) => ({ name: k, value: Number(last[k] ?? 0) }));
+    return <PieSnapshot data={pieData} unit={unit} height={height} />;
+  }
   return (
-    <Panel title={prettyName(name)} subtitle={contextOf(seriesList[0]?.metric || {})} icon={iconFor(name)}>
-      {body}
+    <ResponsiveContainer width="100%" height={height}>
+      <MetricChart data={data} keys={keys} unit={unit} type={type} />
+    </ResponsiveContainer>
+  );
+}
+
+/** One chart panel for a metric, with a kebab menu (View + Graph type). */
+function MetricPanel({ name, seriesList, type, allowed, range, onSelectType, onView }) {
+  return (
+    <Panel
+      title={prettyName(name)}
+      subtitle={contextOf(seriesList[0]?.metric || {})}
+      icon={iconFor(name)}
+      action={<PanelMenu allowed={allowed} current={type} onSelectType={onSelectType} onView={onView} />}
+    >
+      <MetricBody name={name} seriesList={seriesList} type={type} range={range} />
     </Panel>
   );
 }
@@ -302,6 +354,8 @@ export default function DiscoveryExplorePage() {
   const [from, setFrom] = useState(null);
   const [to, setTo] = useState(null);
   const [controlsOpen, setControlsOpen] = useState(true);
+  const [typeOverrides, setTypeOverrides] = useState({}); // per-metric chart type
+  const [viewMetric, setViewMetric] = useState(null);     // fullscreen metric name
 
   useEffect(() => {
     let alive = true;
@@ -345,6 +399,16 @@ export default function DiscoveryExplorePage() {
     if (!allowedIds.includes(chartType)) setChartType(allowedIds[0]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metric]);
+
+  // The chart type for a given metric: per-graph override → global → a valid
+  // fallback for that metric. Each graph also exposes its own allowed list.
+  const allowedFor = (name) => allowedCharts(name).map((id) => CHART_TYPES.find((c) => c.id === id)).filter(Boolean);
+  const effectiveType = (name) => {
+    const allow = allowedCharts(name);
+    const base = typeOverrides[name] || chartType;
+    return allow.includes(base) ? base : allow[0];
+  };
+  const setMetricType = (name, id) => setTypeOverrides((o) => ({ ...o, [name]: id }));
 
   const cloud = discovery?.cloudProvider || result[0]?.metric?.['cloud.provider']?.toUpperCase() || envName;
   const stats = [
@@ -416,7 +480,15 @@ export default function DiscoveryExplorePage() {
               <div className="xg-grid">
                 {(metric === 'all' ? names : names.filter((n) => n === metric)).map((name) => (
                   <div className={metric === 'all' ? 'xg-w3' : 'xg-w6'} key={name}>
-                    <MetricPanel name={name} seriesList={groups[name]} chartType={chartType} range={range} />
+                    <MetricPanel
+                      name={name}
+                      seriesList={groups[name]}
+                      type={effectiveType(name)}
+                      allowed={allowedFor(name)}
+                      range={range}
+                      onSelectType={(id) => setMetricType(name, id)}
+                      onView={() => setViewMetric(name)}
+                    />
                   </div>
                 ))}
               </div>
@@ -481,6 +553,25 @@ export default function DiscoveryExplorePage() {
             </button>
           )}
         </div>
+
+        {/* fullscreen view of a single graph */}
+        {viewMetric && groups[viewMetric] && (
+          <div className="xg-modal" onClick={() => setViewMetric(null)}>
+            <div className="xg-modal-card" onClick={(e) => e.stopPropagation()}>
+              <div className="xg-modal-head">
+                <span className="xg-modal-title">{iconFor(viewMetric)} {prettyName(viewMetric)}
+                  <span className="xg-modal-sub">{contextOf(groups[viewMetric][0]?.metric || {})}</span>
+                </span>
+                <button type="button" className="xg-controls-close" onClick={() => setViewMetric(null)} title="Close" aria-label="Close">
+                  <FiX />
+                </button>
+              </div>
+              <div className="xg-modal-body">
+                <MetricBody name={viewMetric} seriesList={groups[viewMetric]} type={effectiveType(viewMetric)} range={range} height={460} />
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </>
   );

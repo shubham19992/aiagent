@@ -532,6 +532,59 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 
 .xg-panel-body { min-width: 0; }
 
+/* Per-graph kebab menu + chart-type flyout. */
+.xg-pmenu { position: relative; margin-left: auto; flex: 0 0 auto; }
+.xg-pmenu-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 6px; cursor: pointer;
+  background: transparent; border: 1px solid transparent; color: #9fa7b3; font-size: 16px;
+}
+.xg-pmenu-btn:hover { background: #0e1116; border-color: #2e3338; color: #fff; }
+.xg-pmenu-list {
+  position: absolute; top: 30px; right: 0; z-index: 30; min-width: 160px;
+  background: #1b1f24; border: 1px solid #2e3338; border-radius: 8px; padding: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+.xg-pmenu-item {
+  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; cursor: pointer;
+  background: transparent; border: 0; border-radius: 6px; padding: 7px 9px;
+  font: inherit; font-size: 12.5px; color: #d8d9da;
+}
+.xg-pmenu-item:hover { background: #0e1116; }
+.xg-pmenu-item.active { color: #6ed0e0; }
+.xg-pmenu-item svg { font-size: 14px; color: #8a929c; flex: 0 0 auto; }
+.xg-pmenu-item.active svg { color: #6ed0e0; }
+.xg-pmenu-check { margin-left: auto; }
+.xg-pmenu-sub { position: relative; }
+.xg-pmenu-item-parent { justify-content: space-between; }
+.xg-pmenu-arrow { margin-left: auto; }
+.xg-pmenu-flyout {
+  position: absolute; top: -6px; right: 100%; margin-right: 4px; z-index: 31;
+  min-width: 150px; max-height: 280px; overflow: auto;
+  background: #1b1f24; border: 1px solid #2e3338; border-radius: 8px; padding: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4); display: none;
+}
+.xg-pmenu-sub:hover .xg-pmenu-flyout { display: block; }
+
+/* Fullscreen single-graph view. */
+.xg-modal {
+  position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.6); padding: 24px;
+}
+.xg-modal-card {
+  width: min(1100px, 96vw); max-height: 92vh; display: flex; flex-direction: column;
+  background: #181b1f; border: 1px solid #2a2f36; border-radius: 12px; overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,.55);
+}
+.xg-modal-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 18px; border-bottom: 1px solid #23272e;
+}
+.xg-modal-title { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 800; color: #fff; }
+.xg-modal-title svg { color: #6ed0e0; }
+.xg-modal-sub { font-size: 12px; font-weight: 600; color: #8a929c; margin-left: 6px; }
+.xg-modal-body { padding: 18px; overflow: auto; }
+
 /* KPI stat row (full width, above charts + controls). */
 .xg-stats-row { margin-bottom: 14px; }
 
@@ -614,9 +667,9 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 }
 .xg-panel-head svg { color: #6ed0e0; font-size: 14px; }
 .xg-panel-sub {
-  margin-left: auto; font-size: 10.5px; color: #6c737c; font-weight: 600;
+  font-size: 10.5px; color: #6c737c; font-weight: 600;
   text-transform: none; letter-spacing: 0; white-space: nowrap; overflow: hidden;
-  text-overflow: ellipsis; max-width: 50%;
+  text-overflow: ellipsis; max-width: 45%;
 }
 .xg-stat { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
 .xg-stat-val { font-size: 32px; font-weight: 800; line-height: 1; color: #fff; }
