@@ -590,7 +590,8 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 
 /* Body: charts on the left, controls sidebar on the right. */
 .xg-body { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 16px; align-items: start; position: relative; }
-.xg-body-collapsed { grid-template-columns: minmax(0, 1fr); }
+/* Collapsed: graphs reclaim the space; a thin rail holds the reopen tab. */
+.xg-body-collapsed { grid-template-columns: minmax(0, 1fr) 44px; }
 .xg-charts { min-width: 0; }
 .xg-controls {
   position: sticky; top: 16px; display: flex; flex-direction: column; gap: 14px;
@@ -636,17 +637,27 @@ a.xd-crumb:hover { color: var(--xd-emerald); }
 .xg-controls .xg-time-input { margin-left: 0; width: 100%; min-width: 0; }
 .xg-ctl-actions { display: flex; gap: 8px; }
 .xg-ctl-actions .xg-toolbar-btn { flex: 1 1 0; justify-content: center; }
-/* Reopen tab when the controls are collapsed. */
+/* Collapsed reopen tab — occupies the thin rail column (not floating). */
 .xg-controls-reopen {
-  position: absolute; top: 0; right: 0; display: inline-flex; align-items: center; justify-content: center;
-  width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 18px;
-  background: #181b1f; border: 1px solid #2e3338; color: #6ed0e0;
+  position: sticky; top: 16px; align-self: start;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  width: 100%; min-height: 200px; padding: 14px 0; cursor: pointer; font-size: 17px;
+  background: linear-gradient(180deg, #1b1f24 0%, #181b1f 100%);
+  border: 1px solid #2a2f36; border-radius: 10px; color: #6ed0e0;
+  box-shadow: 0 2px 12px rgba(0,0,0,.25);
 }
 .xg-controls-reopen:hover { border-color: #6ed0e0; }
+.xg-reopen-text {
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #c7ccd1;
+}
+.xg-reopen-caret { font-size: 14px; color: #8a929c; }
 
 @media (max-width: 900px) {
-  .xg-body { grid-template-columns: 1fr; }
-  .xg-controls { position: static; }
+  .xg-body, .xg-body-collapsed { grid-template-columns: 1fr; }
+  .xg-controls, .xg-controls-reopen { position: static; }
+  .xg-controls-reopen { flex-direction: row; min-height: 0; }
+  .xg-reopen-text { writing-mode: horizontal-tb; transform: none; }
 }
 .xg-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; align-items: stretch; }
 /* Width helpers — spans add up to 6 per row so there are no blank gaps. */

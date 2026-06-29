@@ -550,6 +550,8 @@ export default function DiscoveryExplorePage() {
           ) : (
             <button type="button" className="xg-controls-reopen" onClick={() => setControlsOpen(true)} title="Show controls" aria-label="Show controls">
               <FiSliders />
+              <span className="xg-reopen-text">Controls</span>
+              <FiChevronRight className="xg-reopen-caret" />
             </button>
           )}
         </div>
